@@ -1,280 +1,1167 @@
-/* =============================================
-   PedalWorks Dynamics — Custom Stylesheet
-   Palette: Professional blues & grays
-   ============================================= */
+/* ==========================================================================
+   PedalWorks Dynamics — Adventure & Nature Glassmorphism Design System
+   Environment: XAMPP (PHP, HTML, CSS, JS, MySQL)
+   Theme: Mountain & Trail Adventure · Pine / Moss / Terracotta Palette
+   ========================================================================== */
 
-/* ----- Color Variables ----- */
+/* --------------------------------------------------------------------------
+   1. Design Tokens & CSS Custom Properties
+   -------------------------------------------------------------------------- */
 :root {
-    --pw-blue:        #1a5276;
-    --pw-blue-light:  #2980b9;
-    --pw-blue-pale:   #d6eaf8;
-    --pw-dark:        #1c2833;
-    --pw-gray:        #566573;
-    --pw-gray-light:  #eaecee;
-    --pw-white:       #fdfdfd;
-    --pw-accent:      #e67e22;
+    /* Nature Palette: Deep Forest & Pine */
+    --pw-pine-darkest:      #07110c;
+    --pw-pine-dark:         #0c1b14;
+    --pw-pine-deep:         #12271d;
+    --pw-forest-base:       #183427;
+    --pw-forest-mid:        #214635;
+    
+    /* Nature Palette: Moss, Sage & Foliage */
+    --pw-moss-green:        #2e5f48;
+    --pw-sage-leaf:         #478164;
+    --pw-sage-light:        #72a88d;
+    --pw-mist-green:        #b8d8c8;
+    --pw-mist-pale:         #eaf5ef;
+    
+    /* Adventure Accent: Trail Terracotta & Ridge Amber */
+    --pw-trail-earth:       #d16629;
+    --pw-trail-bright:      #e5793a;
+    --pw-trail-amber:       #f59b58;
+    --pw-trail-glow:        rgba(209, 102, 41, 0.35);
+
+    /* Text & Neutral Hierarchy */
+    --pw-text-bright:       #f5f9f6;
+    --pw-text-primary:      #e6f0ea;
+    --pw-text-muted:        #9ab5a6;
+    --pw-text-faint:        #658474;
+
+    /* Glassmorphism Surface Tokens */
+    --pw-glass-bg-nav:      rgba(10, 24, 18, 0.78);
+    --pw-glass-bg-card:     rgba(18, 38, 29, 0.62);
+    --pw-glass-bg-card-hover: rgba(25, 52, 40, 0.75);
+    --pw-glass-bg-elevated: rgba(28, 59, 45, 0.55);
+    --pw-glass-bg-subtle:   rgba(255, 255, 255, 0.04);
+    
+    /* Glass Borders & Specular Accents */
+    --pw-glass-border:      rgba(255, 255, 255, 0.12);
+    --pw-glass-border-light: rgba(255, 255, 255, 0.22);
+    --pw-glass-border-moss: rgba(114, 168, 141, 0.28);
+    --pw-glass-specular:    rgba(255, 255, 255, 0.32);
+
+    /* Depth Shadows */
+    --pw-glass-shadow-sm:   0 4px 16px rgba(0, 0, 0, 0.3);
+    --pw-glass-shadow-md:   0 12px 32px rgba(0, 0, 0, 0.45);
+    --pw-glass-shadow-lg:   0 20px 48px rgba(0, 0, 0, 0.55);
+    --pw-glow-accent:       0 0 24px rgba(209, 102, 41, 0.25);
+
+    /* Typography */
+    --pw-font-display:      'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --pw-font-body:         'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Spacing & Radii */
+    --pw-radius-sm:         8px;
+    --pw-radius-md:         14px;
+    --pw-radius-lg:         20px;
+    --pw-radius-full:       9999px;
+    --pw-blur-strength:     16px;
 }
 
-/* ----- Base ----- */
-body {
-    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    color: #2c3e50;
-    background-color: var(--pw-white);
+/* --------------------------------------------------------------------------
+   2. Reset & Adventure Canvas Backdrop
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
-/* ----- Navbar ----- */
-.bg-pw-primary {
-    background-color: var(--pw-blue) !important;
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: clip;
 }
 
-.navbar-brand {
-    font-size: 1.25rem;
-    letter-spacing: 0.02em;
+body.pw-nature-body {
+    font-family: var(--pw-font-body);
+    color: var(--pw-text-primary);
+    background-color: var(--pw-pine-darkest);
+    background-image: 
+        radial-gradient(circle at 15% 15%, rgba(46, 95, 72, 0.38) 0%, transparent 45%),
+        radial-gradient(circle at 85% 25%, rgba(209, 102, 41, 0.16) 0%, transparent 40%),
+        radial-gradient(circle at 50% 65%, rgba(24, 52, 39, 0.45) 0%, transparent 55%),
+        radial-gradient(circle at 20% 90%, rgba(33, 70, 53, 0.3) 0%, transparent 50%),
+        linear-gradient(180deg, #091510 0%, #0c1c14 40%, #07110c 100%);
+    background-attachment: fixed;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
 }
 
-.navbar .nav-link {
+/* Typography styles */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--pw-font-display);
+    color: var(--pw-text-bright);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+}
+
+a {
+    color: var(--pw-sage-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--pw-trail-bright);
+}
+
+/* --------------------------------------------------------------------------
+   3. Glassmorphism Navigation Bar
+   -------------------------------------------------------------------------- */
+.pw-glass-nav {
+    background: var(--pw-glass-bg-nav);
+    backdrop-filter: blur(var(--pw-blur-strength)) saturate(170%);
+    -webkit-backdrop-filter: blur(var(--pw-blur-strength)) saturate(170%);
+    border-bottom: 1px solid var(--pw-glass-border);
+    padding: 0.85rem 0;
+    z-index: 1040;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pw-glass-nav.scrolled {
+    background: rgba(7, 17, 12, 0.92);
+    box-shadow: var(--pw-glass-shadow-md);
+}
+
+/* Brand */
+.pw-brand {
+    font-size: 1.35rem;
+    font-family: var(--pw-font-display);
+    text-decoration: none;
+    color: var(--pw-text-bright);
+}
+
+.pw-brand-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--pw-radius-md);
+    background: linear-gradient(135deg, var(--pw-forest-mid), var(--pw-moss-green));
+    border: 1px solid var(--pw-glass-border-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pw-trail-bright);
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pw-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.pw-brand-title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--pw-text-bright);
+}
+
+.pw-brand-sub {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--pw-trail-amber);
+}
+
+.pw-trail-badge {
+    background: rgba(209, 102, 41, 0.15);
+    border: 1px solid rgba(209, 102, 41, 0.35);
+    color: var(--pw-trail-amber);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--pw-radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Nav Links */
+.pw-nav-link {
+    font-family: var(--pw-font-body);
+    font-weight: 500;
     font-size: 0.95rem;
-    padding: 0.5rem 0.85rem;
-    transition: color 0.2s;
+    color: var(--pw-text-muted) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--pw-radius-full);
+    transition: all 0.25s ease;
 }
 
-.navbar .nav-link:hover {
-    color: var(--pw-blue-pale) !important;
+.pw-nav-link:hover {
+    color: var(--pw-text-bright) !important;
+    background: rgba(255, 255, 255, 0.06);
 }
 
-/* ----- Hero Section ----- */
-.hero-section {
-    background-color: var(--pw-blue);
+.pw-nav-link.active {
+    color: var(--pw-mist-pale) !important;
+    background: rgba(46, 95, 72, 0.35);
+    border: 1px solid var(--pw-glass-border-moss);
+}
+
+/* Nav Toggler */
+.pw-nav-toggler {
+    border: 1px solid var(--pw-glass-border);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--pw-text-bright);
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--pw-radius-sm);
+    font-size: 1.1rem;
+}
+
+.pw-nav-toggler:focus {
+    box-shadow: 0 0 0 2px var(--pw-sage-leaf);
+}
+
+/* --------------------------------------------------------------------------
+   4. Glass Buttons & Interactive Elements
+   -------------------------------------------------------------------------- */
+.pw-btn-trail {
+    background: linear-gradient(135deg, var(--pw-trail-earth), var(--pw-trail-bright));
+    color: #ffffff;
+    font-family: var(--pw-font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--pw-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 18px var(--pw-trail-glow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.pw-btn-trail:hover {
+    background: linear-gradient(135deg, #be571d, var(--pw-trail-earth));
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(209, 102, 41, 0.45);
+}
+
+.pw-btn-trail-sm {
+    background: linear-gradient(135deg, var(--pw-trail-earth), var(--pw-trail-bright));
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.45rem 1.1rem;
+    border-radius: var(--pw-radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.pw-btn-trail-sm:hover {
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px var(--pw-trail-glow);
+}
+
+.pw-btn-glass {
+    background: var(--pw-glass-bg-subtle);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--pw-text-bright);
+    font-family: var(--pw-font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.75rem 1.6rem;
+    border-radius: var(--pw-radius-md);
+    border: 1px solid var(--pw-glass-border-light);
+    box-shadow: var(--pw-glass-shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.25s ease;
+    text-decoration: none;
+}
+
+.pw-btn-glass:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--pw-sage-light);
+    color: var(--pw-text-bright);
+    transform: translateY(-2px);
+}
+
+.pw-btn-glass-sm {
+    background: var(--pw-glass-bg-subtle);
+    border: 1px solid var(--pw-glass-border);
+    color: var(--pw-text-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.45rem 1rem;
+    border-radius: var(--pw-radius-full);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.pw-btn-glass-sm:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--pw-text-bright);
+    border-color: var(--pw-glass-border-light);
+}
+
+.pw-btn-glass-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--pw-radius-full);
+    background: var(--pw-glass-bg-subtle);
+    border: 1px solid var(--pw-glass-border);
+    color: var(--pw-text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.pw-btn-glass-icon:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--pw-trail-bright);
+    border-color: var(--pw-glass-border-light);
+}
+
+.pw-badge-cart {
+    background: var(--pw-trail-earth) !important;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+/* Dropdown Menu Glass */
+.pw-glass-dropdown {
+    background: rgba(12, 27, 20, 0.95);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--pw-glass-border-light);
+    border-radius: var(--pw-radius-md);
+    box-shadow: var(--pw-glass-shadow-lg);
+    padding: 0.5rem;
+}
+
+.pw-dropdown-item {
+    color: var(--pw-text-primary);
+    font-size: 0.9rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: var(--pw-radius-sm);
+    transition: all 0.2s ease;
+}
+
+.pw-dropdown-item:hover {
+    background: rgba(71, 129, 100, 0.25);
+    color: var(--pw-text-bright);
+}
+
+.pw-dropdown-divider {
+    border-color: var(--pw-glass-border);
+}
+
+/* --------------------------------------------------------------------------
+   5. Hero Section — Adventure Lab
+   -------------------------------------------------------------------------- */
+.pw-hero-section {
+    position: relative;
+    padding: 5.5rem 0 4.5rem;
+    overflow: hidden;
+}
+
+.pw-hero-badge {
+    background: rgba(46, 95, 72, 0.3);
+    border: 1px solid var(--pw-glass-border-moss);
+    color: var(--pw-mist-green);
+    padding: 0.4rem 1rem;
+    border-radius: var(--pw-radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    backdrop-filter: blur(8px);
+}
+
+.pw-hero-title {
+    font-size: 3.25rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.25rem;
+}
+
+.pw-hero-title-accent {
+    color: var(--pw-trail-amber);
+    display: inline-block;
+}
+
+.pw-hero-desc {
+    font-size: 1.15rem;
+    color: var(--pw-text-muted);
+    line-height: 1.65;
+    max-width: 540px;
+    margin-bottom: 2rem;
+}
+
+/* Hero Stats Pills */
+.pw-hero-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 2rem;
+}
+
+.pw-stat-pill {
+    background: var(--pw-glass-bg-subtle);
+    border: 1px solid var(--pw-glass-border);
+    backdrop-filter: blur(8px);
+    border-radius: var(--pw-radius-full);
+    padding: 0.4rem 0.95rem;
+    font-size: 0.85rem;
+    color: var(--pw-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pw-stat-pill i {
+    color: var(--pw-trail-amber);
+}
+
+.pw-stat-pill strong {
+    color: var(--pw-text-bright);
+}
+
+/* Hero Placeholder Frame (Glass Frame with Adventure Elevation Contour) */
+.pw-hero-visual-card {
+    position: relative;
+    background: var(--pw-glass-bg-card);
+    backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    border: 1px solid var(--pw-glass-border-light);
+    border-top: 1px solid var(--pw-glass-specular);
+    border-radius: var(--pw-radius-lg);
+    box-shadow: var(--pw-glass-shadow-lg);
+    padding: 1.25rem;
+    overflow: hidden;
+}
+
+.pw-hero-placeholder-inner {
+    width: 100%;
+    min-height: 380px;
+    border-radius: var(--pw-radius-md);
+    background: 
+        radial-gradient(circle at 75% 20%, rgba(209, 102, 41, 0.25) 0%, transparent 45%),
+        linear-gradient(135deg, #0e2218 0%, #153424 50%, #0d2016 100%);
+    border: 1px dashed rgba(114, 168, 141, 0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+    position: relative;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Topographic Contour lines SVG Overlay */
+.pw-topographic-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.pw-hero-placeholder-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--pw-radius-full);
+    background: rgba(209, 102, 41, 0.18);
+    border: 1px solid rgba(209, 102, 41, 0.4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pw-trail-amber);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 24px rgba(209, 102, 41, 0.2);
+}
+
+.pw-hero-placeholder-label {
+    font-family: var(--pw-font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pw-text-bright);
+    margin-bottom: 0.35rem;
+}
+
+.pw-hero-placeholder-meta {
+    font-size: 0.85rem;
+    color: var(--pw-sage-light);
+    letter-spacing: 0.05em;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--pw-radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pw-hero-badge-float {
+    position: absolute;
+    bottom: 1.75rem;
+    right: 1.75rem;
+    background: rgba(12, 27, 20, 0.88);
+    border: 1px solid var(--pw-glass-border-light);
+    backdrop-filter: blur(14px);
+    border-radius: var(--pw-radius-md);
+    padding: 0.75rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: var(--pw-glass-shadow-md);
+}
+
+.pw-badge-float-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--pw-radius-sm);
+    background: var(--pw-moss-green);
     color: #fff;
-    padding: 5rem 0 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   6. Category Filter Navigation (Interactive Glass Pills)
+   -------------------------------------------------------------------------- */
+.pw-category-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-bottom: 2.75rem;
+}
+
+.pw-filter-pill {
+    background: var(--pw-glass-bg-subtle);
+    border: 1px solid var(--pw-glass-border);
+    backdrop-filter: blur(10px);
+    color: var(--pw-text-muted);
+    font-family: var(--pw-font-display);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--pw-radius-full);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pw-filter-pill:hover {
+    color: var(--pw-text-bright);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--pw-glass-border-light);
+}
+
+.pw-filter-pill.active {
+    background: linear-gradient(135deg, rgba(46, 95, 72, 0.7), rgba(20, 48, 35, 0.85));
+    border-color: var(--pw-sage-light);
+    color: var(--pw-text-bright);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   7. Featured Products Section & Glass Product Cards
+   -------------------------------------------------------------------------- */
+.pw-section {
+    padding: 5.5rem 0;
+    position: relative;
+}
+
+.pw-section-head {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 3rem;
+}
+
+.pw-section-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--pw-trail-amber);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.5rem;
+}
+
+.pw-section-title {
+    font-size: 2.35rem;
+    font-weight: 800;
+    margin-bottom: 0.85rem;
+}
+
+.pw-section-sub {
+    font-size: 1.05rem;
+    color: var(--pw-text-muted);
+    line-height: 1.6;
+}
+
+/* Product Card Glass */
+.pw-product-card {
+    background: var(--pw-glass-bg-card);
+    backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    border: 1px solid var(--pw-glass-border);
+    border-top: 1px solid var(--pw-glass-border-light);
+    border-radius: var(--pw-radius-lg);
+    box-shadow: var(--pw-glass-shadow-sm);
+    padding: 1rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
     position: relative;
     overflow: hidden;
 }
 
-.hero-section::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: var(--pw-white);
-    clip-path: ellipse(55% 100% at 50% 100%);
+.pw-product-card:hover {
+    transform: translateY(-6px);
+    background: var(--pw-glass-bg-card-hover);
+    border-color: var(--pw-glass-border-moss);
+    box-shadow: var(--pw-glass-shadow-md), 0 0 20px rgba(46, 95, 72, 0.25);
 }
 
-.hero-section h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1.25;
-    margin-bottom: 1rem;
-}
-
-.hero-section p.lead {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    max-width: 500px;
-    line-height: 1.6;
-}
-
-.hero-placeholder-img {
-    background: var(--pw-blue-light);
-    border-radius: 12px;
-    width: 100%;
-    height: 320px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.5);
-    font-size: 1rem;
-    border: 2px dashed rgba(255,255,255,0.25);
-}
-
-/* ----- Buttons ----- */
-.btn-pw {
-    background-color: var(--pw-accent);
-    color: #fff;
-    border: none;
-    padding: 0.6rem 1.6rem;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-.btn-pw:hover {
-    background-color: #cf6d17;
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-.btn-pw-outline {
-    background: transparent;
-    color: #fff;
-    border: 2px solid rgba(255,255,255,0.5);
-    padding: 0.55rem 1.4rem;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 0.2s, border-color 0.2s;
-}
-
-.btn-pw-outline:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: #fff;
-    color: #fff;
-}
-
-/* ----- Section Titles ----- */
-.section-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--pw-dark);
-    margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-    color: var(--pw-gray);
-    font-size: 1rem;
-    margin-bottom: 2.5rem;
-}
-
-/* ----- Product Cards ----- */
-.product-card {
-    border: 1px solid var(--pw-gray-light);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: box-shadow 0.25s, transform 0.2s;
-    background: #fff;
-    height: 100%;
-}
-
-.product-card:hover {
-    box-shadow: 0 6px 24px rgba(0,0,0,0.09);
-    transform: translateY(-3px);
-}
-
-.product-card .card-img-placeholder {
+/* Product Placeholder Image Container */
+.pw-product-img-box {
     width: 100%;
     height: 200px;
-    background: var(--pw-gray-light);
+    border-radius: var(--pw-radius-md);
+    background: linear-gradient(135deg, rgba(16, 37, 27, 0.9), rgba(28, 59, 44, 0.7));
+    border: 1px dashed rgba(114, 168, 141, 0.3);
+    position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--pw-gray);
-    font-size: 0.85rem;
-}
-
-.product-card .card-body {
-    padding: 1.15rem;
-}
-
-.product-card .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--pw-dark);
-    margin-bottom: 0.35rem;
-}
-
-.product-card .card-category {
-    font-size: 0.8rem;
-    color: var(--pw-gray);
-    margin-bottom: 0.6rem;
-}
-
-.product-card .card-price {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--pw-blue);
-}
-
-/* ----- Service Cards ----- */
-.service-card {
+    color: var(--pw-text-muted);
+    padding: 1rem;
     text-align: center;
-    padding: 2rem 1.5rem;
-    border: 1px solid var(--pw-gray-light);
-    border-radius: 10px;
-    background: #fff;
-    transition: box-shadow 0.25s;
-    height: 100%;
+    overflow: hidden;
 }
 
-.service-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+.pw-product-img-icon {
+    font-size: 2.2rem;
+    color: var(--pw-sage-light);
+    margin-bottom: 0.5rem;
+    opacity: 0.85;
 }
 
-.service-card .service-icon {
-    width: 56px;
-    height: 56px;
+.pw-product-img-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--pw-text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.pw-product-dim {
+    font-size: 0.7rem;
+    color: var(--pw-sage-leaf);
+}
+
+.pw-category-tag {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background: rgba(7, 17, 12, 0.85);
+    border: 1px solid var(--pw-glass-border);
+    backdrop-filter: blur(8px);
+    color: var(--pw-mist-green);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--pw-radius-full);
+}
+
+.pw-stock-indicator {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: rgba(46, 95, 72, 0.4);
+    border: 1px solid var(--pw-sage-leaf);
+    color: #bbf0d4;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--pw-radius-full);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.pw-stock-indicator .pw-dot {
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: var(--pw-blue-pale);
-    color: var(--pw-blue);
+    background: #34d399;
+    box-shadow: 0 0 6px #34d399;
+}
+
+/* Product Body */
+.pw-product-body {
+    padding: 1.15rem 0.35rem 0.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.pw-product-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pw-text-bright);
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+}
+
+.pw-product-spec {
+    font-size: 0.85rem;
+    color: var(--pw-text-muted);
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.pw-product-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--pw-glass-border);
+    margin-top: auto;
+}
+
+.pw-product-price {
+    display: flex;
+    flex-direction: column;
+}
+
+.pw-price-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--pw-text-faint);
+}
+
+.pw-price-amount {
+    font-family: var(--pw-font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--pw-trail-amber);
+    line-height: 1.1;
+}
+
+.pw-btn-product-add {
+    background: rgba(46, 95, 72, 0.4);
+    border: 1px solid var(--pw-glass-border-moss);
+    color: var(--pw-text-bright);
+    padding: 0.5rem 0.95rem;
+    border-radius: var(--pw-radius-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.pw-btn-product-add:hover {
+    background: var(--pw-trail-earth);
+    border-color: var(--pw-trail-bright);
+    color: #ffffff;
+    box-shadow: 0 4px 14px var(--pw-trail-glow);
+}
+
+/* --------------------------------------------------------------------------
+   8. Repair & Labor Services (Glass Service Cards)
+   -------------------------------------------------------------------------- */
+.pw-services-bg {
+    background: linear-gradient(180deg, rgba(8, 20, 14, 0.75) 0%, rgba(13, 29, 21, 0.85) 100%);
+    border-top: 1px solid var(--pw-glass-border);
+    border-bottom: 1px solid var(--pw-glass-border);
+}
+
+.pw-service-card {
+    background: var(--pw-glass-bg-card);
+    backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    border: 1px solid var(--pw-glass-border);
+    border-top: 1px solid var(--pw-glass-border-light);
+    border-radius: var(--pw-radius-lg);
+    box-shadow: var(--pw-glass-shadow-sm);
+    padding: 2rem 1.6rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.pw-service-card:hover {
+    transform: translateY(-6px);
+    background: var(--pw-glass-bg-card-hover);
+    border-color: var(--pw-glass-border-moss);
+    box-shadow: var(--pw-glass-shadow-md), 0 0 24px rgba(46, 95, 72, 0.3);
+}
+
+.pw-service-icon-box {
+    width: 62px;
+    height: 62px;
+    border-radius: var(--pw-radius-md);
+    background: linear-gradient(135deg, rgba(46, 95, 72, 0.4), rgba(20, 48, 35, 0.6));
+    border: 1px solid var(--pw-glass-border-moss);
+    color: var(--pw-trail-amber);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
+    font-size: 1.65rem;
+    margin-bottom: 1.35rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.service-card h5 {
-    font-size: 1.05rem;
+.pw-service-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--pw-text-bright);
+    margin-bottom: 0.65rem;
+}
+
+.pw-service-desc {
+    font-size: 0.9rem;
+    color: var(--pw-text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.pw-service-meta {
+    padding-top: 1rem;
+    border-top: 1px solid var(--pw-glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pw-service-fee {
+    font-family: var(--pw-font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pw-mist-green);
+}
+
+.pw-service-fee span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--pw-text-faint);
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pw-service-pill {
+    background: rgba(209, 102, 41, 0.15);
+    border: 1px solid rgba(209, 102, 41, 0.3);
+    color: var(--pw-trail-amber);
+    font-size: 0.75rem;
     font-weight: 600;
-    color: var(--pw-dark);
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--pw-radius-full);
+}
+
+/* --------------------------------------------------------------------------
+   9. Adventure Features & Workshop Banner
+   -------------------------------------------------------------------------- */
+.pw-feature-card {
+    background: var(--pw-glass-bg-card);
+    backdrop-filter: blur(var(--pw-blur-strength));
+    -webkit-backdrop-filter: blur(var(--pw-blur-strength));
+    border: 1px solid var(--pw-glass-border);
+    border-radius: var(--pw-radius-lg);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    height: 100%;
+    transition: all 0.25s ease;
+}
+
+.pw-feature-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--pw-glass-border-light);
+    box-shadow: var(--pw-glass-shadow-md);
+}
+
+.pw-feature-icon {
+    font-size: 2.2rem;
+    color: var(--pw-trail-bright);
+    margin-bottom: 1.15rem;
+}
+
+.pw-feature-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pw-text-bright);
     margin-bottom: 0.5rem;
 }
 
-.service-card p {
-    font-size: 0.9rem;
-    color: var(--pw-gray);
-    line-height: 1.55;
+.pw-feature-text {
+    font-size: 0.88rem;
+    color: var(--pw-text-muted);
+    margin: 0;
 }
 
-/* ----- Footer ----- */
-.bg-pw-dark {
-    background-color: var(--pw-dark) !important;
+/* Trail Workshop Callout Banner */
+.pw-workshop-banner {
+    background: linear-gradient(135deg, rgba(20, 48, 35, 0.85) 0%, rgba(12, 27, 20, 0.95) 100%);
+    border: 1px solid var(--pw-glass-border-moss);
+    border-top: 1px solid var(--pw-glass-specular);
+    border-radius: var(--pw-radius-lg);
+    box-shadow: var(--pw-glass-shadow-lg);
+    padding: 3rem 2.5rem;
+    position: relative;
+    overflow: hidden;
 }
 
-.text-light-muted {
-    color: #99a3ad;
+.pw-workshop-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(209, 102, 41, 0.18) 0%, transparent 70%);
+    pointer-events: none;
 }
 
-.footer-links a {
-    color: #99a3ad;
-    text-decoration: none;
-    display: block;
-    padding: 0.2rem 0;
-    font-size: 0.9rem;
-    transition: color 0.2s;
+.pw-workshop-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 0.85rem;
 }
 
-.footer-links a:hover {
-    color: #fff;
+.pw-workshop-desc {
+    color: var(--pw-text-muted);
+    font-size: 1.05rem;
+    max-width: 580px;
+    margin-bottom: 1.5rem;
 }
 
-/* ----- Responsive ----- */
-@media (max-width: 768px) {
-    .hero-section {
+.pw-store-badge {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--pw-glass-border);
+    border-radius: var(--pw-radius-md);
+    padding: 0.85rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+/* --------------------------------------------------------------------------
+   10. Glassmorphism Footer
+   -------------------------------------------------------------------------- */
+.pw-glass-footer {
+    background: rgba(6, 14, 10, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--pw-glass-border);
+    padding: 5rem 0 2rem;
+    position: relative;
+    color: var(--pw-text-muted);
+}
+
+.pw-footer-brand {
+    font-size: 1.35rem;
+    font-family: var(--pw-font-display);
+    font-weight: 800;
+    color: var(--pw-text-bright);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.pw-footer-text {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+    max-width: 320px;
+}
+
+.pw-footer-head {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--pw-text-bright);
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.01em;
+}
+
+.pw-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pw-footer-links li {
+    margin-bottom: 0.65rem;
+}
+
+.pw-footer-links a {
+    color: var(--pw-text-muted);
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.pw-footer-links a:hover {
+    color: var(--pw-trail-amber);
+    transform: translateX(3px);
+}
+
+.pw-footer-contact li {
+    margin-bottom: 0.85rem;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.pw-footer-contact i {
+    color: var(--pw-trail-amber);
+    margin-top: 0.25rem;
+}
+
+.pw-footer-bottom {
+    padding-top: 2rem;
+    margin-top: 3.5rem;
+    border-top: 1px solid var(--pw-glass-border);
+    font-size: 0.85rem;
+    color: var(--pw-text-faint);
+}
+
+/* --------------------------------------------------------------------------
+   11. Alerts & Modal Glass
+   -------------------------------------------------------------------------- */
+.alert.pw-glass-alert {
+    background: rgba(18, 38, 29, 0.88);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--pw-glass-border-moss);
+    color: var(--pw-text-bright);
+    border-radius: var(--pw-radius-md);
+    box-shadow: var(--pw-glass-shadow-md);
+}
+
+.alert-success.pw-glass-alert {
+    border-left: 4px solid var(--pw-sage-leaf);
+}
+
+.alert-danger.pw-glass-alert {
+    border-left: 4px solid var(--pw-trail-earth);
+}
+
+/* --------------------------------------------------------------------------
+   12. Responsive Breakpoints
+   -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    .pw-glass-nav .navbar-collapse {
+        background: rgba(9, 20, 15, 0.96);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid var(--pw-glass-border-light);
+        border-radius: var(--pw-radius-lg);
+        padding: 1.25rem;
+        margin-top: 1rem;
+        box-shadow: var(--pw-glass-shadow-lg);
+    }
+    
+    .pw-hero-title {
+        font-size: 2.65rem;
+    }
+
+    .pw-hero-visual-card {
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pw-hero-section {
         padding: 3.5rem 0 3rem;
         text-align: center;
     }
 
-    .hero-section h1 {
+    .pw-hero-desc {
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 1rem;
+    }
+
+    .pw-hero-title {
+        font-size: 2.15rem;
+    }
+
+    .pw-hero-pills {
+        justify-content: center;
+    }
+
+    .pw-hero-placeholder-inner {
+        min-height: 280px;
+    }
+
+    .pw-hero-badge-float {
+        position: static;
+        margin-top: 1rem;
+        justify-content: center;
+    }
+
+    .pw-section {
+        padding: 3.5rem 0;
+    }
+
+    .pw-section-title {
         font-size: 1.85rem;
     }
 
-    .hero-section p.lead {
-        margin-left: auto;
-        margin-right: auto;
+    .pw-workshop-banner {
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .pw-hero-title {
+        font-size: 1.85rem;
     }
 
-    .hero-placeholder-img {
-        height: 220px;
-        margin-top: 2rem;
-    }
-
-    .hero-section .btn-pw,
-    .hero-section .btn-pw-outline {
-        display: block;
+    .pw-btn-trail, .pw-btn-glass {
         width: 100%;
-        margin-bottom: 0.5rem;
     }
 }
