@@ -2,7 +2,18 @@
 $db_host = "localhost";
 $db_username = "root";
 $db_passwd = "";
-$conn = mysqli_connect($db_host, $db_username, $db_passwd) or die("Could not connect!\n");
-
 $db_name = "pedalworks_db";
-mysqli_select_db($conn, $db_name) or die("Could not select the database $db_name!\n" . mysqli_error($conn));
+
+try {
+    $conn = @mysqli_connect($db_host, $db_username, $db_passwd, $db_name);
+    if (!$conn) {
+        $conn = @mysqli_connect($db_host, $db_username, $db_passwd);
+        if ($conn) {
+            @mysqli_query($conn, "CREATE DATABASE IF NOT EXISTS `$db_name`");
+            @mysqli_select_db($conn, $db_name);
+        }
+    }
+} catch (mysqli_sql_exception $e) {
+    // Database connection gracefully handled when MySQL service is inactive
+    $conn = false;
+}

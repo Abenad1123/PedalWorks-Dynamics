@@ -1,0 +1,418 @@
+/* ==========================================================================
+   PedalWorks Dynamics — Established Mountain Parallax Scroll System
+   Multi-Layer Landscape Animation Powered by Anime.js
+   Scope: ONLY applies to index.php (Homepage)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Perspective & Wrapper
+   -------------------------------------------------------------------------- */
+.pw-homepage-wrapper {
+    position: relative;
+    /* Clean container without perspective to ensure fixed children bind to viewport */
+}
+
+/* --------------------------------------------------------------------------
+   2. Multi-Layer Mountain Parallax Stage (Fixed to Viewport)
+   -------------------------------------------------------------------------- */
+.pw-mountain-parallax {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    background-color: #0d1e17;
+}
+
+/* Layer Base: Stacks all 7 mountain depth planes */
+.pw-mountain-layer {
+    position: absolute;
+    bottom: -2%;
+    left: -6%;
+    width: 112%;
+    height: 104%;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+    will-change: transform;
+    transform-origin: center bottom;
+}
+
+/* Specific Layer Stacking & Initial Appearance */
+.pw-mountain-layer-0 {
+    z-index: 1;
+    top: -4%;
+    height: 108%;
+    background-position: center top;
+    background-size: cover;
+    opacity: 0.95;
+}
+
+.pw-mountain-layer-1 {
+    z-index: 2;
+    opacity: 0.88;
+}
+
+.pw-mountain-layer-2 {
+    z-index: 3;
+    opacity: 0.92;
+}
+
+.pw-mountain-layer-3 {
+    z-index: 4;
+}
+
+.pw-mountain-layer-4 {
+    z-index: 5;
+}
+
+.pw-mountain-layer-5 {
+    z-index: 6;
+}
+
+.pw-mountain-layer-6 {
+    z-index: 7;
+}
+
+/* Adventure Atmospheric Tint & Readability Overlay for Glassmorphism */
+.pw-mountain-tint {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    background: 
+        radial-gradient(circle at 50% 25%, rgba(209, 102, 41, 0.22) 0%, transparent 55%),
+        linear-gradient(180deg, rgba(7, 18, 13, 0.45) 0%, rgba(9, 24, 17, 0.35) 45%, rgba(5, 13, 9, 0.88) 100%);
+    pointer-events: none;
+}
+
+/* Topographic Trail Elevation Curves Overlay */
+.pw-parallax-contours {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.16;
+    z-index: 9;
+    will-change: transform;
+    pointer-events: none;
+}
+
+/* Floating Expedition Compass Motif */
+.pw-parallax-compass {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    top: 35%;
+    right: -80px;
+    opacity: 0.08;
+    z-index: 9;
+    will-change: transform;
+    pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. Content Elevation & Layering
+   -------------------------------------------------------------------------- */
+.pw-hero-section,
+.pw-section,
+.pw-features-section,
+.pw-banner-section {
+    position: relative;
+    z-index: 10;
+}
+
+/* --------------------------------------------------------------------------
+   4. Floating Trail Waypoint Progress Rail (Fixed on Desktop & Laptop)
+   -------------------------------------------------------------------------- */
+.pw-trail-progress-rail {
+    position: fixed !important;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+    pointer-events: auto;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+@media (min-width: 1400px) {
+    .pw-trail-progress-rail {
+        right: 2.25rem;
+    }
+}
+
+.pw-trail-elevation-pill {
+    background: rgba(10, 24, 18, 0.92);
+    border: 1px solid var(--pw-glass-border-moss);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--pw-radius-full);
+    font-family: var(--pw-font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--pw-trail-amber);
+    box-shadow: var(--pw-glass-shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+}
+
+/* Meter Container with Track and Dots */
+.pw-trail-meter {
+    position: relative;
+    width: 24px;
+    height: 180px;
+    display: flex;
+    justify-content: center;
+}
+
+.pw-trail-track {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--pw-radius-full);
+}
+
+.pw-trail-track-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, var(--pw-trail-bright), var(--pw-sage-leaf));
+    border-radius: var(--pw-radius-full);
+    box-shadow: 0 0 8px var(--pw-trail-bright);
+    transition: height 0.1s linear;
+}
+
+.pw-trail-dots {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.pw-trail-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--pw-pine-darkest);
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pw-trail-dot:hover,
+.pw-trail-dot.active {
+    background: var(--pw-trail-bright);
+    border-color: #ffffff;
+    transform: scale(1.4);
+    box-shadow: 0 0 14px var(--pw-trail-bright);
+}
+
+.pw-trail-dot-label {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%) translateX(8px);
+    background: rgba(8, 18, 13, 0.95);
+    border: 1px solid var(--pw-glass-border-light);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--pw-text-bright);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: var(--pw-glass-shadow-sm);
+}
+
+.pw-trail-dot:hover .pw-trail-dot-label {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+/* --------------------------------------------------------------------------
+   5. Hero Scroll Cue (Prompting the User to Descend the Trail)
+   -------------------------------------------------------------------------- */
+.pw-scroll-cue {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--pw-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    z-index: 15;
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+
+.pw-scroll-cue:hover {
+    color: var(--pw-trail-bright);
+}
+
+.pw-scroll-cue-icon {
+    width: 32px;
+    height: 48px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    padding-top: 6px;
+    position: relative;
+    backdrop-filter: blur(8px);
+}
+
+.pw-scroll-cue-dot {
+    width: 6px;
+    height: 10px;
+    background: var(--pw-trail-bright);
+    border-radius: 4px;
+    animation: pwCueBounce 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes pwCueBounce {
+    0% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(14px); opacity: 0.4; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   6. Animation Initial States (Applied smoothly when JS initializes)
+   -------------------------------------------------------------------------- */
+.pw-anim-ready .pw-hero-badge,
+.pw-anim-ready .pw-hero-title,
+.pw-anim-ready .pw-hero-desc,
+.pw-anim-ready .pw-hero-actions,
+.pw-anim-ready .pw-stat-pill,
+.pw-anim-ready .pw-hero-visual-card {
+    will-change: transform, opacity;
+}
+
+.pw-anim-ready .pw-feature-card,
+.pw-anim-ready .pw-product-card,
+.pw-anim-ready .pw-service-card,
+.pw-anim-ready .pw-workshop-banner,
+.pw-anim-ready .pw-section-head {
+    will-change: transform, opacity;
+}
+
+.pw-anim-ready .pw-scroll-reveal {
+    opacity: 0;
+    transform: translateY(35px);
+}
+
+/* --------------------------------------------------------------------------
+   7. Card Interactive Micro-Tilt & Specular Shimmer
+   -------------------------------------------------------------------------- */
+.pw-tilt-card {
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease-out, box-shadow 0.25s ease;
+}
+
+.pw-tilt-card:hover {
+    box-shadow: var(--pw-glass-shadow-lg), 0 0 30px rgba(46, 95, 72, 0.35);
+}
+
+/* Topographic elevation line animation */
+.pw-topo-path {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    transition: stroke-dashoffset 1.5s ease-out;
+}
+
+.pw-topo-path.animated {
+    stroke-dashoffset: 0;
+}
+
+/* Pulse animation on waypoint icons */
+.pw-pulse-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: inherit;
+    border: 1px solid var(--pw-trail-bright);
+    opacity: 0;
+    animation: pwRingPulse 3s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pwRingPulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.3); opacity: 0; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   8. Responsive Adjustments & Reduced Motion
+   -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    .pw-trail-progress-rail {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pw-mountain-layer {
+        background-size: cover;
+    }
+    .pw-scroll-cue {
+        display: none;
+    }
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .pw-mountain-parallax,
+    .pw-mountain-layer,
+    .pw-scroll-cue-dot {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+
+    .pw-scroll-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .pw-tilt-card {
+        transform: none !important;
+    }
+}

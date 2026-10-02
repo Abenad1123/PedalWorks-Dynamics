@@ -85,32 +85,10 @@
 <!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Category Filtering Script for Homepage Placeholder Catalog -->
+<!-- Global Navigation Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const filterPills = document.querySelectorAll('.pw-filter-pill');
-    const productItems = document.querySelectorAll('.pw-product-item');
-
-    filterPills.forEach(pill => {
-        pill.addEventListener('click', function (e) {
-            e.preventDefault();
-            filterPills.forEach(p => p.classList.remove('active'));
-            this.classList.add('active');
-
-            const selectedCategory = this.getAttribute('data-category');
-
-            productItems.forEach(item => {
-                const itemCategory = item.getAttribute('data-category');
-                if (selectedCategory === 'all' || itemCategory === selectedCategory) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
-    });
-
-    // Glass navbar scroll effect
+    // Glass navbar scroll elevation effect
     const nav = document.querySelector('.pw-glass-nav');
     window.addEventListener('scroll', function () {
         if (window.scrollY > 40) {
