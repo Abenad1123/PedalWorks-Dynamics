@@ -65,7 +65,7 @@ if (session_status() === PHP_SESSION_NONE) {
             </ul>
 
             <div class="d-flex align-items-center gap-2 pw-nav-actions">
-                <?php if (isset($_SESSION['user_id'])): ?>
+                <?php if (isset($_SESSION['customerAccountID']) || isset($_SESSION['user_id'])): ?>
                     <a class="btn pw-btn-glass-icon position-relative" href="/project/PedalWorks-Dynamics/view_cart.php" title="Shopping Cart">
                         <i class="fa-solid fa-cart-shopping"></i>
                         <?php if (isset($_SESSION['cart_products']) && count($_SESSION['cart_products']) > 0): ?>
@@ -77,13 +77,13 @@ if (session_status() === PHP_SESSION_NONE) {
                     <div class="dropdown">
                         <button class="btn pw-btn-glass dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-circle-user"></i>
-                            <span class="d-none d-md-inline"><?php echo htmlspecialchars($_SESSION['email'] ?? 'Account'); ?></span>
+                            <span class="d-none d-md-inline"><?php echo htmlspecialchars($_SESSION['username'] ?? $_SESSION['email'] ?? 'Account'); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end pw-glass-dropdown">
                             <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/profile.php"><i class="fa-solid fa-id-card me-2"></i>My Profile</a></li>
                             <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/orders.php"><i class="fa-solid fa-clock-rotate-left me-2"></i>My Orders</a></li>
                             <li><hr class="dropdown-divider pw-dropdown-divider"></li>
-                            <li><a class="dropdown-item pw-dropdown-item text-danger" href="/project/PedalWorks-Dynamics/user/logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Logout</a></li>
+                            <li><a class="dropdown-item pw-dropdown-item text-danger" href="/project/PedalWorks-Dynamics/logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Logout</a></li>
                         </ul>
                     </div>
                 <?php else: ?>

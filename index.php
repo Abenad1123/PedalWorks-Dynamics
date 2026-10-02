@@ -10,17 +10,19 @@ include('./includes/config.php');
     <div class="pw-mountain-layer pw-mountain-layer-0" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_0.png');"></div>
     <div class="pw-mountain-layer pw-mountain-layer-1" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_1.png');"></div>
     <div class="pw-mountain-layer pw-mountain-layer-2" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_2.png');"></div>
+    <div class="pw-mountain-mist pw-mountain-mist-far"></div>
     <div class="pw-mountain-layer pw-mountain-layer-3" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_3.png');"></div>
     <div class="pw-mountain-layer pw-mountain-layer-4" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_4.png');"></div>
+    <div class="pw-mountain-mist pw-mountain-mist-near"></div>
     <div class="pw-mountain-layer pw-mountain-layer-5" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_5.png');"></div>
     <div class="pw-mountain-layer pw-mountain-layer-6" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_6.png');"></div>
     
     <div class="pw-mountain-tint"></div>
 
     <svg class="pw-parallax-contours" viewBox="0 0 1200 800" fill="none" preserveAspectRatio="xMidYMid slice">
-        <path d="M-100,120 C200,60 400,240 800,150 C1000,90 1200,300 1400,200" stroke="#72a88d" stroke-width="1.2" stroke-dasharray="6 6"/>
-        <path d="M-100,350 C300,280 500,480 900,380 C1100,320 1300,500 1400,420" stroke="#72a88d" stroke-width="1.2" stroke-dasharray="8 8"/>
-        <path d="M-100,600 C250,520 600,720 950,590 C1150,510 1350,680 1400,610" stroke="#d16629" stroke-width="1.2" stroke-dasharray="4 6"/>
+        <path class="pw-contour-1" d="M-100,120 C200,60 400,240 800,150 C1000,90 1200,300 1400,200" stroke="#72a88d" stroke-width="1.2" stroke-dasharray="6 6"/>
+        <path class="pw-contour-2" d="M-100,350 C300,280 500,480 900,380 C1100,320 1300,500 1400,420" stroke="#72a88d" stroke-width="1.2" stroke-dasharray="8 8"/>
+        <path class="pw-contour-3" d="M-100,600 C250,520 600,720 950,590 C1150,510 1350,680 1400,610" stroke="#d16629" stroke-width="1.2" stroke-dasharray="4 6"/>
     </svg>
 
     <svg class="pw-parallax-compass" viewBox="0 0 200 200" fill="none" stroke="#72a88d" stroke-width="1.5">

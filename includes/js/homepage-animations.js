@@ -113,7 +113,7 @@
         mouseNormX = (e.clientX / window.innerWidth) - 0.5; // -0.5 to 0.5
     }, { passive: true });
 
-    // Cache Mountain Parallax 7 Layers
+    // Cache Mountain Parallax 7 Layers & Atmospheric Overlays
     const layer0 = document.querySelector('.pw-mountain-layer-0');
     const layer1 = document.querySelector('.pw-mountain-layer-1');
     const layer2 = document.querySelector('.pw-mountain-layer-2');
@@ -121,8 +121,14 @@
     const layer4 = document.querySelector('.pw-mountain-layer-4');
     const layer5 = document.querySelector('.pw-mountain-layer-5');
     const layer6 = document.querySelector('.pw-mountain-layer-6');
+    const mistFar = document.querySelector('.pw-mountain-mist-far');
+    const mistNear = document.querySelector('.pw-mountain-mist-near');
+    const mountainTint = document.querySelector('.pw-mountain-tint');
     const compassRing = document.querySelector('.pw-parallax-compass');
     const contourSvg = document.querySelector('.pw-parallax-contours');
+    const contour1 = document.querySelector('.pw-contour-1');
+    const contour2 = document.querySelector('.pw-contour-2');
+    const contour3 = document.querySelector('.pw-contour-3');
     const heroCard = document.querySelector('.pw-hero-visual-card');
 
     // Trail Progress Elements
@@ -141,82 +147,133 @@
 
     function onScrollUpdate() {
         latestScrollY = window.scrollY || window.pageYOffset;
-        if (!isTicking) {
-            window.requestAnimationFrame(renderParallax);
-            isTicking = true;
-        }
     }
 
-    function renderParallax() {
-        // Linear interpolation for smooth velocity
-        smoothScrollY += (latestScrollY - smoothScrollY) * 0.10;
+    function renderParallax(timestamp) {
+        const timeSec = timestamp ? timestamp * 0.001 : performance.now() * 0.001;
+
+        // Subtle ambient mountain wind breathing (keeps scenery organic even when stationary)
+        const windFar = Math.sin(timeSec * 0.65) * 3.5;
+        const windNear = Math.cos(timeSec * 0.95) * 6;
+
+        // Linear interpolation with responsive tracking
+        smoothScrollY += (latestScrollY - smoothScrollY) * 0.12;
         smoothMouseX += (mouseNormX - smoothMouseX) * 0.08;
 
         const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
         const scrollProgress = Math.min(Math.max(smoothScrollY / maxScroll, 0), 1);
         const vh = window.innerHeight;
 
-        // Asymptotic curve: initially linear with gentle slope (rate), smoothly tapering as it approaches maxPx
-        // Ensures the mountain layers never plummet or descend rapidly off the screen
+        // Asymptotic curve: responsive initial slope that smoothly tapers without plunging off-screen
         function getGentleDescent(scrollY, rate, maxPx) {
             if (maxPx <= 0) return 0;
             return maxPx * (1 - Math.exp(-(scrollY * rate) / maxPx));
         }
 
-        const y0 = getGentleDescent(smoothScrollY, 0.005, vh * 0.025);
-        const y1 = getGentleDescent(smoothScrollY, 0.012, vh * 0.05);
-        const y2 = getGentleDescent(smoothScrollY, 0.020, vh * 0.08);
-        const y3 = getGentleDescent(smoothScrollY, 0.032, vh * 0.11);
-        const y4 = getGentleDescent(smoothScrollY, 0.046, vh * 0.14);
-        const y5 = getGentleDescent(smoothScrollY, 0.062, vh * 0.17);
-        const y6 = getGentleDescent(smoothScrollY, 0.080, vh * 0.20);
+        const y0 = getGentleDescent(smoothScrollY, 0.012, vh * 0.04);
+        const y1 = getGentleDescent(smoothScrollY, 0.030, vh * 0.09);
+        const y2 = getGentleDescent(smoothScrollY, 0.055, vh * 0.14);
+        const y3 = getGentleDescent(smoothScrollY, 0.085, vh * 0.19);
+        const y4 = getGentleDescent(smoothScrollY, 0.120, vh * 0.24);
+        const y5 = getGentleDescent(smoothScrollY, 0.160, vh * 0.29);
+        const y6 = getGentleDescent(smoothScrollY, 0.200, vh * 0.35);
 
-        // Established Multi-Layer Mountain Parallax (Scroll & Subtle Mouse Sway)
-        // Layer 0: Sky
+        // 1. Layer 0: Sky (gentle drift)
         if (layer0) {
             layer0.style.transform = `translate3d(0, ${y0.toFixed(2)}px, 0)`;
         }
-        // Layer 1: Distant Peaks
+
+        // 2. Layer 1: Distant Peaks (Cinematic Aerial Perspective & Depth-of-Field Blur)
         if (layer1) {
-            layer1.style.transform = `translate3d(${(smoothMouseX * -6).toFixed(2)}px, ${y1.toFixed(2)}px, 0) scale(${1 + scrollProgress * 0.015})`;
+            const l1Blur = (scrollProgress * 1.6).toFixed(1);
+            const l1Scale = (1 + scrollProgress * 0.012).toFixed(4);
+            const l1X = (smoothMouseX * -8 + windFar * 0.35).toFixed(2);
+            layer1.style.transform = `translate3d(${l1X}px, ${y1.toFixed(2)}px, 0) scale(${l1Scale})`;
+            layer1.style.filter = `blur(${l1Blur}px) brightness(${(1 - scrollProgress * 0.08).toFixed(2)})`;
         }
-        // Layer 2: Secondary Mountain Ridge
+
+        // 3. Layer 2: Secondary Mountain Ridge
         if (layer2) {
-            layer2.style.transform = `translate3d(${(smoothMouseX * -12).toFixed(2)}px, ${y2.toFixed(2)}px, 0)`;
+            const l2Scale = (1 + scrollProgress * 0.018).toFixed(4);
+            const l2X = (smoothMouseX * -15 + windFar * 0.65).toFixed(2);
+            layer2.style.transform = `translate3d(${l2X}px, ${y2.toFixed(2)}px, 0) scale(${l2Scale})`;
         }
-        // Layer 3: Midground Mountain Range
+
+        // 4. Atmospheric Distant Valley Mist
+        if (mistFar) {
+            const mistFarY = (y2 * 0.9).toFixed(2);
+            mistFar.style.transform = `translate3d(${(windFar * 1.5).toFixed(2)}px, ${mistFarY}px, 0)`;
+            mistFar.style.opacity = (0.75 + Math.sin(timeSec * 0.5) * 0.1 + scrollProgress * 0.15).toFixed(2);
+        }
+
+        // 5. Layer 3: Midground Mountain Range
         if (layer3) {
-            layer3.style.transform = `translate3d(${(smoothMouseX * -18).toFixed(2)}px, ${y3.toFixed(2)}px, 0)`;
+            const l3Scale = (1 + scrollProgress * 0.026).toFixed(4);
+            const l3X = (smoothMouseX * -22 + windFar).toFixed(2);
+            layer3.style.transform = `translate3d(${l3X}px, ${y3.toFixed(2)}px, 0) scale(${l3Scale})`;
         }
-        // Layer 4: Mountain Slope & Treeline
+
+        // 6. Layer 4: Mountain Slope & Treeline
         if (layer4) {
-            layer4.style.transform = `translate3d(${(smoothMouseX * -24).toFixed(2)}px, ${y4.toFixed(2)}px, 0)`;
+            const l4Scale = (1 + scrollProgress * 0.036).toFixed(4);
+            const l4X = (smoothMouseX * -30 + windNear * 0.6).toFixed(2);
+            layer4.style.transform = `translate3d(${l4X}px, ${y4.toFixed(2)}px, 0) scale(${l4Scale})`;
         }
-        // Layer 5: Near Pine Forest Ridge
+
+        // 7. Near Treeline Valley Fog
+        if (mistNear) {
+            const mistNearY = (y5 * 0.85).toFixed(2);
+            mistNear.style.transform = `translate3d(${(windNear * 1.2).toFixed(2)}px, ${mistNearY}px, 0)`;
+            mistNear.style.opacity = (0.80 + scrollProgress * 0.18).toFixed(2);
+        }
+
+        // 8. Layer 5: Near Pine Forest Ridge
         if (layer5) {
-            layer5.style.transform = `translate3d(${(smoothMouseX * -32).toFixed(2)}px, ${y5.toFixed(2)}px, 0)`;
+            const l5Scale = (1 + scrollProgress * 0.046).toFixed(4);
+            const l5X = (smoothMouseX * -40 + windNear * 0.85).toFixed(2);
+            layer5.style.transform = `translate3d(${l5X}px, ${y5.toFixed(2)}px, 0) scale(${l5Scale})`;
         }
-        // Layer 6: Foreground Ridge & Trail
+
+        // 9. Layer 6: Foreground Ridge & Trail (Fastest, razor crisp, organic wind sway)
         if (layer6) {
-            layer6.style.transform = `translate3d(${(smoothMouseX * -40).toFixed(2)}px, ${y6.toFixed(2)}px, 0)`;
+            const l6Scale = (1 + scrollProgress * 0.058).toFixed(4);
+            const l6X = (smoothMouseX * -50 + windNear).toFixed(2);
+            layer6.style.transform = `translate3d(${l6X}px, ${y6.toFixed(2)}px, 0) scale(${l6Scale})`;
         }
 
-        // Topographic Contours & Compass
-        if (compassRing) {
-            compassRing.style.transform = `translate3d(0, ${(smoothScrollY * 0.06).toFixed(2)}px, 0) rotate(${(smoothScrollY * 0.03).toFixed(2)}deg)`;
+        // 10. Dynamic Atmospheric Tint Evolution (Golden Dawn -> Deep Pine Twilight)
+        if (mountainTint) {
+            mountainTint.style.opacity = (0.75 + scrollProgress * 0.22).toFixed(2);
         }
+
+        // 11. Topographic Elevation Live Radar Drawing
         if (contourSvg) {
-            contourSvg.style.transform = `translate3d(${(smoothScrollY * -0.015).toFixed(2)}px, ${(smoothScrollY * 0.03).toFixed(2)}px, 0)`;
+            contourSvg.style.transform = `translate3d(${(smoothScrollY * -0.025).toFixed(2)}px, ${(smoothScrollY * 0.05).toFixed(2)}px, 0)`;
+        }
+        if (contour1) {
+            contour1.style.strokeDashoffset = (smoothScrollY * 0.35 + timeSec * 6).toFixed(1);
+        }
+        if (contour2) {
+            contour2.style.strokeDashoffset = (smoothScrollY * -0.45 - timeSec * 5).toFixed(1);
+        }
+        if (contour3) {
+            contour3.style.strokeDashoffset = (smoothScrollY * 0.55 + timeSec * 8).toFixed(1);
         }
 
-        // 6. Hero Card Subtle Exit Lift
+        // 12. Floating Expedition Compass (Heading Drift + Rotation)
+        if (compassRing) {
+            const compassRot = (smoothScrollY * 0.05 + smoothMouseX * 14 + timeSec * 1.5).toFixed(2);
+            compassRing.style.transform = `translate3d(0, ${(smoothScrollY * 0.10).toFixed(2)}px, 0) rotate(${compassRot}deg)`;
+        }
+
+        // 13. Hero Card Subtle Exit Lift
         if (heroCard && smoothScrollY < window.innerHeight * 1.3) {
             const heroOpacity = Math.max(0, 1 - (smoothScrollY / (window.innerHeight * 0.95)));
-            heroCard.style.transform = `translate3d(0, ${(smoothScrollY * 0.08).toFixed(2)}px, 0)`;
+            heroCard.style.transform = `translate3d(0, ${(smoothScrollY * 0.12).toFixed(2)}px, 0)`;
             heroCard.style.opacity = heroOpacity;
         }
 
-        // 5. Waypoint Elevation & Fill Bar
+        // 14. Waypoint Elevation & Fill Bar
         if (trackFill) {
             trackFill.style.height = `${scrollProgress * 100}%`;
         }
@@ -247,7 +304,7 @@
             }
         });
 
-        // 6. Smoothly fade out trail rail when approaching the footer
+        // Smoothly fade out trail rail when approaching the footer
         const rail = document.querySelector('.pw-trail-progress-rail');
         const footer = document.querySelector('.pw-glass-footer');
         if (rail && footer) {
@@ -261,14 +318,12 @@
             }
         }
 
-        // Continue loop if still interpolating
-        if (Math.abs(latestScrollY - smoothScrollY) > 0.3) {
-            window.requestAnimationFrame(renderParallax);
-        } else {
-            isTicking = false;
-        }
+        // Continuous ambient 60FPS loop for organic breathing landscape
+        window.requestAnimationFrame(renderParallax);
     }
 
+    // Launch continuous animation loop
+    window.requestAnimationFrame(renderParallax);
     window.addEventListener('scroll', onScrollUpdate, { passive: true });
 
     /* ==========================================================================
