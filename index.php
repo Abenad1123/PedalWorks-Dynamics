@@ -207,117 +207,84 @@ include('./includes/config.php');
                 <button class="pw-filter-pill active" data-category="all">
                     <i class="fa-solid fa-layer-group"></i> All Gear
                 </button>
-                <button class="pw-filter-pill" data-category="Full Build Bikes">
-                    <i class="fa-solid fa-bicycle"></i> Full Build Bikes
+                <?php
+                $dbCategories = [];
+                if ($conn) {
+                    $catRes = @mysqli_query($conn, "SELECT * FROM productCategory ORDER BY productCategoryID ASC");
+                    if ($catRes) {
+                        while ($catRow = mysqli_fetch_assoc($catRes)) {
+                            $dbCategories[] = $catRow;
+                        }
+                    }
+                }
+                foreach ($dbCategories as $cat):
+                ?>
+                <button class="pw-filter-pill" data-category="<?php echo htmlspecialchars($cat['name']); ?>">
+                    <?php echo htmlspecialchars($cat['name']); ?>
                 </button>
-                <button class="pw-filter-pill" data-category="Bicycle Parts">
-                    <i class="fa-solid fa-gears"></i> Bicycle Parts
-                </button>
-                <button class="pw-filter-pill" data-category="Attachments">
-                    <i class="fa-solid fa-toolbox"></i> Attachments
-                </button>
-                <button class="pw-filter-pill" data-category="Safety Gear">
-                    <i class="fa-solid fa-shield-halved"></i> Safety Gear
-                </button>
+                <?php endforeach; ?>
             </div>
 
             <div class="row g-4" id="productList">
                 <?php
-                $placeholderProducts = [
-                    [
-                        'name'     => 'Apex Trail Mountain Rig Pro',
-                        'category' => 'Full Build Bikes',
-                        'spec'     => '1x12 Drivetrain • Air Suspension Fork • Tubeless Ready',
-                        'price'    => 18500,
-                        'icon'     => 'fa-bicycle',
-                        'stock'    => 'In Stock'
-                    ],
-                    [
-                        'name'     => 'GravelQuest Overland Elite',
-                        'category' => 'Full Build Bikes',
-                        'spec'     => 'Carbon Fork • Shimano GRX Group • Wide Clearance 45c',
-                        'price'    => 22500,
-                        'icon'     => 'fa-bicycle',
-                        'stock'    => 'In Stock'
-                    ],
-                    [
-                        'name'     => 'Shimano Deore Hydraulic Disc Brakes',
-                        'category' => 'Bicycle Parts',
-                        'spec'     => 'Dual-Piston Caliper • 2-Finger Ergonomic Lever',
-                        'price'    => 3450,
-                        'icon'     => 'fa-compact-disc',
-                        'stock'    => 'In Stock'
-                    ],
-                    [
-                        'name'     => 'RockShox Judy Trail Air Fork 120mm',
-                        'category' => 'Bicycle Parts',
-                        'spec'     => 'Solo Air Spring • TurnKey Lockout • Boost 110mm',
-                        'price'    => 7800,
-                        'icon'     => 'fa-wrench',
-                        'stock'    => 'In Stock'
-                    ],
-                    [
-                        'name'     => 'TrailBeam 1200 Rechargeable Light',
-                        'category' => 'Attachments',
-                        'spec'     => '1200 Lumens • USB-C Quick Charge • IPX6 Waterproof',
-                        'price'    => 950,
-                        'icon'     => 'fa-lightbulb',
-                        'stock'    => 'In Stock'
-                    ],
-                    [
-                        'name'     => 'Overland Heavy-Duty Cargo Rack',
-                        'category' => 'Attachments',
-                        'spec'     => '6061 Alloy Frame • 30kg Capacity • Pannier Mounts',
-                        'price'    => 1650,
-                        'icon'     => 'fa-cart-flatbed',
-                        'stock'    => 'In Stock'
-                    ],
-                    [
-                        'name'     => 'TrailGuard Carbon MIPS Enduro Helmet',
-                        'category' => 'Safety Gear',
-                        'spec'     => 'Integrated MIPS Protection • 18 Vents • Extended Visor',
-                        'price'    => 3800,
-                        'icon'     => 'fa-helmet-safety',
-                        'stock'    => 'In Stock'
-                    ],
-                    [
-                        'name'     => 'ProEnduro Gel Shock Gloves',
-                        'category' => 'Safety Gear',
-                        'spec'     => 'Vibration Dampening • Touchscreen Compatible • Breathable',
-                        'price'    => 680,
-                        'icon'     => 'fa-mitten',
-                        'stock'    => 'In Stock'
-                    ],
-                ];
+                $dbProducts = [];
+                if ($conn) {
+                    $prodRes = @mysqli_query($conn, "SELECT p.*, pc.name AS categoryName 
+                                                     FROM product p 
+                                                     LEFT JOIN productCategory pc ON p.productCategoryID = pc.productCategoryID 
+                                                     WHERE p.endDate IS NULL 
+                                                     ORDER BY p.productID DESC");
+                    if ($prodRes) {
+                        while ($prodRow = mysqli_fetch_assoc($prodRes)) {
+                            $dbProducts[] = $prodRow;
+                        }
+                    }
+                }
 
-                foreach ($placeholderProducts as $index => $product):
+                if (!empty($dbProducts)):
+                    foreach ($dbProducts as $product):
+                        $catName = $product['categoryName'] ?? 'Gear';
+                        $isLowStock = ($product['stock'] <= $product['lowStockThreshold'] && $product['stock'] > 0);
+                        $isOutOfStock = ($product['stock'] <= 0);
                 ?>
-                <div class="col-xl-3 col-lg-4 col-md-6 pw-product-item" data-category="<?php echo htmlspecialchars($product['category']); ?>">
+                <div class="col-xl-3 col-lg-4 col-md-6 pw-product-item" data-category="<?php echo htmlspecialchars($catName); ?>">
                     <div class="pw-product-card pw-tilt-card">
-                        <!-- Placeholder Image Container -->
                         <div class="pw-product-img-box">
-                            <span class="pw-category-tag"><?php echo htmlspecialchars($product['category']); ?></span>
-                            <span class="pw-stock-indicator">
-                                <span class="pw-dot"></span> <?php echo htmlspecialchars($product['stock']); ?>
+                            <span class="pw-category-tag"><?php echo htmlspecialchars($catName); ?></span>
+                            <span class="pw-stock-indicator <?php echo $isOutOfStock ? 'text-danger' : ($isLowStock ? 'text-warning' : ''); ?>">
+                                <span class="pw-dot <?php echo $isOutOfStock ? 'bg-danger' : ($isLowStock ? 'bg-warning' : ''); ?>"></span> 
+                                <?php 
+                                if ($isOutOfStock) {
+                                    echo 'Out of Stock';
+                                } elseif ($isLowStock) {
+                                    echo 'Low Stock (' . (int)$product['stock'] . ')';
+                                } else {
+                                    echo 'In Stock (' . (int)$product['stock'] . ')';
+                                }
+                                ?>
                             </span>
                             
-                            <div class="pw-product-img-icon">
-                                <i class="fa-solid <?php echo htmlspecialchars($product['icon']); ?>"></i>
-                            </div>
-                            <div class="pw-product-img-text">Placeholder Image</div>
-                            <div class="pw-product-dim">600 &times; 450 &bull; Item #<?php echo $index + 101; ?></div>
+                            <?php if (!empty($product['image']) && file_exists(__DIR__ . '/' . $product['image'])): ?>
+                                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="pw-product-img">
+                            <?php else: ?>
+                                <div class="pw-product-img-icon">
+                                    <i class="fa-solid fa-bicycle"></i>
+                                </div>
+                                <div class="pw-product-img-text"><?php echo htmlspecialchars($product['name']); ?></div>
+                                <div class="pw-product-dim">SKU: <?php echo htmlspecialchars($product['sku']); ?></div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="pw-product-body">
                             <h5 class="pw-product-title"><?php echo htmlspecialchars($product['name']); ?></h5>
-                            <p class="pw-product-spec"><?php echo htmlspecialchars($product['spec']); ?></p>
+                            <p class="pw-product-spec"><?php echo htmlspecialchars($product['description'] ?? ''); ?></p>
 
                             <div class="pw-product-footer">
                                 <div class="pw-product-price">
                                     <span class="pw-price-label">Price</span>
                                     <span class="pw-price-amount">&#8369;<?php echo number_format($product['price'], 2); ?></span>
                                 </div>
-                                <a href="#services" class="pw-btn-product-add" title="View details">
+                                <a href="#" class="pw-btn-product-add" title="View details">
                                     <i class="fa-solid fa-cart-plus"></i>
                                     <span>Details</span>
                                 </a>
@@ -325,7 +292,18 @@ include('./includes/config.php');
                         </div>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                <?php 
+                    endforeach;
+                else: 
+                ?>
+                <div class="col-12 text-center py-5">
+                    <div class="p-4" style="background: rgba(18, 43, 33, 0.4); border-radius: 12px; border: 1px dashed rgba(114, 168, 141, 0.3);">
+                        <i class="fa-solid fa-boxes-stacked fa-2x mb-3 text-secondary"></i>
+                        <h5 class="text-white-50">No Active Products in Database</h5>
+                        <p class="text-white-50 small mb-0">Products added in the admin dashboard will dynamically appear here.</p>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -344,73 +322,55 @@ include('./includes/config.php');
 
             <div class="row g-4">
                 <?php
-                $services = [
-                    [
-                        'icon'  => 'fa-wrench',
-                        'name'  => 'Comprehensive Trail Tune-Up',
-                        'desc'  => 'Multi-point safety inspection, brake calibration, gear shifting adjustment, chain lubrication, and spoke tension assessment.',
-                        'fee'   => 500,
-                        'turn'  => 'Same-Day'
-                    ],
-                    [
-                        'icon'  => 'fa-compact-disc',
-                        'name'  => 'Hydraulic Brake Bleed & Alignment',
-                        'desc'  => 'Mineral oil or DOT fluid system flush, bubble purge, caliper re-centering, and organic/metallic pad wear inspection.',
-                        'fee'   => 350,
-                        'turn'  => '2–3 Hours'
-                    ],
-                    [
-                        'icon'  => 'fa-link',
-                        'name'  => 'Drivetrain Ultrasonic Clean & Chain Service',
-                        'desc'  => 'Deep ultrasonic degreasing of cassette, chainrings, and pulleys with wear measurement and master-link chain installation.',
-                        'fee'   => 250,
-                        'turn'  => 'Same-Day'
-                    ],
-                    [
-                        'icon'  => 'fa-circle-notch',
-                        'name'  => 'Precision Wheel Truing & Balancing',
-                        'desc'  => 'Tensiometer calibrated spoke adjustment to eliminate lateral wobble and radial hop for smooth high-speed rolling.',
-                        'fee'   => 400,
-                        'turn'  => '1 Day'
-                    ],
-                    [
-                        'icon'  => 'fa-gears',
-                        'name'  => 'Component & Accessory Mounting',
-                        'desc'  => 'Professional torque-spec installation of aftermarket handlebars, racks, lighting harnesses, tubeless setups, and pedals.',
-                        'fee'   => 200,
-                        'turn'  => '1–2 Hours'
-                    ],
-                    [
-                        'icon'  => 'fa-shield-halved',
-                        'name'  => 'Complete Expedition Rig Overhaul',
-                        'desc'  => 'Full bike strip-down, headset and bottom bracket re-packing with marine grease, all cable renewals, and race-ready rebuild.',
-                        'fee'   => 1500,
-                        'turn'  => '2–3 Days'
-                    ],
-                ];
+                $dbServices = [];
+                if ($conn) {
+                    $servRes = @mysqli_query($conn, "SELECT s.*, sc.name AS categoryName 
+                                                     FROM service s 
+                                                     LEFT JOIN serviceCategory sc ON s.serviceCategoryID = sc.serviceCategoryID 
+                                                     WHERE s.endDate IS NULL 
+                                                     ORDER BY s.serviceID ASC");
+                    if ($servRes) {
+                        while ($servRow = mysqli_fetch_assoc($servRes)) {
+                            $dbServices[] = $servRow;
+                        }
+                    }
+                }
 
-                foreach ($services as $service):
+                if (!empty($dbServices)):
+                    foreach ($dbServices as $service):
+                        $catName = $service['categoryName'] ?? 'Workshop';
                 ?>
                 <div class="col-lg-4 col-md-6">
                     <div class="pw-service-card pw-tilt-card">
                         <div class="pw-service-icon-box">
-                            <i class="fa-solid <?php echo htmlspecialchars($service['icon']); ?>"></i>
+                            <i class="fa-solid fa-wrench"></i>
                         </div>
                         <h5 class="pw-service-title"><?php echo htmlspecialchars($service['name']); ?></h5>
-                        <p class="pw-service-desc"><?php echo htmlspecialchars($service['desc']); ?></p>
+                        <p class="pw-service-desc"><?php echo htmlspecialchars($service['description'] ?? ''); ?></p>
 
                         <div class="pw-service-meta">
                             <div class="pw-service-fee">
-                                <span>Base Labor Fee</span>
-                                &#8369;<?php echo number_format($service['fee'], 2); ?>
+                                <span>Labor Fee</span>
+                                &#8369;<?php echo number_format($service['price'], 2); ?>
                             </div>
                             <span class="pw-service-pill">
-                                <i class="fa-regular fa-clock me-1"></i><?php echo htmlspecialchars($service['turn']); ?>
+                                <i class="fa-solid fa-tag me-1"></i><?php echo htmlspecialchars($catName); ?>
                             </span>
                         </div>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                <?php 
+                    endforeach;
+                else: 
+                ?>
+                <div class="col-12 text-center py-5">
+                    <div class="p-4" style="background: rgba(18, 43, 33, 0.4); border-radius: 12px; border: 1px dashed rgba(114, 168, 141, 0.3);">
+                        <i class="fa-solid fa-screwdriver-wrench fa-2x mb-3 text-secondary"></i>
+                        <h5 class="text-white-50">No Workshop Services in Database</h5>
+                        <p class="text-white-50 small mb-0">Services added in the admin dashboard will dynamically appear here.</p>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>

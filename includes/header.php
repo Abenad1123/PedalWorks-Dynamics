@@ -87,10 +87,10 @@ if (session_status() === PHP_SESSION_NONE) {
                         </ul>
                     </div>
                 <?php else: ?>
-                    <a class="btn pw-btn-glass-sm" href="/project/PedalWorks-Dynamics/user/login.php">
+                    <a class="btn pw-btn-glass-sm" href="/project/PedalWorks-Dynamics/login.php">
                         <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>Login
                     </a>
-                    <a class="btn pw-btn-trail-sm" href="/project/PedalWorks-Dynamics/user/register.php">
+                    <a class="btn pw-btn-trail-sm" href="/project/PedalWorks-Dynamics/signup.php">
                         <i class="fa-solid fa-user-plus me-1"></i> Sign Up
                     </a>
                 <?php endif; ?>
