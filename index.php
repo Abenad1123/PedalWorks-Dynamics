@@ -4,13 +4,8 @@ include('./includes/header.php');
 include('./includes/config.php');
 ?>
 
-<!-- Homepage-Specific Animation & Parallax Styles (ONLY applied to index.php) -->
 <link rel="stylesheet" href="/project/PedalWorks-Dynamics/includes/style/homepage-animations.css">
 
-<!-- ==========================================================================
-     ESTABLISHED MOUNTAIN PARALLAX MULTI-LAYER STAGE (Fixed to Viewport)
-     7-layer mountain landscape assets from CodePen/GitHub Firewatch parallax
-     ========================================================================== -->
 <div class="pw-mountain-parallax" aria-hidden="true">
     <div class="pw-mountain-layer pw-mountain-layer-0" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_0.png');"></div>
     <div class="pw-mountain-layer pw-mountain-layer-1" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_1.png');"></div>
@@ -20,17 +15,14 @@ include('./includes/config.php');
     <div class="pw-mountain-layer pw-mountain-layer-5" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_5.png');"></div>
     <div class="pw-mountain-layer pw-mountain-layer-6" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_6.png');"></div>
     
-    <!-- Atmospheric Adventure Tint & Readability Overlay for Frosted Glass -->
     <div class="pw-mountain-tint"></div>
 
-    <!-- Topographic Trail Elevation Curves Overlay -->
     <svg class="pw-parallax-contours" viewBox="0 0 1200 800" fill="none" preserveAspectRatio="xMidYMid slice">
         <path d="M-100,120 C200,60 400,240 800,150 C1000,90 1200,300 1400,200" stroke="#72a88d" stroke-width="1.2" stroke-dasharray="6 6"/>
         <path d="M-100,350 C300,280 500,480 900,380 C1100,320 1300,500 1400,420" stroke="#72a88d" stroke-width="1.2" stroke-dasharray="8 8"/>
         <path d="M-100,600 C250,520 600,720 950,590 C1150,510 1350,680 1400,610" stroke="#d16629" stroke-width="1.2" stroke-dasharray="4 6"/>
     </svg>
 
-    <!-- Floating Expedition Compass Motif -->
     <svg class="pw-parallax-compass" viewBox="0 0 200 200" fill="none" stroke="#72a88d" stroke-width="1.5">
         <circle cx="100" cy="100" r="90" stroke-dasharray="4 8"/>
         <circle cx="100" cy="100" r="65" stroke-dasharray="2 4"/>
@@ -41,7 +33,6 @@ include('./includes/config.php');
     </svg>
 </div>
 
-<!-- Floating Trail Elevation & Waypoint Navigation Rail (Fixed to Viewport on Desktop & Laptop >= 992px) -->
 <aside class="pw-trail-progress-rail d-none d-lg-flex" aria-label="Trail Elevation Progress">
     <div class="pw-trail-elevation-pill">
         <i class="fa-solid fa-mountain"></i>
@@ -71,18 +62,12 @@ include('./includes/config.php');
     </div>
 </aside>
 
-<!-- ==========================================================================
-     HOMEPAGE CONTENT SECTIONS
-     ========================================================================== -->
 <div class="pw-homepage-wrapper">
 
     <div class="container mt-3">
         <?php include('./includes/alert.php'); ?>
     </div>
 
-    <!-- ==========================================================================
-         HERO SECTION — Adventure Mountain & Trail Lab (Immediate First Impression)
-         ========================================================================== -->
     <section class="pw-hero-section pw-scroll-section" id="hero">
         <div class="container">
             <div class="row align-items-center g-5">
@@ -124,10 +109,8 @@ include('./includes/config.php');
                 </div>
 
                 <div class="col-lg-6">
-                    <!-- Hero Visual Glass Card with Nature Contours and Interactive 3D Tilt -->
                     <div class="pw-hero-visual-card pw-tilt-card">
                         <div class="pw-hero-placeholder-inner">
-                            <!-- Topographic vector contour lines with stroke animation hook -->
                             <svg class="pw-topographic-overlay" viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M-50,80 Q100,20 250,90 T550,60" stroke="#72a88d" stroke-width="1.5" />
                                 <path d="M-50,140 Q120,70 280,160 T550,120" stroke="#72a88d" stroke-width="1.5" />
@@ -136,10 +119,6 @@ include('./includes/config.php');
                                 <circle cx="380" cy="100" r="45" stroke="#d16629" stroke-width="1" stroke-dasharray="4 4" />
                             </svg>
 
-                            <div class="pw-hero-placeholder-icon">
-                                <i class="fa-solid fa-bicycle"></i>
-                                <span class="pw-pulse-ring"></span>
-                            </div>
                             <h4 class="pw-hero-placeholder-label">Hero Banner Placeholder</h4>
                             <p class="pw-hero-placeholder-meta">
                                 <i class="fa-solid fa-image me-1"></i> 1200 &times; 800 &bull; Adventure Trail Rig
@@ -161,7 +140,6 @@ include('./includes/config.php');
             </div>
         </div>
 
-        <!-- Descend the Trail Animated Scroll Cue -->
         <a href="#about" class="pw-scroll-cue" aria-label="Scroll down to explore">
             <span>Descend the Trail</span>
             <div class="pw-scroll-cue-icon">
@@ -170,9 +148,6 @@ include('./includes/config.php');
         </a>
     </section>
 
-    <!-- ==========================================================================
-         CORE CAPABILITIES / VALUE PROPOSITIONS (RIDGE PASS)
-         ========================================================================== -->
     <section class="py-5 pw-scroll-section" id="about">
         <div class="container">
             <div class="row g-4">
@@ -216,9 +191,6 @@ include('./includes/config.php');
         </div>
     </section>
 
-    <!-- ==========================================================================
-         FEATURED PRODUCTS / TRAIL CATALOG (GEAR STASH — FR3 & FR4)
-         ========================================================================== -->
     <section id="products" class="pw-section pw-scroll-section">
         <div class="container">
             <div class="pw-section-head">
@@ -231,7 +203,6 @@ include('./includes/config.php');
                 </p>
             </div>
 
-            <!-- Interactive Category Filter Pills -->
             <div class="pw-category-strip">
                 <button class="pw-filter-pill active" data-category="all">
                     <i class="fa-solid fa-layer-group"></i> All Gear
@@ -250,11 +221,8 @@ include('./includes/config.php');
                 </button>
             </div>
 
-            <!-- Product Cards Grid with Placeholder Images -->
             <div class="row g-4" id="productList">
                 <?php
-                // Structured sample products based on Project Proposal BSIT-2B-T (FR3, FR4)
-                // Uses only placeholder images per user instructions
                 $placeholderProducts = [
                     [
                         'name'     => 'Apex Trail Mountain Rig Pro',
@@ -362,9 +330,6 @@ include('./includes/config.php');
         </div>
     </section>
 
-    <!-- ==========================================================================
-         REPAIR & LABOR SERVICES (WORKSHOP LAB — FR5 & FR15)
-         ========================================================================== -->
     <section id="services" class="pw-section pw-services-bg pw-scroll-section">
         <div class="container">
             <div class="pw-section-head">
@@ -379,7 +344,6 @@ include('./includes/config.php');
 
             <div class="row g-4">
                 <?php
-                // Defined services based on proposal FR5 & FR15
                 $services = [
                     [
                         'icon'  => 'fa-wrench',
@@ -451,9 +415,6 @@ include('./includes/config.php');
         </div>
     </section>
 
-    <!-- ==========================================================================
-         WORKSHOP BASECAMP BANNER / LOCATION INFO (FR8, FR15)
-         ========================================================================== -->
     <section class="py-5 pw-scroll-section" id="workshop-basecamp">
         <div class="container">
             <div class="pw-workshop-banner pw-tilt-card">
@@ -493,12 +454,10 @@ include('./includes/config.php');
         </div>
     </section>
 
-</div> <!-- End .pw-homepage-wrapper -->
+</div>
 
-<!-- Anime.js (Local offline library with fallback) -->
 <script src="/project/PedalWorks-Dynamics/includes/js/anime.min.js"></script>
 
-<!-- Homepage-Specific Anime.js Scroll Animation Controller (ONLY for homepage) -->
 <script src="/project/PedalWorks-Dynamics/includes/js/homepage-animations.js"></script>
 
 <?php include('./includes/footer.php'); ?>

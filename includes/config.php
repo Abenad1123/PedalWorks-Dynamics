@@ -14,6 +14,5 @@ try {
         }
     }
 } catch (mysqli_sql_exception $e) {
-    // Database connection gracefully handled when MySQL service is inactive
     $conn = false;
 }

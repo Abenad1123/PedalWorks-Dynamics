@@ -9,7 +9,6 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PedalWorks Dynamics | Adventure Bikes & Workshop</title>
-    <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -22,7 +21,6 @@ if (session_status() === PHP_SESSION_NONE) {
 </head>
 <body class="pw-nature-body">
 
-<!-- Glassmorphism Main Navigation -->
 <nav class="navbar navbar-expand-lg pw-glass-nav sticky-top">
     <div class="container">
         <a class="navbar-brand pw-brand d-flex align-items-center gap-2" href="/project/PedalWorks-Dynamics/index.php">
@@ -90,7 +88,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                 <?php else: ?>
                     <a class="btn pw-btn-glass-sm" href="/project/PedalWorks-Dynamics/user/login.php">
-                        <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Rider Login
+                        <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>Login
                     </a>
                     <a class="btn pw-btn-trail-sm" href="/project/PedalWorks-Dynamics/user/register.php">
                         <i class="fa-solid fa-user-plus me-1"></i> Sign Up

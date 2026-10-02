@@ -483,21 +483,6 @@ a:hover {
     pointer-events: none;
 }
 
-.pw-hero-placeholder-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: var(--pw-radius-full);
-    background: rgba(209, 102, 41, 0.18);
-    border: 1px solid rgba(209, 102, 41, 0.4);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--pw-trail-amber);
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 0 24px rgba(209, 102, 41, 0.2);
-}
-
 .pw-hero-placeholder-label {
     font-family: var(--pw-font-display);
     font-size: 1.15rem;

@@ -1,7 +1,6 @@
 <footer class="pw-glass-footer">
     <div class="container">
         <div class="row g-4">
-            <!-- Brand & Mission Column -->
             <div class="col-lg-4 col-md-6">
                 <div class="pw-footer-brand">
                     <span class="pw-brand-icon">
@@ -22,7 +21,6 @@
                 </div>
             </div>
 
-            <!-- Gear & Catalog Links -->
             <div class="col-lg-2 col-md-6 col-6">
                 <h6 class="pw-footer-head">Adventure Gear</h6>
                 <ul class="pw-footer-links">
@@ -34,7 +32,6 @@
                 </ul>
             </div>
 
-            <!-- Workshop Services -->
             <div class="col-lg-3 col-md-6 col-6">
                 <h6 class="pw-footer-head">Workshop Lab</h6>
                 <ul class="pw-footer-links">
@@ -46,7 +43,6 @@
                 </ul>
             </div>
 
-            <!-- Location & Workshop Hours -->
             <div class="col-lg-3 col-md-6">
                 <h6 class="pw-footer-head">Basecamp &amp; Contact</h6>
                 <ul class="list-unstyled pw-footer-contact">
@@ -70,7 +66,6 @@
             </div>
         </div>
 
-        <!-- Bottom Bar -->
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between pw-footer-bottom gap-3">
             <p class="mb-0 text-center text-md-start">
                 &copy; <?php echo date('Y'); ?> <strong>PedalWorks Dynamics</strong>. Designed for the adventurous trail rider. All rights reserved.
@@ -82,13 +77,10 @@
     </div>
 </footer>
 
-<!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Global Navigation Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Glass navbar scroll elevation effect
     const nav = document.querySelector('.pw-glass-nav');
     window.addEventListener('scroll', function () {
         if (window.scrollY > 40) {
