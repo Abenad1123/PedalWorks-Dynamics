@@ -11,14 +11,6 @@
                 <p class="pw-footer-text">
                     Engineered for high-altitude climbs, rugged mountain trails, and daily urban expeditions. Your trusted bicycle shop and master repair laboratory.
                 </p>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="pw-trail-badge">
-                        <i class="fa-solid fa-mountain me-1"></i>Trail-Tested Lab
-                    </span>
-                    <span class="pw-trail-badge">
-                        <i class="fa-solid fa-shield-halved me-1"></i>Certified Service
-                    </span>
-                </div>
             </div>
 
             <div class="col-lg-2 col-md-6 col-6">

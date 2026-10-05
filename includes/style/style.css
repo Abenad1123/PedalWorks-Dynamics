@@ -173,18 +173,6 @@ a:hover {
     color: var(--pw-trail-amber);
 }
 
-.pw-trail-badge {
-    background: rgba(209, 102, 41, 0.15);
-    border: 1px solid rgba(209, 102, 41, 0.35);
-    color: var(--pw-trail-amber);
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.25rem 0.65rem;
-    border-radius: var(--pw-radius-full);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
 /* Nav Links */
 .pw-nav-link {
     font-family: var(--pw-font-body);

@@ -382,9 +382,9 @@ include('./includes/config.php');
             <div class="pw-workshop-banner pw-tilt-card">
                 <div class="row align-items-center g-4">
                     <div class="col-lg-8">
-                        <span class="pw-trail-badge mb-3 d-inline-block">
+                        <div class="pw-section-eyebrow mb-3">
                             <i class="fa-solid fa-location-dot me-1"></i>Taguig Basecamp &amp; Service Bay
-                        </span>
+                        </div>
                         <h3 class="pw-workshop-title text-white">Need a Trail Diagnostic or Custom Rig Build?</h3>
                         <p class="pw-workshop-desc">
                             Visit our physical service bay at Western Bicutan for walk-in repairs, parts installation, or online order pickups. Our mechanics are ready to prep your bike for whatever the mountain throws at you.

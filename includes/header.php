@@ -31,9 +31,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 <span class="pw-brand-title">PedalWorks</span>
                 <span class="pw-brand-sub">Dynamics</span>
             </span>
-            <span class="pw-trail-badge ms-1 d-none d-sm-inline-block">
-                <i class="fa-solid fa-mountain me-1"></i>Adventure Lab
-            </span>
         </a>
 
         <button class="navbar-toggler pw-nav-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
