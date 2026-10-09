@@ -141,6 +141,7 @@
         { id: 'hero', element: document.querySelector('.pw-hero-section'), altitude: 1450 },
         { id: 'about', element: document.querySelector('#about'), altitude: 1120 },
         { id: 'products', element: document.querySelector('#products'), altitude: 780 },
+        { id: 'featured', element: document.querySelector('#featured-products'), altitude: 620 },
         { id: 'services', element: document.querySelector('#services'), altitude: 420 },
         { id: 'workshop', element: document.querySelector('#workshop-basecamp'), altitude: 45 }
     ];
@@ -396,8 +397,23 @@
             });
         }
 
-        // Product Catalog (#products)
-        if (id === 'products' || container.querySelector('#productList')) {
+        // Product Categories & Featured Catalog
+        if (id === 'products' || container.querySelector('.pw-category-card')) {
+            const catCards = container.querySelectorAll('.pw-category-card');
+            if (catCards.length) {
+                anime({
+                    targets: catCards,
+                    translateY: [40, 0],
+                    opacity: [0, 1],
+                    scale: [0.94, 1],
+                    delay: anime.stagger(100),
+                    duration: 800,
+                    easing: 'cubicBezier(0.16, 1, 0.3, 1)'
+                });
+            }
+        }
+
+        if (id === 'featured-products' || container.querySelector('.pw-product-item')) {
             // Category filter pills
             const pills = container.querySelectorAll('.pw-filter-pill');
             if (pills.length) {

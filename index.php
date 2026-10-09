@@ -52,7 +52,10 @@ include('./includes/config.php');
                 <span class="pw-trail-dot-label">Ridge Pass (Pillars)</span>
             </div>
             <div class="pw-trail-dot" data-target="#products">
-                <span class="pw-trail-dot-label">Gear Stash (Bikes &amp; Parts)</span>
+                <span class="pw-trail-dot-label">Expedition Catalog</span>
+            </div>
+            <div class="pw-trail-dot" data-target="#featured-products">
+                <span class="pw-trail-dot-label">Featured Products</span>
             </div>
             <div class="pw-trail-dot" data-target="#services">
                 <span class="pw-trail-dot-label">Workshop Lab (Repairs)</span>
@@ -89,7 +92,7 @@ include('./includes/config.php');
                         <a href="#products" class="pw-btn-trail">
                             <i class="fa-solid fa-compass"></i> Explore Trail Catalog
                         </a>
-                        <a href="#services" class="pw-btn-glass">
+                        <a href="services.php" class="pw-btn-glass">
                             <i class="fa-solid fa-wrench"></i> Workshop Services
                         </a>
                     </div>
@@ -199,17 +202,21 @@ include('./includes/config.php');
                 <div class="pw-section-eyebrow">
                     <i class="fa-solid fa-compass"></i> Expedition Catalog
                 </div>
-                <h2 class="pw-section-title">Adventure Bikes &amp; Essential Gear</h2>
+                <h2 class="pw-section-title">Explore by Category</h2>
                 <p class="pw-section-sub">
-                    Browse our curated selection of trail-ready rigs, precision replacement parts, rugged racks, and rider protection.
+                    Select a category below to browse our trail-tested bicycles, replacement components, attachments, and safety gear.
                 </p>
             </div>
 
-            <div class="pw-category-strip">
-                <button class="pw-filter-pill active" data-category="all">
-                    <i class="fa-solid fa-layer-group"></i> All Gear
-                </button>
+            <div class="row g-4">
                 <?php
+                $categoryImages = [
+                    'Full Build Bikes' => 'assets/images/categories/category_bikes.jpg',
+                    'Bicycle Parts'    => 'assets/images/categories/category_parts.jpg',
+                    'Attachments'      => 'assets/images/categories/category_attachments.jpg',
+                    'Safety Gear'      => 'assets/images/categories/category_safety_gear.jpg',
+                ];
+
                 $dbCategories = [];
                 if ($conn) {
                     $catRes = @mysqli_query($conn, "SELECT * FROM productCategory ORDER BY productCategoryID ASC");
@@ -219,37 +226,65 @@ include('./includes/config.php');
                         }
                     }
                 }
+
                 foreach ($dbCategories as $cat):
+                    $cName = $cat['name'];
+                    $cImg = $categoryImages[$cName] ?? 'assets/images/categories/category_bikes.jpg';
                 ?>
-                <button class="pw-filter-pill" data-category="<?php echo htmlspecialchars($cat['name']); ?>">
-                    <?php echo htmlspecialchars($cat['name']); ?>
-                </button>
+                <div class="col-lg-3 col-sm-6">
+                    <a href="products.php?category=<?php echo urlencode($cName); ?>" class="pw-category-card pw-tilt-card">
+                        <div class="pw-category-img-wrapper">
+                            <img src="<?php echo htmlspecialchars($cImg); ?>" alt="<?php echo htmlspecialchars($cName); ?>" class="pw-category-img">
+                            <div class="pw-category-overlay">
+                                <h3 class="pw-category-title">
+                                    <span><?php echo htmlspecialchars($cName); ?></span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </h3>
+                            </div>
+                        </div>
+                    </a>
+                </div>
                 <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <section id="featured-products" class="pw-section pw-scroll-section" style="padding-top: 1rem;">
+        <div class="container">
+            <div class="pw-section-head">
+                <div class="pw-section-eyebrow">
+                    <i class="fa-solid fa-fire text-warning"></i> Hand-Picked Rigs &amp; Gear
+                </div>
+                <h2 class="pw-section-title">Featured Products</h2>
+                <p class="pw-section-sub">
+                    Our top recommended bicycles, high-performance components, and essential expedition accessories.
+                </p>
             </div>
 
             <div class="row g-4" id="productList">
                 <?php
-                $dbProducts = [];
+                $featuredProducts = [];
                 if ($conn) {
-                    $prodRes = @mysqli_query($conn, "SELECT p.*, pc.name AS categoryName 
+                    $featRes = @mysqli_query($conn, "SELECT p.*, pc.name AS categoryName 
                                                      FROM product p 
                                                      LEFT JOIN productCategory pc ON p.productCategoryID = pc.productCategoryID 
                                                      WHERE p.endDate IS NULL 
-                                                     ORDER BY p.productID DESC");
-                    if ($prodRes) {
-                        while ($prodRow = mysqli_fetch_assoc($prodRes)) {
-                            $dbProducts[] = $prodRow;
+                                                     ORDER BY p.productID DESC 
+                                                     LIMIT 8");
+                    if ($featRes) {
+                        while ($featRow = mysqli_fetch_assoc($featRes)) {
+                            $featuredProducts[] = $featRow;
                         }
                     }
                 }
 
-                if (!empty($dbProducts)):
-                    foreach ($dbProducts as $product):
+                if (!empty($featuredProducts)):
+                    foreach ($featuredProducts as $product):
                         $catName = $product['categoryName'] ?? 'Gear';
                         $isLowStock = ($product['stock'] <= $product['lowStockThreshold'] && $product['stock'] > 0);
                         $isOutOfStock = ($product['stock'] <= 0);
                 ?>
-                <div class="col-xl-3 col-lg-4 col-md-6 pw-product-item" data-category="<?php echo htmlspecialchars($catName); ?>">
+                <div class="col-xl-3 col-lg-4 col-md-6 pw-product-item">
                     <div class="pw-product-card pw-tilt-card">
                         <div class="pw-product-img-box">
                             <span class="pw-category-tag"><?php echo htmlspecialchars($catName); ?></span>
@@ -286,8 +321,8 @@ include('./includes/config.php');
                                     <span class="pw-price-label">Price</span>
                                     <span class="pw-price-amount">&#8369;<?php echo number_format($product['price'], 2); ?></span>
                                 </div>
-                                <a href="#" class="pw-btn-product-add" title="View details">
-                                    <i class="fa-solid fa-cart-plus"></i>
+                                <a href="products.php?search=<?php echo urlencode($product['sku']); ?>" class="pw-btn-product-add" title="View in Catalog">
+                                    <i class="fa-solid fa-eye"></i>
                                     <span>Details</span>
                                 </a>
                             </div>
@@ -306,6 +341,12 @@ include('./includes/config.php');
                     </div>
                 </div>
                 <?php endif; ?>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="products.php" class="pw-btn-trail py-3 px-4">
+                    <i class="fa-solid fa-boxes-stacked me-2"></i> Browse Complete Products Catalog
+                </a>
             </div>
         </div>
     </section>
@@ -407,7 +448,7 @@ include('./includes/config.php');
                         </div>
                     </div>
                     <div class="col-lg-4 text-lg-end text-center mt-4 mt-lg-0">
-                        <a href="#services" class="pw-btn-trail py-3 px-4">
+                        <a href="services.php" class="pw-btn-trail py-3 px-4">
                             <i class="fa-solid fa-calendar-check"></i> Book Workshop Visit
                         </a>
                     </div>

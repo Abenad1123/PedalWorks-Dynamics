@@ -40,23 +40,23 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav mx-auto align-items-lg-center pw-nav-list my-2 my-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link active" href="/project/PedalWorks-Dynamics/index.php">
+                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php">
                         <i class="fa-solid fa-compass me-1"></i> Home
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php#products">
-                        <i class="fa-solid fa-bicycle me-1"></i> Gear &amp; Bikes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php#services">
-                        <i class="fa-solid fa-wrench me-1"></i> Repair Lab
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php#about">
-                        <i class="fa-solid fa-tree me-1"></i> The Shop
+                        <i class="fa-solid fa-circle-info me-1"></i> About
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/products.php">
+                        <i class="fa-solid fa-bicycle me-1"></i> Products
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/services.php">
+                        <i class="fa-solid fa-wrench me-1"></i> Services
                     </a>
                 </li>
             </ul>
