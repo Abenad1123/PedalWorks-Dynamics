@@ -9,7 +9,7 @@
  * 2. Default Product and Service Categories
  */
 
-require_once __DIR__ . '/includes/config.php';
+include('./includes/config.php');
 
 if (!$conn) {
     die("<h3>Database connection failed.</h3><p>Please make sure MySQL is running in XAMPP and database 'pedalworks_db' exists.</p>");

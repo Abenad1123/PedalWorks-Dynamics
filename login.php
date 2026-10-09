@@ -1,8 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once __DIR__ . '/includes/config.php';
+session_start();
+include('./includes/config.php');
 
 $errors = [];
 $username = '';
@@ -36,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['account_type']   = 'admin';
                     $_SESSION['success']        = 'Logged in successfully as Admin (' . $admin['username'] . ').';
 
-                    header('Location: /project/PedalWorks-Dynamics/admin/dashboard.php');
+                    header('Location: admin/dashboard.php');
                     exit;
                 } elseif ($isAdminAction) {
                     $errors[] = 'Invalid admin username or password.';
@@ -61,9 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($cust) {
                     if ($cust['status'] === 'Disabled') {
-                        $errors[] = 'Your customer account has been disabled. Please contact support.';
-                    } elseif ($cust['status'] === 'Inactive') {
-                        $errors[] = 'Your customer account is currently inactive.';
+                        $errors[] = 'Your account has been disabled. Please contact shop administration.';
                     } elseif (password_verify($password, $cust['password'])) {
                         $_SESSION['customerAccountID'] = (int)$cust['customerAccountID'];
                         $_SESSION['customerID']        = (int)$cust['customerID'];
@@ -75,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_SESSION['account_type']      = 'customer';
                         $_SESSION['success']           = 'Welcome back, ' . ($cust['firstName'] ?: $cust['username']) . '!';
 
-                        header('Location: /project/PedalWorks-Dynamics/index.php');
+                        header('Location: index.php');
                         exit;
                     } else {
                         $errors[] = 'Invalid customer username or password.';
@@ -130,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </form>
     <br>
-    <p>New customer? <a href="/project/PedalWorks-Dynamics/signup.php"><button type="button">Go to Sign Up</button></a></p>
-    <p><a href="/project/PedalWorks-Dynamics/index.php"><button type="button">Back to Homepage</button></a></p>
+    <p>New customer? <a href="signup.php"><button type="button">Go to Sign Up</button></a></p>
+    <p><a href="index.php"><button type="button">Back to Homepage</button></a></p>
 </body>
 </html>

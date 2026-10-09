@@ -1,8 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once __DIR__ . '/includes/config.php';
+session_start();
+include('./includes/config.php');
 
 $errors = [];
 $firstName = '';
@@ -48,75 +46,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
     }
 
     if (empty($errors)) {
-        // Check if email already exists
-        $emailStmt = mysqli_prepare($conn, "SELECT customerID FROM customer WHERE email = ? LIMIT 1");
-        if ($emailStmt) {
-            mysqli_stmt_bind_param($emailStmt, 's', $email);
-            mysqli_stmt_execute($emailStmt);
-            mysqli_stmt_store_result($emailStmt);
-            if (mysqli_stmt_num_rows($emailStmt) > 0) {
-                $errors[] = 'Email is already registered. Please log in or use another email.';
+        // Check email uniqueness
+        $emailCheck = mysqli_prepare($conn, "SELECT customerID FROM customer WHERE email = ? LIMIT 1");
+        if ($emailCheck) {
+            mysqli_stmt_bind_param($emailCheck, 's', $email);
+            mysqli_stmt_execute($emailCheck);
+            mysqli_stmt_store_result($emailCheck);
+            if (mysqli_stmt_num_rows($emailCheck) > 0) {
+                $errors[] = 'This email address is already registered.';
             }
-            mysqli_stmt_close($emailStmt);
+            mysqli_stmt_close($emailCheck);
         }
 
-        // Check if username already exists
-        $userStmt = mysqli_prepare($conn, "SELECT customerAccountID FROM customerAccount WHERE username = ? LIMIT 1");
-        if ($userStmt) {
-            mysqli_stmt_bind_param($userStmt, 's', $username);
-            mysqli_stmt_execute($userStmt);
-            mysqli_stmt_store_result($userStmt);
-            if (mysqli_stmt_num_rows($userStmt) > 0) {
-                $errors[] = 'Username is already taken. Please choose another username.';
+        // Check username uniqueness
+        $userCheck = mysqli_prepare($conn, "SELECT customerAccountID FROM customerAccount WHERE username = ? LIMIT 1");
+        if ($userCheck) {
+            mysqli_stmt_bind_param($userCheck, 's', $username);
+            mysqli_stmt_execute($userCheck);
+            mysqli_stmt_store_result($userCheck);
+            if (mysqli_stmt_num_rows($userCheck) > 0) {
+                $errors[] = 'This username is already taken. Please choose another.';
             }
-            mysqli_stmt_close($userStmt);
+            mysqli_stmt_close($userCheck);
         }
     }
 
-    // Insert customer & customerAccount atomically
+    // Insert customer & account inside a transaction
     if (empty($errors)) {
         mysqli_begin_transaction($conn);
         try {
             $dbLastName = ($lastName !== '') ? $lastName : null;
             $dbBirthDate = ($birthDate !== '') ? $birthDate : null;
 
-            // 1. Insert customer
-            $custSql = "INSERT INTO customer (firstName, lastName, birthDate, email, address) VALUES (?, ?, ?, ?, ?)";
-            $stmtCust = mysqli_prepare($conn, $custSql);
-            mysqli_stmt_bind_param($stmtCust, "sssss", $firstName, $dbLastName, $dbBirthDate, $email, $address);
-            if (!mysqli_stmt_execute($stmtCust)) {
-                throw new Exception(mysqli_stmt_error($stmtCust));
-            }
-            $customerID = mysqli_insert_id($conn);
-            mysqli_stmt_close($stmtCust);
+            $insertCustomer = mysqli_prepare($conn, "INSERT INTO customer (firstName, lastName, birthDate, email, address) VALUES (?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($insertCustomer, 'sssss', $firstName, $dbLastName, $dbBirthDate, $email, $address);
+            mysqli_stmt_execute($insertCustomer);
+            $newCustomerID = mysqli_insert_id($conn);
+            mysqli_stmt_close($insertCustomer);
 
-            // 2. Insert customerAccount
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             $status = 'Active';
-            $accSql = "INSERT INTO customerAccount (customerID, username, password, status) VALUES (?, ?, ?, ?)";
-            $stmtAcc = mysqli_prepare($conn, $accSql);
-            mysqli_stmt_bind_param($stmtAcc, "isss", $customerID, $username, $hashedPassword, $status);
-            if (!mysqli_stmt_execute($stmtAcc)) {
-                throw new Exception(mysqli_stmt_error($stmtAcc));
-            }
-            $customerAccountID = mysqli_insert_id($conn);
-            mysqli_stmt_close($stmtAcc);
+
+            $insertAccount = mysqli_prepare($conn, "INSERT INTO customerAccount (customerID, username, password, status) VALUES (?, ?, ?, ?)");
+            mysqli_stmt_bind_param($insertAccount, 'isss', $newCustomerID, $username, $hashedPassword, $status);
+            mysqli_stmt_execute($insertAccount);
+            mysqli_stmt_close($insertAccount);
 
             mysqli_commit($conn);
 
-            // Set login session variables
-            $_SESSION['customerAccountID'] = $customerAccountID;
-            $_SESSION['customerID'] = $customerID;
-            $_SESSION['username'] = $username;
-            $_SESSION['email'] = $email;
-            $_SESSION['role'] = 'customer';
-            $_SESSION['success'] = 'Account created successfully! Welcome to PedalWorks Dynamics.';
-
-            header('Location: /project/PedalWorks-Dynamics/index.php');
+            $_SESSION['success'] = "Account successfully created for {$username}! You can now log in.";
+            header('Location: login.php');
             exit;
         } catch (Exception $e) {
             mysqli_rollback($conn);
-            $errors[] = 'Registration failed: ' . $e->getMessage();
+            $errors[] = 'Failed to create account: ' . $e->getMessage();
         }
     }
 }
@@ -186,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
         </div>
     </form>
     <br>
-    <p>Already have an account? <a href="/project/PedalWorks-Dynamics/login.php"><button type="button">Go to Login</button></a></p>
-    <p><a href="/project/PedalWorks-Dynamics/index.php"><button type="button">Back to Homepage</button></a></p>
+    <p>Already have an account? <a href="login.php"><button type="button">Go to Login</button></a></p>
+    <p><a href="index.php"><button type="button">Back to Homepage</button></a></p>
 </body>
 </html>

@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+session_start();
 
 $_SESSION = [];
 
@@ -17,5 +15,5 @@ session_destroy();
 
 session_start();
 $_SESSION['success'] = "You have logged out successfully.";
-header("Location: /project/PedalWorks-Dynamics/index.php");
+header("Location: index.php");
 exit;
