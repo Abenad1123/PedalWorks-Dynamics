@@ -53,27 +53,7 @@ if ($conn) {
 <body class="bg-light">
 
     <!-- Top Admin Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold" href="dashboard.php">
-                <i class="fa-solid fa-person-biking me-2"></i>PedalWorks Dynamics Admin
-            </a>
-            <div class="d-flex align-items-center gap-3">
-                <?php if (isset($_SESSION['username'])): ?>
-                    <span class="text-light small">
-                        <i class="fa-solid fa-user-shield me-1"></i>
-                        <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
-                        <span class="badge bg-primary ms-1"><?php echo htmlspecialchars($_SESSION['role'] ?? 'Staff'); ?></span>
-                    </span>
-                    <a href="../logout.php" class="btn btn-outline-danger btn-sm">
-                        <i class="fa-solid fa-right-from-bracket me-1"></i>Logout
-                    </a>
-                <?php else: ?>
-                    <a href="../login.php" class="btn btn-outline-light btn-sm">Login</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </nav>
+    <?php include('../includes/admin_nav.php'); ?>
 
     <!-- Main Content Area -->
     <div class="container py-4">

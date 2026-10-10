@@ -76,12 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_admin'])) {
         }
 
         if (mysqli_stmt_execute($upStmt)) {
-            // Update current session if the admin edited their own account
             if (isset($_SESSION['adminAccountID']) && (int)$_SESSION['adminAccountID'] === $editID) {
                 $_SESSION['username'] = $username;
-                $_SESSION['role']     = $role;
+                $_SESSION['role'] = $role;
             }
-            $_SESSION['success'] = 'Administrator account #' . $editID . ' updated successfully.';
+            $_SESSION['success'] = 'Administrator "' . htmlspecialchars($username) . '" updated successfully.';
             header('Location: index.php');
             exit;
         } else {
@@ -91,78 +90,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_admin'])) {
     }
 }
 
-// Fetch existing data for form
+// Fetch existing details
 $adminData = null;
 if ($conn) {
-    $stmt = mysqli_prepare($conn, "SELECT adminAccountID, username, role FROM adminAccount WHERE adminAccountID = ? LIMIT 1");
-    mysqli_stmt_bind_param($stmt, 'i', $editID);
-    mysqli_stmt_execute($stmt);
-    $res = mysqli_stmt_get_result($stmt);
+    $selStmt = mysqli_prepare($conn, "SELECT adminAccountID, username, role FROM adminAccount WHERE adminAccountID = ? LIMIT 1");
+    mysqli_stmt_bind_param($selStmt, 'i', $editID);
+    mysqli_stmt_execute($selStmt);
+    $res = mysqli_stmt_get_result($selStmt);
     $adminData = mysqli_fetch_assoc($res);
-    mysqli_stmt_close($stmt);
+    mysqli_stmt_close($selStmt);
 }
 
 if (!$adminData) {
-    $_SESSION['error'] = 'Administrator account with ID #' . $editID . ' was not found.';
+    $_SESSION['error'] = 'Administrator account not found.';
     header('Location: index.php');
     exit;
 }
+$activeModule = 'admin';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Administrator - PedalWorks Dynamics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
-<body>
-    <h1>Edit Administrator Account</h1>
+<body class="bg-light">
 
-    <div>
-        <a href="index.php"><button type="button">Back to Admin Accounts</button></a>
-        <a href="../dashboard.php"><button type="button">Back to Admin Dashboard</button></a>
+    <!-- Top Admin Navigation Bar -->
+    <?php include('../../includes/admin_nav.php'); ?>
+
+    <div class="container py-4">
+
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none">Staff Accounts</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit <?php echo htmlspecialchars($adminData['username']); ?></li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-primary bg-opacity-10 text-primary p-2 rounded">
+                                <i class="fa-solid fa-user-pen fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0 fw-bold">Edit Administrator Account</h5>
+                                <small class="text-muted">Modify staff credentials or access tier (ID: #<?php echo (int)$adminData['adminAccountID']; ?>)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        <?php if (!empty($errors)): ?>
+                            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                                <strong class="d-block mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> Please fix the errors:</strong>
+                                <ul class="mb-0 ps-3">
+                                    <?php foreach ($errors as $err): ?>
+                                        <li><?php echo htmlspecialchars($err); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="editAdminAccount.php" method="post">
+                            <input type="hidden" name="adminAccountID" value="<?php echo (int)$adminData['adminAccountID']; ?>">
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label fw-semibold">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa-solid fa-at"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($_POST['username'] ?? $adminData['username']); ?>" required minlength="3">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-semibold">
+                                    Change Password <small class="text-muted fw-normal">(Optional)</small>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa-solid fa-key"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Leave empty to keep existing password" minlength="6">
+                                </div>
+                                <div class="form-text">Only enter a new password if you wish to reset or update this account's password.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="role" class="form-label fw-semibold">
+                                    Assigned Role <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa-solid fa-shield-halved"></i></span>
+                                    <select class="form-select" id="role" name="role" required>
+                                        <?php 
+                                        $currentRole = $_POST['role'] ?? $adminData['role'];
+                                        foreach ($validRoles as $r): 
+                                        ?>
+                                            <option value="<?php echo htmlspecialchars($r); ?>" <?php echo ($currentRole === $r) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($r); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <a href="index.php" class="btn btn-outline-secondary">
+                                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Accounts
+                                </a>
+                                <button type="submit" name="update_admin" class="btn btn-primary px-4">
+                                    <i class="fa-solid fa-check me-1"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
-    <br>
 
-    <?php if (!empty($errors)): ?>
-        <div style="color: red;">
-            <ul>
-                <?php foreach ($errors as $err): ?>
-                    <li><?php echo htmlspecialchars($err); ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
-
-    <h2>Editing: <?php echo htmlspecialchars($adminData['username']); ?> (ID #<?php echo (int)$adminData['adminAccountID']; ?>)</h2>
-
-    <form action="editAdminAccount.php?id=<?php echo (int)$adminData['adminAccountID']; ?>" method="post">
-        <input type="hidden" name="adminAccountID" value="<?php echo (int)$adminData['adminAccountID']; ?>">
-        <div>
-            <label for="username">Username (required):</label><br>
-            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($_POST['username'] ?? $adminData['username']); ?>" required>
-        </div>
-        <br>
-        <div>
-            <label for="password">New Password (leave blank to keep current password):</label><br>
-            <input type="password" id="password" name="password" placeholder="Leave blank to keep unchanged">
-        </div>
-        <br>
-        <div>
-            <label for="role">Role (required):</label><br>
-            <?php $selectedRole = $_POST['role'] ?? $adminData['role']; ?>
-            <select id="role" name="role" required>
-                <?php foreach ($validRoles as $r): ?>
-                    <option value="<?php echo htmlspecialchars($r); ?>" <?php echo ($selectedRole === $r) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($r); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <br>
-        <div>
-            <button type="submit" name="update_admin">Save Changes</button>
-            <a href="index.php"><button type="button">Cancel</button></a>
-        </div>
-    </form>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
