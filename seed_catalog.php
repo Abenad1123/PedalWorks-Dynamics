@@ -2,398 +2,534 @@
 include('./includes/config.php');
 
 if (!$conn) {
-    die("Database connection failed.\n");
+    die("Database connection failed. Please ensure MySQL is running in XAMPP.\n");
 }
 
-echo "Seeding products and services...\n";
+echo "=========================================================\n";
+echo "   PedalWorks Dynamics: Clean Catalog Seeder\n";
+echo "   (Strictly using provided products & services)\n";
+echo "=========================================================\n\n";
 
-// Map category names to IDs
+// Disable foreign key checks for clean wipe of catalog tables
+mysqli_query($conn, "SET FOREIGN_KEY_CHECKS = 0");
+mysqli_query($conn, "DELETE FROM customerCart");
+mysqli_query($conn, "DELETE FROM orderLineProduct");
+mysqli_query($conn, "DELETE FROM customerService");
+mysqli_query($conn, "DELETE FROM product");
+mysqli_query($conn, "DELETE FROM service");
+mysqli_query($conn, "ALTER TABLE product AUTO_INCREMENT = 1");
+mysqli_query($conn, "ALTER TABLE service AUTO_INCREMENT = 1");
+mysqli_query($conn, "SET FOREIGN_KEY_CHECKS = 1");
+
+// Ensure required categories exist
+$productCategories = [
+    'Road Bikes',
+    'Mountain Bikes',
+    'Gravel Bikes',
+    'Mamachari Bikes',
+    'Folding Bikes',
+    'Bikes for Kids',
+    'Fixies',
+    'BMX',
+    'Frames'
+];
+
+foreach ($productCategories as $pc) {
+    $cStmt = mysqli_prepare($conn, "INSERT IGNORE INTO productCategory (name) VALUES (?)");
+    mysqli_stmt_bind_param($cStmt, 's', $pc);
+    mysqli_stmt_execute($cStmt);
+    mysqli_stmt_close($cStmt);
+}
+
+$serviceCategories = [
+    'Bicycle Repair',
+    'Cleaning & Detailing',
+    'Parts Installation',
+    'Custom Bike Building',
+    'Frame Painting'
+];
+
+foreach ($serviceCategories as $sc) {
+    $scStmt = mysqli_prepare($conn, "INSERT IGNORE INTO serviceCategory (name) VALUES (?)");
+    mysqli_stmt_bind_param($scStmt, 's', $sc);
+    mysqli_stmt_execute($scStmt);
+    mysqli_stmt_close($scStmt);
+}
+
+// Fetch category maps
 $catMap = [];
 $res = mysqli_query($conn, "SELECT productCategoryID, name FROM productCategory");
-while ($row = mysqli_fetch_assoc($res)) {
-    $catMap[$row['name']] = (int)$row['productCategoryID'];
+while ($r = mysqli_fetch_assoc($res)) {
+    $catMap[$r['name']] = (int)$r['productCategoryID'];
 }
 
 $servCatMap = [];
 $res = mysqli_query($conn, "SELECT serviceCategoryID, name FROM serviceCategory");
-while ($row = mysqli_fetch_assoc($res)) {
-    $servCatMap[$row['name']] = (int)$row['serviceCategoryID'];
+while ($r = mysqli_fetch_assoc($res)) {
+    $servCatMap[$r['name']] = (int)$r['serviceCategoryID'];
 }
 
+// ========================================================
+// PRODUCTS LIST (Strictly from the provided products document)
+// ========================================================
 $products = [
-    // Full Build Bikes
+    // --- Road Bikes ---
     [
-        'sku' => 'PROD-BIKE-001',
-        'name' => 'PedalWorks Classic City Commuter',
-        'description' => 'Comfortable step-through city bicycle equipped with front wire basket, full fenders, and reliable Shimano 7-speed gearing.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image1.png',
-        'price' => 8500.00,
+        'sku' => 'PROD-ROAD-001',
+        'name' => 'Wonder Wheels Road Bike 700c Aluminum Frame',
+        'description' => 'Wonder Wheels Road Bike 700C 53Cm Aluminum Frame Matte Black, Shimano TX-35 7 Speed, Alloy Black Rims, Black Spokes 700C*1.5*14G*32H, Tire: Black.',
+        'category' => 'Road Bikes',
+        'image' => 'assets/images/image6.png',
+        'price' => 28289.00,
+        'stock' => 10,
+        'lowStockThreshold' => 3
+    ],
+    [
+        'sku' => 'PROD-ROAD-002',
+        'name' => 'ROCKBROS Road Bike 700C 2*10 Speeds Disc Brake',
+        'description' => 'ROCKBROS Road Bike 700C 2*10 Speeds Disc Brake Bike Aluminum Alloy Frame Internal Cable Light Weight Adults Road Bike for 160-190cm Height.',
+        'category' => 'Road Bikes',
+        'image' => 'assets/images/image17.png',
+        'price' => 64366.35,
+        'stock' => 5,
+        'lowStockThreshold' => 2
+    ],
+    [
+        'sku' => 'PROD-ROAD-003',
+        'name' => 'Garuda SpearowAero Roadbike 700c 21 Speed',
+        'description' => 'Garuda SpearowAero Roadbike 700c Aluminum Frame 3x7 21 Speed Shimano 30 Direct Dial with Carinside Line and Special Horn Brake.',
+        'category' => 'Road Bikes',
+        'image' => 'assets/images/image16.png',
+        'price' => 6499.00,
+        'stock' => 15,
+        'lowStockThreshold' => 4
+    ],
+    [
+        'sku' => 'PROD-ROAD-004',
+        'name' => 'Raleigh | Ultra-light Variable Speed Bicycle',
+        'description' => 'Raleigh ultra-light variable speed performance road bicycle designed for speed and endurance.',
+        'category' => 'Road Bikes',
+        'image' => 'assets/images/image28.png',
+        'price' => 23687.47,
+        'stock' => 8,
+        'lowStockThreshold' => 2
+    ],
+
+    // --- Mountain Bikes ---
+    [
+        'sku' => 'PROD-MTB-001',
+        'name' => 'AENXRD Mountain Bike 24/26 inch 21 SPEED',
+        'description' => 'AENXRD Mountain Bike 24/26 inch 21 SPEED Adult Bicycles Bike High Carbon Steel Road Bicycle Aluminum alloy frame.',
+        'category' => 'Mountain Bikes',
+        'image' => 'assets/images/image35.png',
+        'price' => 4699.00,
+        'stock' => 18,
+        'lowStockThreshold' => 5
+    ],
+    [
+        'sku' => 'PROD-MTB-002',
+        'name' => '2026 Trinx M134 24" Mechanical Alloy Mountain Bike',
+        'description' => '2026 Trinx M134 24" Mechanical Alloy Mountain Bike with suspension fork and durable trail tires.',
+        'category' => 'Mountain Bikes',
+        'image' => 'assets/images/image34.png',
+        'price' => 8900.00,
         'stock' => 12,
         'lowStockThreshold' => 4
     ],
     [
-        'sku' => 'PROD-BIKE-002',
-        'name' => 'Black Mamba Mountain Bike 29er',
-        'description' => 'Rugged aluminum hardtail frame with front suspension fork, dual mechanical disc brakes, and knobby 29-inch trail tires.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image2.png',
-        'price' => 14999.00,
-        'stock' => 8,
-        'lowStockThreshold' => 3
-    ],
-    [
-        'sku' => 'PROD-BIKE-003',
-        'name' => 'FoldMaster Urban 20" Folding Bike',
-        'description' => 'Compact folding commuter bike with quick-release latches, integrated headlamp mount, and responsive rim brakes.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image3.png',
-        'price' => 11200.00,
-        'stock' => 15,
-        'lowStockThreshold' => 5
-    ],
-    [
-        'sku' => 'PROD-BIKE-004',
-        'name' => 'Rockbros Aero Endurance Road Bike',
-        'description' => 'Lightweight aerodynamic road bike with drop handlebars, dual disc brakes, and high-efficiency 2x9 road groupset.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image4.png',
-        'price' => 28500.00,
-        'stock' => 5,
-        'lowStockThreshold' => 2
-    ],
-    [
-        'sku' => 'PROD-BIKE-005',
-        'name' => 'Bickerton British Racing Green Folder',
-        'description' => 'Heritage-inspired British folding bike with rear luggage rack, leather saddle accents, and 8-speed wide-range gearing.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image5.png',
-        'price' => 13500.00,
-        'stock' => 7,
-        'lowStockThreshold' => 2
-    ],
-    [
-        'sku' => 'PROD-BIKE-006',
-        'name' => 'Aenxrd Trail Slayer MTB 27.5"',
-        'description' => 'High-traction cross country mountain bike with lockout front suspension, lightweight alloy cockpit, and 24-speed gears.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image8.png',
-        'price' => 16800.00,
-        'stock' => 9,
-        'lowStockThreshold' => 3
-    ],
-    [
-        'sku' => 'PROD-BIKE-007',
-        'name' => 'Cube All-Terrain Touring Rig',
-        'description' => 'Ready for cross-country bikepacking adventures with front and rear mudguards, integrated cargo rack, and 1x11 drivetrain.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image9.png',
-        'price' => 22000.00,
-        'stock' => 4,
-        'lowStockThreshold' => 2
-    ],
-    [
-        'sku' => 'PROD-BIKE-008',
-        'name' => 'Dagger Stealth Gravel Rig',
-        'description' => 'Matte black gravel grinder with tan-wall 700x38c multi-surface tires, flared drop bars, and flat-mount disc brakes.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image10.png',
-        'price' => 19500.00,
-        'stock' => 6,
-        'lowStockThreshold' => 2
-    ],
-    [
-        'sku' => 'PROD-BIKE-009',
-        'name' => 'Tern Verge Disc Folding Rig',
-        'description' => 'Performance folding bicycle engineered with disc brakes, stiff hydroformed aluminum frame, and rapid compact fold.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image11.png',
-        'price' => 24000.00,
-        'stock' => 3,
-        'lowStockThreshold' => 2
-    ],
-    [
-        'sku' => 'PROD-BIKE-010',
-        'name' => 'Raleigh Cyan Sprint Aero Racer',
-        'description' => 'Striking aero frame with deep-section aerodynamic wheels, integrated cables, and precision road race groupset.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image13.png',
-        'price' => 31000.00,
-        'stock' => 4,
-        'lowStockThreshold' => 2
-    ],
-    [
-        'sku' => 'PROD-BIKE-011',
-        'name' => 'Trinx M134 Sport Hardtail MTB',
-        'description' => 'Durable trail machine designed for aggressive singletrack climbing and stable downhill control.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image14.png',
-        'price' => 9800.00,
-        'stock' => 10,
-        'lowStockThreshold' => 3
-    ],
-    [
-        'sku' => 'PROD-BIKE-012',
-        'name' => 'Rainmo Retro Cream Cruiser',
-        'description' => 'Vintage lifestyle bicycle with cream powder-coat finish, woven basket, tan tires, and relaxed upright posture.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image16.png',
-        'price' => 7900.00,
-        'stock' => 14,
-        'lowStockThreshold' => 4
-    ],
-    [
-        'sku' => 'PROD-BIKE-013',
-        'name' => 'Garuda Geometric Aero Road Bike',
-        'description' => 'Geometric styling on lightweight 6061 alloy frame, drop-bar ergonomics, and high-cadence drivetrain.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image17.png',
-        'price' => 15500.00,
-        'stock' => 6,
-        'lowStockThreshold' => 2
-    ],
-    [
-        'sku' => 'PROD-BIKE-014',
-        'name' => 'Toseek Targa Endurance Gravel',
-        'description' => 'Long-distance gravel and adventure bicycle with internal cabling, thru-axles, and hydraulic stopping power.',
-        'category' => 'Full Build Bikes',
-        'image' => 'assets/images/image18.png',
-        'price' => 18900.00,
-        'stock' => 5,
-        'lowStockThreshold' => 2
-    ],
-
-    // Bicycle Parts
-    [
-        'sku' => 'PROD-PART-001',
-        'name' => 'Shimano Deore 11-Speed Rear Derailleur',
-        'description' => 'Shadow RD+ clutch technology delivers consistent chain retention and quiet drivetrain performance over rough terrain.',
-        'category' => 'Bicycle Parts',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 2450.00,
+        'sku' => 'PROD-MTB-003',
+        'name' => 'Black Mamba 26 & 27.5 inches Steel Mountain Bike Cycling',
+        'description' => 'Black Mamba 26 & 27.5 inches Steel Mountain Bike Cycling built for reliable all-terrain riding.',
+        'category' => 'Mountain Bikes',
+        'image' => 'assets/images/image29.png',
+        'price' => 3679.00,
         'stock' => 20,
         'lowStockThreshold' => 5
     ],
     [
-        'sku' => 'PROD-PART-002',
-        'name' => 'Shimano MT200 Hydraulic Disc Brake Set',
-        'description' => 'Front and rear pre-bled hydraulic disc brake set offering consistent, modulated stopping power in all weather conditions.',
-        'category' => 'Bicycle Parts',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 2800.00,
-        'stock' => 18,
+        'sku' => 'PROD-MTB-004',
+        'name' => 'ANEXRD R12 Mountain Bike 24/26 INCH 21 SPEED',
+        'description' => 'ANEXRD R12 Mountain Bike 24/26 INCH 21 SPEED Adult Bike With disc brakes & Gear shifting Kids Bike High Carbon Steel with Fork Shock absorbing front.',
+        'category' => 'Mountain Bikes',
+        'image' => 'assets/images/image25.png',
+        'price' => 4199.00,
+        'stock' => 14,
+        'lowStockThreshold' => 4
+    ],
+
+    // --- Gravel Bikes ---
+    [
+        'sku' => 'PROD-GRVL-001',
+        'name' => 'TOSEEK TARGA 1.0 2022 All New Road Bike/CX 700c',
+        'description' => 'TOSEEK TARGA 1.0 2022 All New Toseek Road Bike/CX 700c with performance cyclocross and gravel geometry.',
+        'category' => 'Gravel Bikes',
+        'image' => 'assets/images/image21.png',
+        'price' => 14499.00,
+        'stock' => 7,
+        'lowStockThreshold' => 2
+    ],
+    [
+        'sku' => 'PROD-GRVL-002',
+        'name' => '700c Gravel Bike, High Carbon Steel Frame 7 speed',
+        'description' => '700c Gravel Bike, High Carbon Steel Frame, 700 x 28c 7:27, Front and Rear Disc Brakes, Drop Handlebars, Ideal for Beginners, Lightweight and Comfortable City Bike 7 speed, Gray.',
+        'category' => 'Gravel Bikes',
+        'image' => 'assets/images/image13.png',
+        'price' => 19389.00,
+        'stock' => 9,
+        'lowStockThreshold' => 3
+    ],
+    [
+        'sku' => 'PROD-GRVL-003',
+        'name' => 'Cube Nuroad Pro FE Gravel Bike',
+        'description' => 'Cube Nuroad Pro FE Gravel Bike fully equipped with adventure touring components and disc brakes.',
+        'category' => 'Gravel Bikes',
+        'image' => 'assets/images/image22.png',
+        'price' => 37556.96,
+        'stock' => 5,
+        'lowStockThreshold' => 2
+    ],
+    [
+        'sku' => 'PROD-GRVL-004',
+        'name' => 'dagger | Oil Brake Through-Axle Gravel Bike',
+        'description' => 'dagger | Oil Brake Through-Axle Gravel Bike with hydraulic braking and high-stiffness through-axles.',
+        'category' => 'Gravel Bikes',
+        'image' => 'assets/images/image20.png',
+        'price' => 39088.75,
+        'stock' => 6,
+        'lowStockThreshold' => 2
+    ],
+
+    // --- Mamachari Bikes ---
+    [
+        'sku' => 'PROD-MAMA-001',
+        'name' => 'Bicycle City Cycle Mama-chari cyma Punk Rock 27" ATM012',
+        'description' => 'Bicycle City Cycle Mama-chari cyma Punk Rock 27" ATM012 with step-through commuter frame and front basket.',
+        'category' => 'Mamachari Bikes',
+        'image' => 'assets/images/image30.png',
+        'price' => 18631.00,
+        'stock' => 11,
+        'lowStockThreshold' => 3
+    ],
+    [
+        'sku' => 'PROD-MAMA-002',
+        'name' => 'City Cycle Mamachari 26-inch Ladies\' Bicycle with Basket',
+        'description' => 'City Cycle Mamachari 26-inch Ladies\' Bicycle with Basket and Carrier, Thick Tires, Commuting to Work or School, Riding in Town, Going out, New Life, School Entrance Celebration, Simple Design.',
+        'category' => 'Mamachari Bikes',
+        'image' => 'assets/images/image36.png',
+        'price' => 12782.00,
+        'stock' => 13,
         'lowStockThreshold' => 4
     ],
     [
-        'sku' => 'PROD-PART-003',
-        'name' => 'SRAM 12-Speed Wide-Range Cassette',
-        'description' => '10-52T steel stamped cog range for tackling the steepest mountain gradients with precision shifting ramps.',
-        'category' => 'Bicycle Parts',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 4500.00,
+        'sku' => 'PROD-MAMA-003',
+        'name' => 'City Cycle Mamachari 24/26 inch Bicycle V-Brake with Basket',
+        'description' => 'City Cycle Mamachari 24/26 inch Bicycle, City Car, Women\'s Car, V-Brake, Basket Included, Basket, Thick Tires, Commuting to Work or School, City Riding, Going, New Life, Popular Gift.',
+        'category' => 'Mamachari Bikes',
+        'image' => 'assets/images/image23.png',
+        'price' => 11794.00,
         'stock' => 10,
         'lowStockThreshold' => 3
     ],
     [
-        'sku' => 'PROD-PART-004',
-        'name' => 'CenterLock 160mm Floating Disc Rotor',
-        'description' => 'Heat-dissipating alloy carrier with stainless steel braking surface to reduce brake fade on long alpine descents.',
-        'category' => 'Bicycle Parts',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 1350.00,
-        'stock' => 25,
-        'lowStockThreshold' => 6
+        'sku' => 'PROD-MAMA-004',
+        'name' => 'City Cycle Mamachari 24 / 26 Inch 6 Speed Bike with Dynamo LED',
+        'description' => 'City Cycle Mamachari 24 / 26 Inch 6 Speed Bike with Basket with Key Dynamo LED Light Mud Flaps with Carrier Included, Popular, Fashionable, For Commuting to Work or School, City Rides Outings.',
+        'category' => 'Mamachari Bikes',
+        'image' => 'assets/images/image7.png',
+        'price' => 20655.00,
+        'stock' => 8,
+        'lowStockThreshold' => 2
     ],
 
-    // Attachments
+    // --- Folding Bikes ---
     [
-        'sku' => 'PROD-ATT-001',
-        'name' => 'Nomad Waterproof Handlebar Bag 4L',
-        'description' => 'IPX6 waterproof roll-top handlebar bag with heavy-duty mounting straps, exterior bungee cords, and reflective accents.',
-        'category' => 'Attachments',
-        'image' => 'assets/images/categories/category_attachments.jpg',
-        'price' => 1250.00,
-        'stock' => 22,
-        'lowStockThreshold' => 5
-    ],
-    [
-        'sku' => 'PROD-ATT-002',
-        'name' => 'Explorer RA-3 Heavy Duty Rear Cargo Rack',
-        'description' => 'Tubular 6061-T6 aluminum rack supporting up to 25kg load, compatible with standard panniers and rear safety lights.',
-        'category' => 'Attachments',
-        'image' => 'assets/images/categories/category_attachments.jpg',
-        'price' => 1650.00,
-        'stock' => 15,
+        'sku' => 'PROD-FOLD-001',
+        'name' => 'Bickerton Junction 1507 (20in Folding Bike)',
+        'description' => 'Bickerton Junction 1507 (20in Folding Bike) precision engineered with premium folding latches and luggage rack.',
+        'category' => 'Folding Bikes',
+        'image' => 'assets/images/image26.png',
+        'price' => 23500.00,
+        'stock' => 9,
         'lowStockThreshold' => 3
     ],
     [
-        'sku' => 'PROD-ATT-003',
-        'name' => 'Lumina 800-Lumen USB-C Rechargeable Headlight',
-        'description' => 'Ultra-bright trail headlight with IPX5 aluminum housing, multiple light modes, and silicone handlebar strap.',
-        'category' => 'Attachments',
-        'image' => 'assets/images/categories/category_attachments.jpg',
-        'price' => 950.00,
-        'stock' => 30,
-        'lowStockThreshold' => 6
+        'sku' => 'PROD-FOLD-002',
+        'name' => 'Tern Link B8',
+        'description' => 'Tern Link B8 versatile folding commuter bike with 8-speed wide gearing and disc brakes.',
+        'category' => 'Folding Bikes',
+        'image' => 'assets/images/image24.png',
+        'price' => 29850.00,
+        'stock' => 7,
+        'lowStockThreshold' => 2
     ],
     [
-        'sku' => 'PROD-ATT-004',
-        'name' => 'Matte Trail Water Bottle & Alloy Cage Set',
-        'description' => 'BPA-free high-flow squeeze bottle paired with lightweight anodized aluminum retention cage.',
-        'category' => 'Attachments',
-        'image' => 'assets/images/categories/category_attachments.jpg',
-        'price' => 450.00,
-        'stock' => 40,
-        'lowStockThreshold' => 8
+        'sku' => 'PROD-FOLD-003',
+        'name' => 'Folding Bike Tilt 120 ADJ 20 inch 6 speed',
+        'description' => 'Folding Bike Tilt 120 ADJ 20 inch 6 speed with fast folding mechanism and compact footprint.',
+        'category' => 'Folding Bikes',
+        'image' => 'assets/images/image2.png',
+        'price' => 14990.00,
+        'stock' => 12,
+        'lowStockThreshold' => 4
+    ],
+    [
+        'sku' => 'PROD-FOLD-004',
+        'name' => 'Shibomei 16-inch 20-inch folding bicycle',
+        'description' => 'Shibomei 16-inch 20-inch folding bicycle student adult light ultra-light portable variable speed small bicycle for men and women.',
+        'category' => 'Folding Bikes',
+        'image' => 'assets/images/image14.png',
+        'price' => 12025.00,
+        'stock' => 14,
+        'lowStockThreshold' => 4
     ],
 
-    // Safety Gear
+    // --- Bikes for Kids ---
     [
-        'sku' => 'PROD-SAFE-001',
-        'name' => 'Kinetic Matte Trail Helmet with Sun Visor',
-        'description' => 'In-mold EPS impact foam with adjustable dial fit system, detachable sun visor, and 18 high-flow ventilation channels.',
-        'category' => 'Safety Gear',
-        'image' => 'assets/images/categories/category_safety_gear.jpg',
-        'price' => 2600.00,
+        'sku' => 'PROD-KIDS-001',
+        'name' => 'Maru Minato 4.0 Kids 14" Junior Series Bike',
+        'description' => 'Maru Minato 4.0 Kids 14" Junior Series Bike with training wheels and chain protection guard.',
+        'category' => 'Bikes for Kids',
+        'image' => 'assets/images/image8.png',
+        'price' => 4500.00,
+        'stock' => 15,
+        'lowStockThreshold' => 4
+    ],
+    [
+        'sku' => 'PROD-KIDS-002',
+        'name' => 'RoyalBaby Freestyle',
+        'description' => 'RoyalBaby Freestyle durable children bicycle with water bottle and sturdy spoked wheels.',
+        'category' => 'Bikes for Kids',
+        'image' => 'assets/images/image33.png',
+        'price' => 4500.00,
         'stock' => 16,
-        'lowStockThreshold' => 4
-    ],
-    [
-        'sku' => 'PROD-SAFE-002',
-        'name' => 'ArmorGrip Full-Finger Riding Gloves',
-        'description' => 'Breathable mesh back with shock-absorbing gel palm pads, touchscreen-compatible fingertips, and TPR knuckle guards.',
-        'category' => 'Safety Gear',
-        'image' => 'assets/images/categories/category_safety_gear.jpg',
-        'price' => 750.00,
-        'stock' => 35,
-        'lowStockThreshold' => 7
-    ],
-    [
-        'sku' => 'PROD-SAFE-003',
-        'name' => 'Titan Hardened Steel U-Lock with Bracket',
-        'description' => '14mm hardened steel shackle with anti-pick disc cylinder and quick-release frame mounting bracket.',
-        'category' => 'Safety Gear',
-        'image' => 'assets/images/categories/category_safety_gear.jpg',
-        'price' => 1400.00,
-        'stock' => 18,
-        'lowStockThreshold' => 4
-    ],
-    [
-        'sku' => 'PROD-SAFE-004',
-        'name' => 'AeroVision UV400 Polarized Sport Glasses',
-        'description' => 'High-clarity impact-resistant polycarbonate lenses with TR90 flexible frame and anti-fog ventilation slits.',
-        'category' => 'Safety Gear',
-        'image' => 'assets/images/categories/category_safety_gear.jpg',
-        'price' => 890.00,
-        'stock' => 24,
         'lowStockThreshold' => 5
     ],
-];
+    [
+        'sku' => 'PROD-KIDS-003',
+        'name' => 'BMX Bicycle Mongoose/HARO',
+        'description' => 'BMX Bicycle Mongoose/HARO style junior bicycle designed for neighborhood cruising and jumps.',
+        'category' => 'Bikes for Kids',
+        'image' => 'assets/images/image27.png',
+        'price' => 3733.00,
+        'stock' => 11,
+        'lowStockThreshold' => 3
+    ],
+    [
+        'sku' => 'PROD-KIDS-004',
+        'name' => 'Kiumo Kids Bike 12/14/16 Inch Foldable Bicycle',
+        'description' => 'Kiumo Kids Bike 12/14/16 Inch Foldable Bicycle with Training Wheels, Adjustable Seat, Rubber Tires & Front Basket.',
+        'category' => 'Bikes for Kids',
+        'image' => 'assets/images/image15.png',
+        'price' => 2399.00,
+        'stock' => 18,
+        'lowStockThreshold' => 5
+    ],
 
-foreach ($products as $p) {
-    $catId = $catMap[$p['category']] ?? 1;
-    $chk = mysqli_prepare($conn, "SELECT productID FROM product WHERE sku = ? AND endDate IS NULL LIMIT 1");
-    mysqli_stmt_bind_param($chk, 's', $p['sku']);
-    mysqli_stmt_execute($chk);
-    mysqli_stmt_store_result($chk);
+    // --- Fixies ---
+    [
+        'sku' => 'PROD-FIX-001',
+        'name' => 'Garuda Fixie Bike Fixed Gear steel bike',
+        'description' => 'Garuda Fixie Bike Fixed Gear steel bike with classic track dropouts and minimalist design.',
+        'category' => 'Fixies',
+        'image' => 'assets/images/image1.png',
+        'price' => 3899.00,
+        'stock' => 12,
+        'lowStockThreshold' => 3
+    ],
+    [
+        'sku' => 'PROD-FIX-002',
+        'name' => 'Garuda Hurracane Steel Fixed Gear Bicycle',
+        'description' => 'Garuda Hurracane Steel Fixed Gear Bicycle built for fast responsive city riding.',
+        'category' => 'Fixies',
+        'image' => 'assets/images/image19.png',
+        'price' => 5999.00,
+        'stock' => 10,
+        'lowStockThreshold' => 3
+    ],
+    [
+        'sku' => 'PROD-FIX-003',
+        'name' => 'BETTA HELLBOY FIXIE AERO 700x25C',
+        'description' => 'BETTA HELLBOY FIXIE AERO 700x25C aerodynamic track bike with aero frame tubing.',
+        'category' => 'Fixies',
+        'image' => 'assets/images/image18.png',
+        'price' => 8999.00,
+        'stock' => 8,
+        'lowStockThreshold' => 2
+    ],
+    [
+        'sku' => 'PROD-FIX-004',
+        'name' => 'PROMAX PF-30 FIXIE',
+        'description' => 'PROMAX PF-30 FIXIE lightweight urban fixed gear track bicycle.',
+        'category' => 'Fixies',
+        'image' => 'assets/images/image31.png',
+        'price' => 6899.00,
+        'stock' => 9,
+        'lowStockThreshold' => 3
+    ],
 
-    if (mysqli_stmt_num_rows($chk) === 0) {
-        $ins = mysqli_prepare($conn, "INSERT INTO product (sku, name, description, productCategoryID, image, price, stock, lowStockThreshold, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NULL)");
-        mysqli_stmt_bind_param($ins, 'sssissdi', $p['sku'], $p['name'], $p['description'], $catId, $p['image'], $p['price'], $p['stock'], $p['lowStockThreshold']);
-        mysqli_stmt_execute($ins);
-        mysqli_stmt_close($ins);
-        echo "Inserted product: {$p['name']} ({$p['sku']})\n";
-    } else {
-        echo "Product exists: {$p['sku']}\n";
-    }
-    mysqli_stmt_close($chk);
-}
+    // --- BMX ---
+    [
+        'sku' => 'PROD-BMX-001',
+        'name' => 'BMX 20 PUNISHER AMBUSH STREET DESIGN O/S THREADLESS AHEAD SEMI ASSEMBLED',
+        'description' => 'BMX 20 PUNISHER AMBUSH STREET DESIGN O/S THREADLESS AHEAD SEMI ASSEMBLED stunt bike.',
+        'category' => 'BMX',
+        'image' => 'assets/images/image4.png',
+        'price' => 4338.00,
+        'stock' => 14,
+        'lowStockThreshold' => 4
+    ],
+    [
+        'sku' => 'PROD-BMX-002',
+        'name' => 'Maru Seido BMX 20" Version 3.0',
+        'description' => 'Maru Seido BMX 20" Version 3.0 freestyle street and park stunt bicycle.',
+        'category' => 'BMX',
+        'image' => 'assets/images/image9.png',
+        'price' => 5940.00,
+        'stock' => 10,
+        'lowStockThreshold' => 3
+    ],
+    [
+        'sku' => 'PROD-BMX-003',
+        'name' => 'Sushida MTB 26" FATBIKE Mountain Bike 26x4.0',
+        'description' => 'Sushida MTB 26" FATBIKE Mountain Bike 26x4.0 with ultra wide all-terrain tires.',
+        'category' => 'BMX',
+        'image' => 'assets/images/image5.png',
+        'price' => 5699.00,
+        'stock' => 7,
+        'lowStockThreshold' => 2
+    ],
+    [
+        'sku' => 'PROD-BMX-004',
+        'name' => 'Calum X-Man Alloy Frame Bmx 20" w rotor',
+        'description' => 'Calum X-Man Alloy Frame Bmx 20" w rotor for 360 bar rotation freestyle riding.',
+        'category' => 'BMX',
+        'image' => 'assets/images/image10.png',
+        'price' => 8195.00,
+        'stock' => 6,
+        'lowStockThreshold' => 2
+    ],
 
-// Services
-$services = [
+    // --- Frames ---
     [
-        'sku' => 'SERV-TUNE-001',
-        'name' => 'Complete Trail Tune-Up & Overhaul',
-        'description' => 'Full frame inspection, 100% bearing torque check, derailleur indexing, brake adjustment, and drivetrain clean & lube.',
-        'category' => 'Tune-Up & Overhaul',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 1200.00
+        'sku' => 'PROD-FRM-001',
+        'name' => 'Ryder X9 Frame (Thru-Axle Type)',
+        'description' => 'Ryder X9 Frame (Thru-Axle Type) hardtail mountain bike frame with boost spacing.',
+        'category' => 'Frames',
+        'image' => 'assets/images/image12.png',
+        'price' => 6400.00,
+        'stock' => 8,
+        'lowStockThreshold' => 2
     ],
     [
-        'sku' => 'SERV-BRK-001',
-        'name' => 'Hydraulic Brake Bleed & Fluid Flush (Front & Rear)',
-        'description' => 'Complete flush with premium mineral oil or DOT fluid, bubble removal, caliper piston cleaning, and bite point calibration.',
-        'category' => 'Brake Services',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 650.00
+        'sku' => 'PROD-FRM-002',
+        'name' => 'MAXZONE CHROMOLY 1.0 FRAME',
+        'description' => 'MAXZONE CHROMOLY 1.0 FRAME classic durable steel bicycle frame.',
+        'category' => 'Frames',
+        'image' => 'assets/images/image32.png',
+        'price' => 2500.00,
+        'stock' => 12,
+        'lowStockThreshold' => 3
     ],
     [
-        'sku' => 'SERV-BRK-002',
-        'name' => 'Disc Brake Pad Replacement & Rotor Truing',
-        'description' => 'Installation of fresh semi-metallic or ceramic brake pads, surface decontamination, and rotor truing.',
-        'category' => 'Brake Services',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 350.00
+        'sku' => 'PROD-FRM-003',
+        'name' => 'KEMEKE | Mountain All-Mountain/Cross Country Bike Frame',
+        'description' => 'KEMEKE | Mountain All-Mountain/Cross Country Bike Frame alloy cross country lightweight frame.',
+        'category' => 'Frames',
+        'image' => 'assets/images/image3.png',
+        'price' => 10825.74,
+        'stock' => 5,
+        'lowStockThreshold' => 2
     ],
     [
-        'sku' => 'SERV-DRV-001',
-        'name' => 'Drivetrain Ultrasonic Deep Clean & Re-Lube',
-        'description' => 'Ultrasonic bath cleaning for cassette, chain, chainrings, and pulleys with high-efficiency chain wax application.',
-        'category' => 'Drivetrain & Transmission',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 500.00
-    ],
-    [
-        'sku' => 'SERV-DRV-002',
-        'name' => 'Derailleur Hanger Alignment & Shifter Indexing',
-        'description' => 'Gauge tool calibration to straighten bent derailleur hanger and cable tension tuning for crisp gear changes.',
-        'category' => 'Drivetrain & Transmission',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 400.00
-    ],
-    [
-        'sku' => 'SERV-WHL-001',
-        'name' => 'Precision Wheel Truing & Spoke Tensioning',
-        'description' => 'Centering and radial/lateral truing on truing stand with spoke tensiometer inspection.',
-        'category' => 'Wheel & Tire Services',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 450.00
-    ],
-    [
-        'sku' => 'SERV-WHL-002',
-        'name' => 'Tubeless Tire Conversion & Sealant Fill',
-        'description' => 'Rim bed tape application, tubeless valve installation, bead seating, and sealant injection.',
-        'category' => 'Wheel & Tire Services',
-        'image' => 'assets/images/categories/category_parts.jpg',
-        'price' => 550.00
-    ],
-    [
-        'sku' => 'SERV-MNT-001',
-        'name' => 'Custom Bikepacking Rack & Bag Mount Fitting',
-        'description' => 'Custom bracket alignment and secure mounting of front/rear cargo racks, bottle cages, and bikepacking kits.',
-        'category' => 'Custom Component Mounts',
-        'image' => 'assets/images/categories/category_attachments.jpg',
-        'price' => 750.00
+        'sku' => 'PROD-FRM-004',
+        'name' => 'Ryder Carbon Frame (27.5in Tires w/ 12 x 142mm TA)',
+        'description' => 'Ryder Carbon Frame (27.5in Tires w/ 12 x 142mm TA) ultra-lightweight carbon fiber frame.',
+        'category' => 'Frames',
+        'image' => 'assets/images/image11.png',
+        'price' => 13000.00,
+        'stock' => 4,
+        'lowStockThreshold' => 2
     ]
 ];
 
+echo "Inserting Products (" . count($products) . " items)...\n";
+$insProd = mysqli_prepare($conn, "INSERT INTO product (sku, name, description, productCategoryID, image, price, stock, lowStockThreshold, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NULL)");
+
+foreach ($products as $p) {
+    $catId = $catMap[$p['category']] ?? 1;
+    mysqli_stmt_bind_param($insProd, 'sssissdi', $p['sku'], $p['name'], $p['description'], $catId, $p['image'], $p['price'], $p['stock'], $p['lowStockThreshold']);
+    mysqli_stmt_execute($insProd);
+    echo "  [+] {$p['sku']} — {$p['name']} (PHP {$p['price']})\n";
+}
+mysqli_stmt_close($insProd);
+
+// ========================================================
+// SERVICES LIST (Strictly the 6 services from products.html)
+// ========================================================
+$services = [
+    [
+        'sku' => 'SERV-REP-001',
+        'name' => 'Bike Repair w/ Cleaning',
+        'description' => 'Mechanical repair diagnostics and repair service combined with complete cleaning.',
+        'category' => 'Bicycle Repair',
+        'image' => 'assets/images/categories/category_parts.jpg',
+        'price' => 250.00
+    ],
+    [
+        'sku' => 'SERV-REP-002',
+        'name' => 'Bike Repair',
+        'description' => 'Standard mechanical bike repair and adjustment service.',
+        'category' => 'Bicycle Repair',
+        'image' => 'assets/images/categories/category_parts.jpg',
+        'price' => 150.00
+    ],
+    [
+        'sku' => 'SERV-CLN-001',
+        'name' => 'Cleaning',
+        'description' => 'Full frame and drivetrain degreasing and bike wash.',
+        'category' => 'Cleaning & Detailing',
+        'image' => 'assets/images/categories/category_safety_gear.jpg',
+        'price' => 100.00
+    ],
+    [
+        'sku' => 'SERV-INS-001',
+        'name' => 'Parts Installment',
+        'description' => 'Installation service for individual replacement or upgrade components (PHP 50 per part).',
+        'category' => 'Parts Installation',
+        'image' => 'assets/images/categories/category_attachments.jpg',
+        'price' => 50.00
+    ],
+    [
+        'sku' => 'SERV-BLD-001',
+        'name' => 'Full Bike Building',
+        'description' => 'Complete ground-up assembly of full build bikes from boxed or custom parts.',
+        'category' => 'Custom Bike Building',
+        'image' => 'assets/images/categories/category_bikes.jpg',
+        'price' => 300.00
+    ],
+    [
+        'sku' => 'SERV-PNT-001',
+        'name' => 'Re-paint',
+        'description' => 'Frame surface preparation and full custom re-painting service.',
+        'category' => 'Frame Painting',
+        'image' => 'assets/images/categories/category_bikes.jpg',
+        'price' => 500.00
+    ]
+];
+
+echo "\nInserting Services (" . count($services) . " items)...\n";
+$insServ = mysqli_prepare($conn, "INSERT INTO service (sku, name, description, serviceCategoryID, image, price, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, NOW(), NULL)");
+
 foreach ($services as $s) {
     $scId = $servCatMap[$s['category']] ?? 1;
-    $chk = mysqli_prepare($conn, "SELECT serviceID FROM service WHERE sku = ? AND endDate IS NULL LIMIT 1");
-    mysqli_stmt_bind_param($chk, 's', $s['sku']);
-    mysqli_stmt_execute($chk);
-    mysqli_stmt_store_result($chk);
-
-    if (mysqli_stmt_num_rows($chk) === 0) {
-        $ins = mysqli_prepare($conn, "INSERT INTO service (sku, name, description, serviceCategoryID, image, price, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, NOW(), NULL)");
-        mysqli_stmt_bind_param($ins, 'sssiss', $s['sku'], $s['name'], $s['description'], $scId, $s['image'], $s['price']);
-        mysqli_stmt_execute($ins);
-        mysqli_stmt_close($ins);
-        echo "Inserted service: {$s['name']} ({$s['sku']})\n";
-    } else {
-        echo "Service exists: {$s['sku']}\n";
-    }
-    mysqli_stmt_close($chk);
+    mysqli_stmt_bind_param($insServ, 'sssiss', $s['sku'], $s['name'], $s['description'], $scId, $s['image'], $s['price']);
+    mysqli_stmt_execute($insServ);
+    echo "  [+] {$s['sku']} — {$s['name']} (PHP {$s['price']})\n";
 }
+mysqli_stmt_close($insServ);
 
-echo "Seeding completed successfully.\n";
+echo "\n=========================================================\n";
+echo "   Catalog reset & seeded with exact provided data!\n";
+echo "   Total Products: " . count($products) . "\n";
+echo "   Total Services: " . count($services) . "\n";
+echo "=========================================================\n";
