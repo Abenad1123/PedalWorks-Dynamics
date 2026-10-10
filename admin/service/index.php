@@ -1,6 +1,8 @@
 <?php
 session_start();
 include('../../includes/config.php');
+include('../../includes/admin_auth.php');
+requireAdminRole(['Service & Repair Manager']);
 
 $successMessage = '';
 $errorMessage = '';

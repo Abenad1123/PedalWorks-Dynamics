@@ -1,6 +1,8 @@
 <?php
 session_start();
 include('../../includes/config.php');
+include('../../includes/admin_auth.php');
+requireAdminRole(['Service & Repair Manager']);
 
 $deleteID = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

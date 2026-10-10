@@ -1,12 +1,24 @@
 <?php
 session_start();
 include('../includes/config.php');
+include('../includes/admin_auth.php');
 
 $totalProducts = 0;
 $totalServices = 0;
 $totalCustomers = 0;
 $totalAdmins = 0;
 $lowStockCount = 0;
+
+$successMessage = '';
+$errorMessage = '';
+if (isset($_SESSION['success'])) {
+    $successMessage = $_SESSION['success'];
+    unset($_SESSION['success']);
+}
+if (isset($_SESSION['error'])) {
+    $errorMessage = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
 
 if ($conn) {
     // Current products
@@ -39,6 +51,13 @@ if ($conn) {
         $lowStockCount = (int)$r['c'];
     }
 }
+
+// Module access checks
+$canManageProducts  = hasAdminRole(['Inventory Manager']);
+$canManageServices  = hasAdminRole(['Service & Repair Manager']);
+$canManageCustomers = hasAdminRole(['Accounting Administrator']);
+$canManageAdmins    = hasAdminRole(['Super Administrator']);
+$currentRole        = $_SESSION['role'] ?? 'Staff Member';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,20 +78,40 @@ if ($conn) {
     <div class="container py-4">
 
         <!-- Welcome Banner -->
-        <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom">
+        <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-4 border-bottom gap-2">
             <div>
-                <h1 class="h3 mb-1">Management Dashboard</h1>
-                <p class="text-muted mb-0">Overview and control center for bicycle shop operations.</p>
+                <h1 class="h3 mb-1 fw-bold">
+                    <i class="fa-solid fa-gauge-high text-primary me-2"></i>Management Dashboard
+                </h1>
+                <p class="text-muted mb-0 small">
+                    Signed in as <strong><?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></strong> &bull; Role: 
+                    <span class="badge bg-primary"><?php echo htmlspecialchars($currentRole); ?></span>
+                </p>
             </div>
             <div>
-                <a href="../index.php" class="btn btn-outline-secondary" target="_blank">
+                <a href="../index.php" class="btn btn-outline-secondary btn-sm" target="_blank">
                     <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>View Storefront
                 </a>
             </div>
         </div>
 
-        <?php if ($lowStockCount > 0): ?>
-            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
+        <!-- Success & Error System Alerts -->
+        <?php if ($successMessage !== ''): ?>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($successMessage); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($errorMessage !== ''): ?>
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i><?php echo htmlspecialchars($errorMessage); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($lowStockCount > 0 && $canManageProducts): ?>
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 shadow-sm" role="alert">
                 <i class="fa-solid fa-triangle-exclamation fs-5"></i>
                 <div>
                     <strong>Inventory Alert:</strong> There are <strong><?php echo $lowStockCount; ?></strong> product(s) at or below their low stock threshold.
@@ -152,93 +191,137 @@ if ($conn) {
         <h2 class="h5 mb-3 fw-bold text-secondary">Operation Modules</h2>
         <div class="row g-4">
 
-            <!-- 1. Products Module -->
+            <!-- 1. Products Module (Inventory Manager & Super Admin) -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm h-100 <?php echo !$canManageProducts ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="fa-solid fa-boxes-stacked text-primary fs-4"></i>
-                            <h5 class="card-title mb-0 fw-bold">Products</h5>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-boxes-stacked text-primary fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Products</h5>
+                            </div>
+                            <?php if (!$canManageProducts): ?>
+                                <span class="badge bg-secondary-subtle text-secondary small"><i class="fa-solid fa-lock me-1"></i>Restricted</span>
+                            <?php endif; ?>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
                             Manage bike catalog, prices, categories, and inventory stock levels.
                         </p>
                         <div class="d-grid gap-2">
-                            <a href="product/index.php" class="btn btn-outline-primary btn-sm">
-                                <i class="fa-solid fa-list me-1"></i>Product Overview
-                            </a>
-                            <a href="product/addProduct.php" class="btn btn-light btn-sm text-secondary">
-                                <i class="fa-solid fa-plus me-1"></i>Add Product
-                            </a>
+                            <?php if ($canManageProducts): ?>
+                                <a href="product/index.php" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-list me-1"></i>Product Overview
+                                </a>
+                                <a href="product/addProduct.php" class="btn btn-light btn-sm text-secondary">
+                                    <i class="fa-solid fa-plus me-1"></i>Add Product
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Inventory Manager Only
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Services Module -->
+            <!-- 2. Services Module (Service & Repair Manager & Super Admin) -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm h-100 <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="fa-solid fa-screwdriver-wrench text-success fs-4"></i>
-                            <h5 class="card-title mb-0 fw-bold">Services</h5>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-screwdriver-wrench text-success fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Services</h5>
+                            </div>
+                            <?php if (!$canManageServices): ?>
+                                <span class="badge bg-secondary-subtle text-secondary small"><i class="fa-solid fa-lock me-1"></i>Restricted</span>
+                            <?php endif; ?>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
                             Configure repair labor, tune-up service packages, and maintenance rates.
                         </p>
                         <div class="d-grid gap-2">
-                            <a href="service/index.php" class="btn btn-outline-success btn-sm">
-                                <i class="fa-solid fa-list me-1"></i>Service Overview
-                            </a>
-                            <a href="service/addService.php" class="btn btn-light btn-sm text-secondary">
-                                <i class="fa-solid fa-plus me-1"></i>Add Service
-                            </a>
+                            <?php if ($canManageServices): ?>
+                                <a href="service/index.php" class="btn btn-outline-success btn-sm">
+                                    <i class="fa-solid fa-list me-1"></i>Service Overview
+                                </a>
+                                <a href="service/addService.php" class="btn btn-light btn-sm text-secondary">
+                                    <i class="fa-solid fa-plus me-1"></i>Add Service
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Service Manager Only
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. Customer Accounts Module -->
+            <!-- 3. Customer Accounts Module (Super Admin Only) -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm h-100 <?php echo !$canManageCustomers ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="fa-solid fa-address-book text-info fs-4"></i>
-                            <h5 class="card-title mb-0 fw-bold">Customer Accounts</h5>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-address-book text-info fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Customer Accounts</h5>
+                            </div>
+                            <?php if (!$canManageCustomers): ?>
+                                <span class="badge bg-secondary-subtle text-secondary small"><i class="fa-solid fa-lock me-1"></i>Restricted</span>
+                            <?php endif; ?>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
                             Browse customer profiles, modify personal info, and manage account statuses.
                         </p>
                         <div class="d-grid gap-2">
-                            <a href="customerAccount/index.php" class="btn btn-outline-info btn-sm">
-                                <i class="fa-solid fa-users-gear me-1"></i>Manage Customers
-                            </a>
-                            <a href="customerAccount/addCustomerAccount.php" class="btn btn-light btn-sm text-secondary">
-                                <i class="fa-solid fa-user-plus me-1"></i>New Customer
-                            </a>
+                            <?php if ($canManageCustomers): ?>
+                                <a href="customerAccount/index.php" class="btn btn-outline-info btn-sm">
+                                    <i class="fa-solid fa-users-gear me-1"></i>Manage Customers
+                                </a>
+                                <a href="customerAccount/addCustomerAccount.php" class="btn btn-light btn-sm text-secondary">
+                                    <i class="fa-solid fa-user-plus me-1"></i>New Customer
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Accounting Admin Only
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 4. Admin Accounts Module -->
+            <!-- 4. Admin Accounts Module (Super Admin Only) -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm h-100 <?php echo !$canManageAdmins ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="fa-solid fa-user-shield text-warning fs-4"></i>
-                            <h5 class="card-title mb-0 fw-bold">Admin Accounts</h5>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-user-shield text-warning fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Admin Accounts</h5>
+                            </div>
+                            <?php if (!$canManageAdmins): ?>
+                                <span class="badge bg-secondary-subtle text-secondary small"><i class="fa-solid fa-lock me-1"></i>Restricted</span>
+                            <?php endif; ?>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
                             Assign roles (Super Admin, Inventory, Service, Accounting) and staff credentials.
                         </p>
                         <div class="d-grid gap-2">
-                            <a href="adminAccount/index.php" class="btn btn-outline-warning btn-sm text-dark">
-                                <i class="fa-solid fa-users-viewfinder me-1"></i>Manage Staff
-                            </a>
-                            <a href="adminAccount/addAdminAccount.php" class="btn btn-light btn-sm text-secondary">
-                                <i class="fa-solid fa-user-plus me-1"></i>New Staff
-                            </a>
+                            <?php if ($canManageAdmins): ?>
+                                <a href="adminAccount/index.php" class="btn btn-outline-warning btn-sm text-dark">
+                                    <i class="fa-solid fa-users-viewfinder me-1"></i>Manage Staff
+                                </a>
+                                <a href="adminAccount/addAdminAccount.php" class="btn btn-light btn-sm text-secondary">
+                                    <i class="fa-solid fa-user-plus me-1"></i>New Staff
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Super Admin Only
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

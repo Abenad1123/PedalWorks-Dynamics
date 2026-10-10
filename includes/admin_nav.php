@@ -3,6 +3,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Ensure auth helper functions exist if not already included
+if (!function_exists('hasAdminRole')) {
+    include_once(__DIR__ . '/admin_auth.php');
+}
+
 $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 $activeModule = $activeModule ?? '';
 
@@ -19,6 +24,12 @@ if (!$activeModule) {
         $activeModule = 'dashboard';
     }
 }
+
+// Role checks for each navigation tab
+$canAccessProducts  = hasAdminRole(['Inventory Manager']);
+$canAccessServices  = hasAdminRole(['Service & Repair Manager']);
+$canAccessCustomers = hasAdminRole(['Accounting Administrator']);
+$canAccessAdmins    = hasAdminRole(['Super Administrator']);
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
     <div class="container-fluid px-4">
@@ -38,26 +49,38 @@ if (!$activeModule) {
                         <i class="fa-solid fa-gauge me-1"></i> Dashboard
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo ($activeModule === 'product') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/product/index.php">
-                        <i class="fa-solid fa-boxes-stacked me-1"></i> Products
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo ($activeModule === 'service') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/service/index.php">
-                        <i class="fa-solid fa-screwdriver-wrench me-1"></i> Services
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo ($activeModule === 'customer') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/customerAccount/index.php">
-                        <i class="fa-solid fa-users me-1"></i> Customers
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo ($activeModule === 'admin') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/adminAccount/index.php">
-                        <i class="fa-solid fa-user-shield me-1"></i> Staff Accounts
-                    </a>
-                </li>
+
+                <?php if ($canAccessProducts): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'product') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/product/index.php">
+                            <i class="fa-solid fa-boxes-stacked me-1"></i> Products
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if ($canAccessServices): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'service') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/service/index.php">
+                            <i class="fa-solid fa-screwdriver-wrench me-1"></i> Services
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if ($canAccessCustomers): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'customer') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/customerAccount/index.php">
+                            <i class="fa-solid fa-users me-1"></i> Customers
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if ($canAccessAdmins): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'admin') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/adminAccount/index.php">
+                            <i class="fa-solid fa-user-shield me-1"></i> Staff Accounts
+                        </a>
+                    </li>
+                <?php endif; ?>
             </ul>
 
             <div class="d-flex align-items-center gap-3">
