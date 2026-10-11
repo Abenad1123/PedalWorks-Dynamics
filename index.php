@@ -77,10 +77,6 @@ include('./includes/config.php');
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6">
-                    <div class="pw-hero-badge">
-                        <i class="fa-solid fa-mountain"></i>
-                        <span>EXPEDITION &amp; TRAIL READY • BIKE LAB</span>
-                    </div>
                     <h1 class="pw-hero-title">
                         Engineered for <span class="pw-hero-title-accent">Adventure.</span><br>
                         Built for Every Trail.
@@ -95,21 +91,6 @@ include('./includes/config.php');
                         <a href="services.php" class="pw-btn-glass">
                             <i class="fa-solid fa-wrench"></i> Workshop Services
                         </a>
-                    </div>
-
-                    <div class="pw-hero-pills">
-                        <div class="pw-stat-pill">
-                            <i class="fa-solid fa-check-double"></i>
-                            <span><strong>100%</strong> Trail-Tested</span>
-                        </div>
-                        <div class="pw-stat-pill">
-                            <i class="fa-solid fa-certificate"></i>
-                            <span><strong>Certified</strong> Master Technicians</span>
-                        </div>
-                        <div class="pw-stat-pill">
-                            <i class="fa-solid fa-stopwatch"></i>
-                            <span><strong>Fast</strong> Workshop Turnaround</span>
-                        </div>
                     </div>
                 </div>
 

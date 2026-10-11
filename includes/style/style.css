@@ -8,50 +8,50 @@
    1. Design Tokens & CSS Custom Properties
    -------------------------------------------------------------------------- */
 :root {
-    /* Nature Palette: Deep Forest & Pine */
-    --pw-pine-darkest:      #07110c;
-    --pw-pine-dark:         #0c1b14;
-    --pw-pine-deep:         #12271d;
-    --pw-forest-base:       #183427;
-    --pw-forest-mid:        #214635;
+    /* Base Neutral Palette: Deep Slate & Obsidian */
+    --pw-pine-darkest:      #090d12;
+    --pw-pine-dark:         #0e1319;
+    --pw-pine-deep:         #131a22;
+    --pw-forest-base:       #18212b;
+    --pw-forest-mid:        #1f2a36;
     
-    /* Nature Palette: Moss, Sage & Foliage */
-    --pw-moss-green:        #2e5f48;
-    --pw-sage-leaf:         #478164;
-    --pw-sage-light:        #72a88d;
-    --pw-mist-green:        #b8d8c8;
-    --pw-mist-pale:         #eaf5ef;
+    /* Nature Accent: Refined Emerald & Sage (Clean Accents, not overwhelming) */
+    --pw-moss-green:        #1d3d30;
+    --pw-sage-leaf:         #2e6b52;
+    --pw-sage-light:        #34d399;
+    --pw-mist-green:        #94a3b8;
+    --pw-mist-pale:         #f1f5f9;
     
     /* Adventure Accent: Trail Terracotta & Ridge Amber */
     --pw-trail-earth:       #d16629;
     --pw-trail-bright:      #e5793a;
     --pw-trail-amber:       #f59b58;
-    --pw-trail-glow:        rgba(209, 102, 41, 0.35);
+    --pw-trail-glow:        rgba(209, 102, 41, 0.28);
 
     /* Text & Neutral Hierarchy */
-    --pw-text-bright:       #f5f9f6;
-    --pw-text-primary:      #e6f0ea;
-    --pw-text-muted:        #9ab5a6;
-    --pw-text-faint:        #658474;
+    --pw-text-bright:       #ffffff;
+    --pw-text-primary:      #e2e8f0;
+    --pw-text-muted:        #94a3b8;
+    --pw-text-faint:        #64748b;
 
-    /* Glassmorphism Surface Tokens */
-    --pw-glass-bg-nav:      rgba(10, 24, 18, 0.78);
-    --pw-glass-bg-card:     rgba(18, 38, 29, 0.62);
-    --pw-glass-bg-card-hover: rgba(25, 52, 40, 0.75);
-    --pw-glass-bg-elevated: rgba(28, 59, 45, 0.55);
+    /* Glassmorphism Surface Tokens (Sleek Obsidian Glass) */
+    --pw-glass-bg-nav:      rgba(11, 16, 22, 0.88);
+    --pw-glass-bg-card:     rgba(16, 22, 30, 0.72);
+    --pw-glass-bg-card-hover: rgba(22, 30, 40, 0.84);
+    --pw-glass-bg-elevated: rgba(25, 34, 46, 0.78);
     --pw-glass-bg-subtle:   rgba(255, 255, 255, 0.04);
     
     /* Glass Borders & Specular Accents */
-    --pw-glass-border:      rgba(255, 255, 255, 0.12);
-    --pw-glass-border-light: rgba(255, 255, 255, 0.22);
-    --pw-glass-border-moss: rgba(114, 168, 141, 0.28);
-    --pw-glass-specular:    rgba(255, 255, 255, 0.32);
+    --pw-glass-border:      rgba(255, 255, 255, 0.08);
+    --pw-glass-border-light: rgba(255, 255, 255, 0.16);
+    --pw-glass-border-moss: rgba(255, 255, 255, 0.12);
+    --pw-glass-specular:    rgba(255, 255, 255, 0.25);
 
     /* Depth Shadows */
-    --pw-glass-shadow-sm:   0 4px 16px rgba(0, 0, 0, 0.3);
-    --pw-glass-shadow-md:   0 12px 32px rgba(0, 0, 0, 0.45);
-    --pw-glass-shadow-lg:   0 20px 48px rgba(0, 0, 0, 0.55);
-    --pw-glow-accent:       0 0 24px rgba(209, 102, 41, 0.25);
+    --pw-glass-shadow-sm:   0 4px 16px rgba(0, 0, 0, 0.35);
+    --pw-glass-shadow-md:   0 12px 32px rgba(0, 0, 0, 0.48);
+    --pw-glass-shadow-lg:   0 20px 48px rgba(0, 0, 0, 0.60);
+    --pw-glow-accent:       0 0 24px rgba(209, 102, 41, 0.20);
 
     /* Typography */
     --pw-font-display:      'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -84,11 +84,10 @@ body.pw-nature-body {
     color: var(--pw-text-primary);
     background-color: var(--pw-pine-darkest);
     background-image: 
-        radial-gradient(circle at 15% 15%, rgba(46, 95, 72, 0.38) 0%, transparent 45%),
-        radial-gradient(circle at 85% 25%, rgba(209, 102, 41, 0.16) 0%, transparent 40%),
-        radial-gradient(circle at 50% 65%, rgba(24, 52, 39, 0.45) 0%, transparent 55%),
-        radial-gradient(circle at 20% 90%, rgba(33, 70, 53, 0.3) 0%, transparent 50%),
-        linear-gradient(180deg, #091510 0%, #0c1c14 40%, #07110c 100%);
+        radial-gradient(circle at 18% 10%, rgba(29, 61, 48, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 82% 22%, rgba(209, 102, 41, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 65%, rgba(20, 32, 44, 0.20) 0%, transparent 55%),
+        linear-gradient(180deg, #0a0e13 0%, #0d1218 40%, #070a0e 100%);
     background-attachment: fixed;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -363,22 +362,6 @@ a:hover {
     overflow: hidden;
 }
 
-.pw-hero-badge {
-    background: rgba(46, 95, 72, 0.3);
-    border: 1px solid var(--pw-glass-border-moss);
-    color: var(--pw-mist-green);
-    padding: 0.4rem 1rem;
-    border-radius: var(--pw-radius-full);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
-    backdrop-filter: blur(8px);
-}
-
 .pw-hero-title {
     font-size: 3.25rem;
     font-weight: 800;
@@ -398,14 +381,6 @@ a:hover {
     line-height: 1.65;
     max-width: 540px;
     margin-bottom: 2rem;
-}
-
-/* Hero Stats Pills */
-.pw-hero-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.85rem;
-    margin-top: 2rem;
 }
 
 .pw-stat-pill {
@@ -553,10 +528,10 @@ a:hover {
 }
 
 .pw-filter-pill.active {
-    background: linear-gradient(135deg, rgba(46, 95, 72, 0.7), rgba(20, 48, 35, 0.85));
-    border-color: var(--pw-sage-light);
-    color: var(--pw-text-bright);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.32);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 /* --------------------------------------------------------------------------
@@ -597,52 +572,62 @@ a:hover {
     line-height: 1.6;
 }
 
-/* Product Card Glass */
+/* Product Card Hallmark Design */
 .pw-product-card {
-    background: var(--pw-glass-bg-card);
-    backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
-    -webkit-backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
-    border: 1px solid var(--pw-glass-border);
-    border-top: 1px solid var(--pw-glass-border-light);
-    border-radius: var(--pw-radius-lg);
-    box-shadow: var(--pw-glass-shadow-sm);
+    background: #111721;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     padding: 1rem;
     height: 100%;
     display: flex;
     flex-direction: column;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
 }
 
 .pw-product-card:hover {
     transform: translateY(-6px);
-    background: var(--pw-glass-bg-card-hover);
-    border-color: var(--pw-glass-border-moss);
-    box-shadow: var(--pw-glass-shadow-md), 0 0 20px rgba(46, 95, 72, 0.25);
+    background: #151d2a;
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(209, 102, 41, 0.18);
 }
 
-/* Product Placeholder Image Container */
+/* Product Showcase Stage (Seamless Studio Backdrop) */
 .pw-product-img-box {
     width: 100%;
-    height: 200px;
-    border-radius: var(--pw-radius-md);
-    background: linear-gradient(135deg, rgba(16, 37, 27, 0.9), rgba(28, 59, 44, 0.7));
-    border: 1px dashed rgba(114, 168, 141, 0.3);
+    height: 220px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--pw-text-muted);
-    padding: 1rem;
-    text-align: center;
+    padding: 1.25rem 1rem;
     overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.03);
+}
+
+.pw-product-img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+}
+
+.pw-product-card:hover .pw-product-img {
+    transform: scale(1.06);
 }
 
 .pw-product-img-icon {
-    font-size: 2.2rem;
-    color: var(--pw-sage-light);
+    font-size: 2.4rem;
+    color: #94a3b8;
     margin-bottom: 0.5rem;
     opacity: 0.85;
 }
@@ -650,85 +635,136 @@ a:hover {
 .pw-product-img-text {
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--pw-text-faint);
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
 
 .pw-product-dim {
     font-size: 0.7rem;
-    color: var(--pw-sage-leaf);
+    color: #94a3b8;
 }
 
+/* Floating Badges on Studio Stage */
 .pw-category-tag {
     position: absolute;
     top: 0.75rem;
     left: 0.75rem;
-    background: rgba(7, 17, 12, 0.85);
-    border: 1px solid var(--pw-glass-border);
+    background: rgba(14, 19, 26, 0.88);
     backdrop-filter: blur(8px);
-    color: var(--pw-mist-green);
-    font-size: 0.7rem;
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.25rem 0.65rem;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.65rem;
     border-radius: var(--pw-radius-full);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 2;
 }
 
 .pw-stock-indicator {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
-    background: rgba(46, 95, 72, 0.4);
-    border: 1px solid var(--pw-sage-leaf);
-    color: #bbf0d4;
+    background: rgba(14, 19, 26, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     font-size: 0.65rem;
     font-weight: 700;
-    padding: 0.2rem 0.55rem;
+    padding: 0.3rem 0.65rem;
     border-radius: var(--pw-radius-full);
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 2;
 }
 
 .pw-stock-indicator .pw-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #34d399;
-    box-shadow: 0 0 6px #34d399;
 }
 
-/* Product Body */
+.pw-stock-indicator.in-stock {
+    color: #34d399;
+}
+
+.pw-stock-indicator.in-stock .pw-dot {
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+}
+
+.pw-stock-indicator.low-stock {
+    color: #fbbf24;
+}
+
+.pw-stock-indicator.low-stock .pw-dot {
+    background: #f59e0b;
+    box-shadow: 0 0 6px #f59e0b;
+}
+
+.pw-stock-indicator.out-of-stock {
+    color: #f87171;
+}
+
+.pw-stock-indicator.out-of-stock .pw-dot {
+    background: #ef4444;
+    box-shadow: 0 0 6px #ef4444;
+}
+
+/* Product Card Body */
 .pw-product-body {
-    padding: 1.15rem 0.35rem 0.25rem;
+    padding: 1.15rem 0.25rem 0.25rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
 }
 
+.pw-sku-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+}
+
 .pw-product-title {
-    font-size: 1.15rem;
+    font-family: var(--pw-font-display);
+    font-size: 1.1rem;
     font-weight: 700;
-    color: var(--pw-text-bright);
-    margin-bottom: 0.4rem;
-    line-height: 1.3;
+    color: #ffffff;
+    line-height: 1.35;
+    margin-bottom: 0.45rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 2.9rem;
 }
 
 .pw-product-spec {
-    font-size: 0.85rem;
-    color: var(--pw-text-muted);
-    margin-bottom: 1rem;
-    flex-grow: 1;
+    font-size: 0.83rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-bottom: 1.1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 2.5rem;
 }
 
 .pw-product-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--pw-glass-border);
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     margin-top: auto;
 }
 
@@ -738,48 +774,63 @@ a:hover {
 }
 
 .pw-price-label {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--pw-text-faint);
+    letter-spacing: 0.08em;
+    color: #64748b;
+    font-weight: 600;
 }
 
 .pw-price-amount {
     font-family: var(--pw-font-display);
     font-size: 1.35rem;
     font-weight: 800;
-    color: var(--pw-trail-amber);
+    color: #ffffff;
     line-height: 1.1;
 }
 
-.pw-btn-product-add {
-    background: rgba(46, 95, 72, 0.4);
-    border: 1px solid var(--pw-glass-border-moss);
-    color: var(--pw-text-bright);
-    padding: 0.5rem 0.95rem;
-    border-radius: var(--pw-radius-md);
-    font-size: 0.85rem;
+.pw-btn-product-add,
+.pw-btn-product-action {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #f8fafc;
+    padding: 0.55rem 1.05rem;
+    border-radius: var(--pw-radius-sm);
+    font-family: var(--pw-font-display);
+    font-size: 0.86rem;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    transition: all 0.2s ease;
+    gap: 0.45rem;
+    transition: all 0.25s ease;
     cursor: pointer;
     text-decoration: none;
 }
 
-.pw-btn-product-add:hover {
-    background: var(--pw-trail-earth);
-    border-color: var(--pw-trail-bright);
+.pw-btn-product-add:hover,
+.pw-btn-product-action:hover {
+    background: linear-gradient(135deg, var(--pw-trail-earth), var(--pw-trail-bright));
+    border-color: rgba(255, 255, 255, 0.3);
     color: #ffffff;
     box-shadow: 0 4px 14px var(--pw-trail-glow);
+    transform: translateY(-1px);
+}
+
+.pw-btn-product-add:hover i,
+.pw-btn-product-action:hover i {
+    transform: translateX(2px);
+}
+
+.pw-btn-product-add i,
+.pw-btn-product-action i {
+    transition: transform 0.2s ease;
 }
 
 /* --------------------------------------------------------------------------
    8. Repair & Labor Services (Glass Service Cards)
    -------------------------------------------------------------------------- */
 .pw-services-bg {
-    background: linear-gradient(180deg, rgba(8, 20, 14, 0.75) 0%, rgba(13, 29, 21, 0.85) 100%);
+    background: linear-gradient(180deg, rgba(12, 16, 22, 0.75) 0%, rgba(16, 21, 28, 0.85) 100%);
     border-top: 1px solid var(--pw-glass-border);
     border-bottom: 1px solid var(--pw-glass-border);
 }
@@ -801,25 +852,26 @@ a:hover {
 }
 
 .pw-service-card:hover {
-    transform: translateY(-6px);
+    transform: translateY(-5px);
     background: var(--pw-glass-bg-card-hover);
-    border-color: var(--pw-glass-border-moss);
-    box-shadow: var(--pw-glass-shadow-md), 0 0 24px rgba(46, 95, 72, 0.3);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: var(--pw-glass-shadow-md), 0 0 20px rgba(209, 102, 41, 0.15);
 }
 
 .pw-service-icon-box {
     width: 62px;
     height: 62px;
     border-radius: var(--pw-radius-md);
-    background: linear-gradient(135deg, rgba(46, 95, 72, 0.4), rgba(20, 48, 35, 0.6));
-    border: 1px solid var(--pw-glass-border-moss);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--pw-trail-amber);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1.65rem;
     margin-bottom: 1.35rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
 }
 
 .pw-service-title {
@@ -1101,10 +1153,6 @@ a:hover {
         font-size: 2.15rem;
     }
 
-    .pw-hero-pills {
-        justify-content: center;
-    }
-
     .pw-hero-placeholder-inner {
         min-height: 280px;
     }
@@ -1213,3 +1261,237 @@ a:hover {
     transform: translateX(4px);
     color: var(--pw-terracotta);
 }
+
+/* --------------------------------------------------------------------------
+   13. Form Controls & Catalog Search Filters
+   -------------------------------------------------------------------------- */
+.pw-form-control,
+.pw-form-select {
+    background: rgba(10, 24, 18, 0.75);
+    border: 1px solid var(--pw-glass-border);
+    color: var(--pw-text-bright);
+    border-radius: var(--pw-radius-md);
+    padding: 0.65rem 1rem;
+    font-size: 0.95rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+}
+
+.pw-form-control:focus,
+.pw-form-select:focus {
+    background: rgba(18, 24, 32, 0.95);
+    border-color: var(--pw-trail-earth);
+    box-shadow: 0 0 0 3px rgba(209, 102, 41, 0.2);
+    color: var(--pw-text-bright);
+    outline: none;
+}
+
+.pw-form-control::placeholder {
+    color: var(--pw-text-faint);
+}
+
+.pw-form-select option {
+    background: #111720;
+    color: var(--pw-text-bright);
+}
+
+.pw-input-group-text {
+    background: rgba(20, 26, 35, 0.9);
+    border: 1px solid var(--pw-glass-border);
+    border-right: none;
+    color: var(--pw-text-muted);
+    border-top-left-radius: var(--pw-radius-md);
+    border-bottom-left-radius: var(--pw-radius-md);
+    padding: 0.65rem 1rem;
+}
+
+.pw-input-group .pw-form-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Catalog Filter Card */
+.pw-filter-card {
+    background: var(--pw-glass-bg-card);
+    backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--pw-blur-strength)) saturate(160%);
+    border: 1px solid var(--pw-glass-border-light);
+    border-radius: var(--pw-radius-lg);
+    box-shadow: var(--pw-glass-shadow-sm);
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+/* Image in Product Box */
+.pw-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--pw-radius-md);
+    transition: transform 0.4s ease;
+}
+
+.pw-product-card:hover .pw-product-img {
+    transform: scale(1.06);
+}
+
+/* SKU Badge */
+.pw-sku-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--pw-text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--pw-radius-sm);
+}
+
+/* Service Image in Service Card */
+.pw-service-img-box {
+    width: 100%;
+    height: 180px;
+    border-radius: var(--pw-radius-md);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    position: relative;
+    background: #0f141a;
+    border: 1px solid var(--pw-glass-border);
+}
+
+.pw-service-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.pw-service-card:hover .pw-service-img {
+    transform: scale(1.05);
+}
+
+/* Workshop Highlights Spec Card */
+.pw-workshop-spec-card {
+    background: var(--pw-glass-bg-card);
+    border: 1px solid var(--pw-glass-border);
+    border-radius: var(--pw-radius-md);
+    padding: 1.15rem 1.25rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.25s ease;
+}
+
+.pw-workshop-spec-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--pw-glass-shadow-sm);
+}
+
+.pw-workshop-spec-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--pw-radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+}
+
+/* Modal Glassmorphism */
+.pw-modal-content {
+    background: rgba(13, 18, 25, 0.97);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid var(--pw-glass-border-light);
+    border-radius: var(--pw-radius-lg);
+    color: var(--pw-text-primary);
+    box-shadow: var(--pw-glass-shadow-lg);
+}
+
+.pw-modal-header {
+    border-bottom: 1px solid var(--pw-glass-border);
+    padding: 1.25rem 1.5rem;
+}
+
+.pw-modal-footer {
+    border-top: 1px solid var(--pw-glass-border);
+    padding: 1.25rem 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   14. Authentication Pages (Login & Signup Cards)
+   -------------------------------------------------------------------------- */
+.pw-auth-wrapper {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+}
+
+.pw-auth-card {
+    background: #111721;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 20px;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+    padding: 2.5rem 2.25rem;
+    width: 100%;
+}
+
+.pw-auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.pw-auth-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--pw-trail-bright);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.pw-auth-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.4rem;
+}
+
+.pw-auth-subtitle {
+    font-size: 0.9rem;
+    color: var(--pw-text-muted);
+    margin-bottom: 0;
+}
+
+.pw-password-toggle {
+    background: rgba(18, 24, 32, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: none;
+    color: var(--pw-text-muted);
+    border-top-right-radius: var(--pw-radius-md) !important;
+    border-bottom-right-radius: var(--pw-radius-md) !important;
+    padding: 0.65rem 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.pw-password-toggle:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+

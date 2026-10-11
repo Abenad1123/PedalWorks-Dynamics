@@ -103,73 +103,208 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
         }
     }
 }
+
+include('./includes/header.php');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Customer Sign Up - PedalWorks Dynamics</title>
-</head>
-<body>
-    <h1>Customer Sign Up</h1>
 
-    <?php if (!empty($errors)): ?>
-        <div style="color: red;">
-            <ul>
-                <?php foreach ($errors as $error): ?>
-                    <li><?php echo htmlspecialchars($error); ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
+<div class="container">
+    <div class="pw-auth-wrapper">
+        <div class="pw-auth-card" style="max-width: 640px;">
+            <div class="pw-auth-header">
+                <div class="pw-auth-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h2 class="pw-auth-title">Join PedalWorks</h2>
+                <p class="pw-auth-subtitle">Create your customer account for streamlined service booking and gear orders</p>
+            </div>
 
-    <form action="" method="post">
-        <div>
-            <label for="firstName">First Name (required):</label>
-            <input type="text" id="firstName" name="firstName" value="<?php echo htmlspecialchars($firstName); ?>" required>
+            <?php if (!empty($errors)): ?>
+                <div class="alert alert-danger pw-glass-alert alert-dismissible fade show mb-4" role="alert">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fa-solid fa-circle-exclamation text-warning fs-5"></i>
+                        <strong class="text-white small">Registration Error</strong>
+                    </div>
+                    <ul class="mb-0 ps-3 small text-white-50">
+                        <?php foreach ($errors as $error): ?>
+                            <li><?php echo htmlspecialchars($error); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <button type="button" class="btn-close btn-close-white ms-auto position-absolute top-0 end-0 mt-3 me-3" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+
+            <form action="signup.php" method="POST" autocomplete="on">
+                <!-- Personal Details Section -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="firstName" class="form-label text-white-50 small fw-semibold">
+                            First Name <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group pw-input-group">
+                            <span class="input-group-text pw-input-group-text">
+                                <i class="fa-solid fa-id-badge"></i>
+                            </span>
+                            <input type="text" class="form-control pw-form-control" id="firstName" name="firstName" 
+                                   value="<?php echo htmlspecialchars($firstName); ?>" 
+                                   placeholder="e.g. Alex" required autofocus>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label text-white-50 small fw-semibold">
+                            Last Name <span class="text-muted">(Optional)</span>
+                        </label>
+                        <div class="input-group pw-input-group">
+                            <span class="input-group-text pw-input-group-text">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" class="form-control pw-form-control" id="lastName" name="lastName" 
+                                   value="<?php echo htmlspecialchars($lastName); ?>" 
+                                   placeholder="e.g. Vance">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact & DOB Section -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-7">
+                        <label for="email" class="form-label text-white-50 small fw-semibold">
+                            Email Address <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group pw-input-group">
+                            <span class="input-group-text pw-input-group-text">
+                                <i class="fa-solid fa-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control pw-form-control" id="email" name="email" 
+                                   value="<?php echo htmlspecialchars($email); ?>" 
+                                   placeholder="rider@pedalworks.com" required>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="birthDate" class="form-label text-white-50 small fw-semibold">
+                            Birth Date <span class="text-muted">(Optional)</span>
+                        </label>
+                        <div class="input-group pw-input-group">
+                            <span class="input-group-text pw-input-group-text">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </span>
+                            <input type="date" class="form-control pw-form-control" id="birthDate" name="birthDate" 
+                                   value="<?php echo htmlspecialchars($birthDate); ?>">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Section -->
+                <div class="mb-3">
+                    <label for="address" class="form-label text-white-50 small fw-semibold">
+                        Delivery & Workshop Address <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group pw-input-group">
+                        <span class="input-group-text pw-input-group-text align-items-start pt-2">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </span>
+                        <textarea class="form-control pw-form-control" id="address" name="address" rows="2" 
+                                  placeholder="House/Street, Barangay, City, Postal Code" required><?php echo htmlspecialchars($address); ?></textarea>
+                    </div>
+                </div>
+
+                <!-- Account Credentials Section -->
+                <div class="mb-3">
+                    <label for="username" class="form-label text-white-50 small fw-semibold">
+                        Account Username <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group pw-input-group">
+                        <span class="input-group-text pw-input-group-text">
+                            <i class="fa-solid fa-at"></i>
+                        </span>
+                        <input type="text" class="form-control pw-form-control" id="username" name="username" 
+                               value="<?php echo htmlspecialchars($username); ?>" 
+                               placeholder="Choose a username (min 3 chars)" minlength="3" required>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="password" class="form-label text-white-50 small fw-semibold">
+                            Password <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group pw-input-group">
+                            <span class="input-group-text pw-input-group-text">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control pw-form-control border-end-0" id="password" name="password" 
+                                   placeholder="Min 6 characters" minlength="6" required>
+                            <button type="button" class="btn pw-password-toggle" id="togglePasswordBtn" title="Toggle password visibility">
+                                <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="confirmPassword" class="form-label text-white-50 small fw-semibold">
+                            Confirm Password <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group pw-input-group">
+                            <span class="input-group-text pw-input-group-text">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </span>
+                            <input type="password" class="form-control pw-form-control border-end-0" id="confirmPassword" name="confirmPassword" 
+                                   placeholder="Re-enter password" minlength="6" required>
+                            <button type="button" class="btn pw-password-toggle" id="toggleConfirmPasswordBtn" title="Toggle password visibility">
+                                <i class="fa-solid fa-eye" id="toggleConfirmPasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid gap-2 mb-3">
+                    <button type="submit" name="signup_customer" class="pw-btn-trail py-3">
+                        <i class="fa-solid fa-user-check me-1"></i> Complete Registration
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center pt-3 border-top border-secondary border-opacity-25">
+                <p class="text-white-50 small mb-2">
+                    Already registered? 
+                    <a href="login.php" class="text-white fw-bold text-decoration-none">
+                        Sign In here <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
+                    </a>
+                </p>
+                <p class="text-white-50 small mb-0">
+                    <a href="index.php" class="text-muted text-decoration-none small">
+                        <i class="fa-solid fa-house me-1"></i> Return to Homepage
+                    </a>
+                </p>
+            </div>
         </div>
-        <br>
-        <div>
-            <label for="lastName">Last Name (optional):</label>
-            <input type="text" id="lastName" name="lastName" value="<?php echo htmlspecialchars($lastName); ?>">
-        </div>
-        <br>
-        <div>
-            <label for="birthDate">Birth Date (optional):</label>
-            <input type="date" id="birthDate" name="birthDate" value="<?php echo htmlspecialchars($birthDate); ?>">
-        </div>
-        <br>
-        <div>
-            <label for="email">Email (required):</label>
-            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
-        </div>
-        <br>
-        <div>
-            <label for="address">Address (required):</label>
-            <textarea id="address" name="address" required><?php echo htmlspecialchars($address); ?></textarea>
-        </div>
-        <br>
-        <div>
-            <label for="username">Username (required):</label>
-            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required>
-        </div>
-        <br>
-        <div>
-            <label for="password">Password (min 6 characters):</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <br>
-        <div>
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required>
-        </div>
-        <br>
-        <div>
-            <button type="submit" name="signup_customer">Submit Sign Up</button>
-        </div>
-    </form>
-    <br>
-    <p>Already have an account? <a href="login.php"><button type="button">Go to Login</button></a></p>
-    <p><a href="index.php"><button type="button">Back to Homepage</button></a></p>
-</body>
-</html>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function setupPasswordToggle(btnId, inputId, iconId) {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (btn && input && icon) {
+            btn.addEventListener('click', function() {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        }
+    }
+
+    setupPasswordToggle('togglePasswordBtn', 'password', 'togglePasswordIcon');
+    setupPasswordToggle('toggleConfirmPasswordBtn', 'confirmPassword', 'toggleConfirmPasswordIcon');
+});
+</script>
+
+<?php include('./includes/footer.php'); ?>

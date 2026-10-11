@@ -35,18 +35,11 @@
 
         heroTimeline
             .add({
-                targets: '.pw-hero-badge',
-                translateY: [-24, 0],
-                opacity: [0, 1],
-                scale: [0.94, 1],
-                duration: 750
-            })
-            .add({
                 targets: '.pw-hero-title',
                 translateY: [35, 0],
                 opacity: [0, 1],
                 duration: 900
-            }, '-=500')
+            })
             .add({
                 targets: '.pw-hero-desc',
                 translateY: [25, 0],
@@ -61,13 +54,6 @@
                 delay: anime.stagger(120),
                 duration: 750
             }, '-=600')
-            .add({
-                targets: '.pw-stat-pill',
-                translateY: [20, 0],
-                opacity: [0, 1],
-                delay: anime.stagger(100),
-                duration: 700
-            }, '-=550')
             .add({
                 targets: '.pw-hero-visual-card',
                 translateY: [50, 0],

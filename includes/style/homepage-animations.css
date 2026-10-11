@@ -340,11 +340,9 @@
 /* --------------------------------------------------------------------------
    6. Animation Initial States (Applied smoothly when JS initializes)
    -------------------------------------------------------------------------- */
-.pw-anim-ready .pw-hero-badge,
 .pw-anim-ready .pw-hero-title,
 .pw-anim-ready .pw-hero-desc,
 .pw-anim-ready .pw-hero-actions,
-.pw-anim-ready .pw-stat-pill,
 .pw-anim-ready .pw-hero-visual-card {
     will-change: transform, opacity;
 }
