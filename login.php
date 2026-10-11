@@ -9,79 +9,68 @@ $username = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $password = trim($_POST['password'] ?? '');
 
     if ($username === '' || $password === '') {
         $errors[] = 'Please enter both username and password.';
     } elseif (!$conn) {
         $errors[] = 'Database is offline. Please ensure MySQL is running in XAMPP.';
     } else {
-        $isAdminAction = isset($_POST['login_admin']);
-        $isCustomerAction = isset($_POST['login_customer']);
+        // Query Admin account
+        $adminSql = "SELECT adminAccountID, username, password, role FROM adminAccount WHERE username = ? LIMIT 1";
+        $adminStmt = mysqli_prepare($conn, $adminSql);
+        mysqli_stmt_bind_param($adminStmt, 's', $username);
+        mysqli_stmt_execute($adminStmt);
+        $adminRes = mysqli_stmt_get_result($adminStmt);
+        $admin = mysqli_fetch_assoc($adminRes);
+        mysqli_stmt_close($adminStmt);
 
-        // 1. Check Admin Account
-        if ($isAdminAction || (!$isCustomerAction)) {
-            $stmt = mysqli_prepare($conn, "SELECT adminAccountID, username, password, role FROM adminAccount WHERE username = ? LIMIT 1");
-            if ($stmt) {
-                mysqli_stmt_bind_param($stmt, 's', $username);
-                mysqli_stmt_execute($stmt);
-                $res = mysqli_stmt_get_result($stmt);
-                $admin = mysqli_fetch_assoc($res);
-                mysqli_stmt_close($stmt);
+        if ($admin && password_verify($password, $admin['password'])) {
+            $_SESSION['adminAccountID'] = (int)$admin['adminAccountID'];
+            $_SESSION['user_id']        = (int)$admin['adminAccountID'];
+            $_SESSION['username']       = $admin['username'];
+            $_SESSION['role']           = $admin['role'];
+            $_SESSION['account_type']   = 'admin';
+            $_SESSION['success']        = 'Welcome, ' . $admin['username'] . '!';
 
-                if ($admin && password_verify($password, $admin['password'])) {
-                    $_SESSION['adminAccountID'] = (int)$admin['adminAccountID'];
-                    $_SESSION['username']       = $admin['username'];
-                    $_SESSION['role']           = $admin['role'];
-                    $_SESSION['account_type']   = 'admin';
-                    $_SESSION['success']        = 'Logged in successfully as Admin (' . $admin['username'] . ').';
+            header('Location: admin/dashboard.php');
+            exit;
+        }
 
-                    header('Location: admin/dashboard.php');
-                    exit;
-                } elseif ($isAdminAction) {
-                    $errors[] = 'Invalid admin username or password.';
-                }
+        // Query Customer account
+        $custSql = "SELECT ca.customerAccountID, ca.customerID, ca.username, ca.password, ca.status, 
+                           c.firstName, c.lastName, c.email 
+                    FROM customerAccount ca 
+                    JOIN customer c ON ca.customerID = c.customerID 
+                    WHERE ca.username = ? LIMIT 1";
+        $custStmt = mysqli_prepare($conn, $custSql);
+        mysqli_stmt_bind_param($custStmt, 's', $username);
+        mysqli_stmt_execute($custStmt);
+        $custRes = mysqli_stmt_get_result($custStmt);
+        $cust = mysqli_fetch_assoc($custRes);
+        mysqli_stmt_close($custStmt);
+
+        if ($cust && password_verify($password, $cust['password'])) {
+            if ($cust['status'] === 'Disabled') {
+                $errors[] = 'Your account has been disabled. Please contact shop administration.';
+            } else {
+                $_SESSION['customerAccountID'] = (int)$cust['customerAccountID'];
+                $_SESSION['customerID']        = (int)$cust['customerID'];
+                $_SESSION['user_id']           = (int)$cust['customerID'];
+                $_SESSION['username']          = $cust['username'];
+                $_SESSION['email']             = $cust['email'];
+                $_SESSION['firstName']         = $cust['firstName'];
+                $_SESSION['role']              = 'customer';
+                $_SESSION['account_type']      = 'customer';
+                $_SESSION['success']           = 'Welcome back, ' . ($cust['firstName'] ?: $cust['username']) . '!';
+
+                header('Location: index.php');
+                exit;
             }
         }
 
-        // 2. Check Customer Account
-        if (empty($errors) && ($isCustomerAction || (!$isAdminAction))) {
-            $custSql = "SELECT ca.customerAccountID, ca.customerID, ca.username, ca.password, ca.status, 
-                               c.firstName, c.lastName, c.email 
-                        FROM customerAccount ca 
-                        JOIN customer c ON ca.customerID = c.customerID 
-                        WHERE ca.username = ? LIMIT 1";
-            $stmt = mysqli_prepare($conn, $custSql);
-            if ($stmt) {
-                mysqli_stmt_bind_param($stmt, 's', $username);
-                mysqli_stmt_execute($stmt);
-                $res = mysqli_stmt_get_result($stmt);
-                $cust = mysqli_fetch_assoc($res);
-                mysqli_stmt_close($stmt);
-
-                if ($cust) {
-                    if ($cust['status'] === 'Disabled') {
-                        $errors[] = 'Your account has been disabled. Please contact shop administration.';
-                    } elseif (password_verify($password, $cust['password'])) {
-                        $_SESSION['customerAccountID'] = (int)$cust['customerAccountID'];
-                        $_SESSION['customerID']        = (int)$cust['customerID'];
-                        $_SESSION['user_id']           = (int)$cust['customerID'];
-                        $_SESSION['username']          = $cust['username'];
-                        $_SESSION['email']             = $cust['email'];
-                        $_SESSION['firstName']         = $cust['firstName'];
-                        $_SESSION['role']              = 'customer';
-                        $_SESSION['account_type']      = 'customer';
-                        $_SESSION['success']           = 'Welcome back, ' . ($cust['firstName'] ?: $cust['username']) . '!';
-
-                        header('Location: index.php');
-                        exit;
-                    } else {
-                        $errors[] = 'Invalid customer username or password.';
-                    }
-                } else {
-                    $errors[] = 'Invalid username or password.';
-                }
-            }
+        if (empty($errors)) {
+            $errors[] = 'Wrong username or password.';
         }
     }
 }
@@ -97,7 +86,7 @@ include('./includes/header.php');
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
                 </div>
                 <h2 class="pw-auth-title">Welcome Back</h2>
-                <p class="pw-auth-subtitle">Sign in to your customer account or staff portal</p>
+                <p class="pw-auth-subtitle">Sign in to your customer account or staff dashboard</p>
             </div>
 
             <?php if (isset($_SESSION['success'])): ?>
@@ -112,7 +101,7 @@ include('./includes/header.php');
                 <div class="alert alert-danger pw-glass-alert alert-dismissible fade show mb-4" role="alert">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <i class="fa-solid fa-circle-exclamation text-warning fs-5"></i>
-                        <strong class="text-white small">Authentication Error</strong>
+                        <strong class="text-white small">Authentication Notice</strong>
                     </div>
                     <ul class="mb-0 ps-3 small text-white-50">
                         <?php foreach ($errors as $error): ?>
@@ -155,27 +144,15 @@ include('./includes/header.php');
                 </div>
 
                 <div class="d-grid gap-2 mb-3">
-                    <button type="submit" name="login_customer" class="pw-btn-trail py-3">
-                        <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In as Customer
-                    </button>
-                </div>
-
-                <div class="d-flex align-items-center my-3">
-                    <hr class="flex-grow-1 border-secondary border-opacity-25 my-0">
-                    <span class="px-3 text-white-50 small" style="font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">or staff login</span>
-                    <hr class="flex-grow-1 border-secondary border-opacity-25 my-0">
-                </div>
-
-                <div class="d-grid mb-4">
-                    <button type="submit" name="login_admin" class="pw-btn-glass py-2" style="font-size: 0.9rem;">
-                        <i class="fa-solid fa-shield-halved me-1 text-warning"></i> Sign In as Staff / Admin
+                    <button type="submit" name="submit" class="pw-btn-trail py-3">
+                        <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In
                     </button>
                 </div>
             </form>
 
             <div class="text-center pt-3 border-top border-secondary border-opacity-25">
                 <p class="text-white-50 small mb-2">
-                    Don't have a customer account? 
+                    Don't have an account? 
                     <a href="signup.php" class="text-white fw-bold text-decoration-none">
                         Create an Account <i class="fa-solid fa-arrow-right fa-xs ms-1"></i>
                     </a>
