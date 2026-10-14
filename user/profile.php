@@ -319,7 +319,8 @@ include('../includes/header.php');
                     Personal Information
                 </h5>
 
-                <form action="profile.php" method="POST" enctype="multipart/form-data" autocomplete="on">
+                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <form action="profile.php" method="POST" enctype="multipart/form-data" autocomplete="on" novalidate>
                     <!-- Names -->
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">

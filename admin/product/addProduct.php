@@ -5,6 +5,7 @@ include('../../includes/admin_auth.php');
 requireAdminRole(['Inventory Manager']);
 
 $errors = [];
+$fieldErrors = [];
 
 // Fetch product categories
 $categories = [];
@@ -30,79 +31,143 @@ if (is_dir($assetsDir)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
-    $sku = trim($_POST['sku'] ?? '');
-    $name = trim($_POST['name'] ?? '');
-    $categoryID = isset($_POST['productCategoryID']) ? (int)$_POST['productCategoryID'] : 0;
-    $price = isset($_POST['price']) ? (float)$_POST['price'] : -1;
-    $stock = isset($_POST['stock']) ? (int)$_POST['stock'] : -1;
-    $lowStockThreshold = isset($_POST['lowStockThreshold']) ? (int)$_POST['lowStockThreshold'] : 5;
-    $description = trim($_POST['description'] ?? '');
-    $imagePath = trim($_POST['image_select'] ?? '');
+    $rawSku               = $_POST['sku'] ?? '';
+    $rawName              = $_POST['name'] ?? '';
+    $rawCategoryID        = $_POST['productCategoryID'] ?? '';
+    $rawPrice             = $_POST['price'] ?? '';
+    $rawStock             = $_POST['stock'] ?? '';
+    $rawLowStockThreshold = $_POST['lowStockThreshold'] ?? '';
+    $rawDescription       = $_POST['description'] ?? '';
+    $rawImageSelect       = $_POST['image_select'] ?? '';
 
-    // Validation
+    $sku               = trim($rawSku);
+    $name              = trim($rawName);
+    $categoryID        = ($rawCategoryID !== '') ? (int)$rawCategoryID : 0;
+    $price             = -1;
+    $stock             = -1;
+    $lowStockThreshold = 5;
+    $description       = trim($rawDescription);
+    $imagePath         = trim($rawImageSelect);
+
+    // 1. SKU validation (PHP)
     if ($sku === '') {
-        $errors[] = 'SKU is required.';
+        $fieldErrors['sku'] = 'Product SKU is required.';
+        $errors[] = 'Product SKU is required.';
     } elseif (!preg_match('/^[A-Za-z0-9\-_]+$/', $sku)) {
+        $fieldErrors['sku'] = 'SKU must only contain letters, numbers, hyphens, and underscores.';
         $errors[] = 'SKU must only contain letters, numbers, hyphens, and underscores.';
+    } elseif (strlen($sku) < 3 || strlen($sku) > 30) {
+        $fieldErrors['sku'] = 'SKU length must be between 3 and 30 characters.';
+        $errors[] = 'SKU length must be between 3 and 30 characters.';
     }
 
-    if ($name === '' || strlen($name) < 2) {
+    // 2. Product Name validation (PHP)
+    if ($name === '') {
+        $fieldErrors['name'] = 'Product Title / Name is required.';
+        $errors[] = 'Product Title / Name is required.';
+    } elseif (strlen($name) < 2) {
+        $fieldErrors['name'] = 'Product Name must be at least 2 characters long.';
         $errors[] = 'Product Name must be at least 2 characters long.';
+    } elseif (strlen($name) > 100) {
+        $fieldErrors['name'] = 'Product Name cannot exceed 100 characters.';
+        $errors[] = 'Product Name cannot exceed 100 characters.';
     }
 
-    if ($categoryID <= 0) {
+    // 3. Category validation (PHP)
+    if ($rawCategoryID === '' || $categoryID <= 0) {
+        $fieldErrors['productCategoryID'] = 'Please select a valid product category.';
         $errors[] = 'Please select a valid product category.';
+    } elseif ($conn) {
+        $catStmt = mysqli_prepare($conn, "SELECT productCategoryID FROM productCategory WHERE productCategoryID = ? LIMIT 1");
+        mysqli_stmt_bind_param($catStmt, 'i', $categoryID);
+        mysqli_stmt_execute($catStmt);
+        mysqli_stmt_store_result($catStmt);
+        if (mysqli_stmt_num_rows($catStmt) === 0) {
+            $fieldErrors['productCategoryID'] = 'The selected category does not exist.';
+            $errors[] = 'The selected category does not exist.';
+        }
+        mysqli_stmt_close($catStmt);
     }
 
-    if ($price < 0) {
-        $errors[] = 'Price must be a valid positive amount.';
+    // 4. Retail Price validation (PHP)
+    if (trim($rawPrice) === '') {
+        $fieldErrors['price'] = 'Retail Price is required.';
+        $errors[] = 'Retail Price is required.';
+    } elseif (!is_numeric($rawPrice)) {
+        $fieldErrors['price'] = 'Retail Price must be a valid numeric amount (e.g. 15999.00).';
+        $errors[] = 'Retail Price must be a valid numeric amount.';
+    } elseif ((float)$rawPrice < 0) {
+        $fieldErrors['price'] = 'Retail Price cannot be negative.';
+        $errors[] = 'Retail Price cannot be negative.';
+    } else {
+        $price = round((float)$rawPrice, 2);
     }
 
-    if ($stock < 0) {
-        $errors[] = 'Stock quantity cannot be negative.';
+    // 5. Initial Stock validation (PHP)
+    if (trim($rawStock) === '') {
+        $fieldErrors['stock'] = 'Initial Stock quantity is required.';
+        $errors[] = 'Initial Stock quantity is required.';
+    } elseif (!ctype_digit(strval(trim($rawStock)))) {
+        $fieldErrors['stock'] = 'Stock quantity must be a non-negative whole integer (e.g. 10).';
+        $errors[] = 'Stock quantity must be a non-negative whole integer.';
+    } else {
+        $stock = (int)$rawStock;
     }
 
-    if ($lowStockThreshold < 0) {
-        $errors[] = 'Low Stock Threshold cannot be negative.';
+    // 6. Low Stock Alert Threshold validation (PHP)
+    if (trim($rawLowStockThreshold) === '') {
+        $lowStockThreshold = 5;
+    } elseif (!ctype_digit(strval(trim($rawLowStockThreshold)))) {
+        $fieldErrors['lowStockThreshold'] = 'Low stock threshold must be a non-negative whole integer.';
+        $errors[] = 'Low stock threshold must be a non-negative whole integer.';
+    } else {
+        $lowStockThreshold = (int)$rawLowStockThreshold;
     }
 
-    // Check SKU uniqueness among active products
-    if (empty($errors) && $conn) {
+    // 7. Check SKU uniqueness among active products (PHP)
+    if (!isset($fieldErrors['sku']) && $conn) {
         $skuStmt = mysqli_prepare($conn, "SELECT productID FROM product WHERE sku = ? AND endDate IS NULL LIMIT 1");
         mysqli_stmt_bind_param($skuStmt, 's', $sku);
         mysqli_stmt_execute($skuStmt);
         mysqli_stmt_store_result($skuStmt);
         if (mysqli_stmt_num_rows($skuStmt) > 0) {
-            $errors[] = 'An active product with SKU "' . htmlspecialchars($sku) . '" already exists. Each active item must have a unique SKU.';
+            $fieldErrors['sku'] = 'An active product with SKU "' . htmlspecialchars($sku) . '" already exists. Each active item must have a unique SKU.';
+            $errors[] = 'An active product with SKU "' . htmlspecialchars($sku) . '" already exists.';
         }
         mysqli_stmt_close($skuStmt);
     }
 
-    // Handle Image Upload if provided
-    if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
-        $fileTmp = $_FILES['image_file']['tmp_name'];
-        $fileName = $_FILES['image_file']['name'];
-        $fileSize = $_FILES['image_file']['size'];
-        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-        $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
-        if (!in_array($ext, $allowedExts)) {
-            $errors[] = 'Invalid image file type. Allowed formats: JPG, JPEG, PNG, WEBP.';
-        } elseif ($fileSize > 5 * 1024 * 1024) {
-            $errors[] = 'Image file size exceeds the 5MB maximum limit.';
+    // 8. Image Upload validation (PHP)
+    if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+        if ($_FILES['image_file']['error'] !== UPLOAD_ERR_OK) {
+            $errors[] = 'File upload error occurred (code: ' . (int)$_FILES['image_file']['error'] . ').';
         } else {
-            $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
-            if (!is_dir($uploadTargetDir)) {
-                mkdir($uploadTargetDir, 0777, true);
-            }
-            $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
-            $newFileName = 'prod_' . time() . '_' . $cleanBase . '.' . $ext;
-            $destination = $uploadTargetDir . $newFileName;
+            $fileTmp = $_FILES['image_file']['tmp_name'];
+            $fileName = $_FILES['image_file']['name'];
+            $fileSize = $_FILES['image_file']['size'];
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-            if (move_uploaded_file($fileTmp, $destination)) {
-                $imagePath = 'assets/images/uploads/' . $newFileName;
+            $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+            if (!in_array($ext, $allowedExts)) {
+                $fieldErrors['image_file'] = 'Invalid image file type. Allowed formats: JPG, JPEG, PNG, WEBP.';
+                $errors[] = 'Invalid image file type. Allowed formats: JPG, JPEG, PNG, WEBP.';
+            } elseif ($fileSize > 5 * 1024 * 1024) {
+                $fieldErrors['image_file'] = 'Image file size exceeds the 5MB maximum limit.';
+                $errors[] = 'Image file size exceeds the 5MB maximum limit.';
             } else {
-                $errors[] = 'Failed to upload image to server directory.';
+                $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
+                if (!is_dir($uploadTargetDir)) {
+                    mkdir($uploadTargetDir, 0777, true);
+                }
+                $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
+                $newFileName = 'prod_' . time() . '_' . $cleanBase . '.' . $ext;
+                $destination = $uploadTargetDir . $newFileName;
+
+                if (move_uploaded_file($fileTmp, $destination)) {
+                    $imagePath = 'assets/images/uploads/' . $newFileName;
+                } else {
+                    $errors[] = 'Failed to upload image to server directory.';
+                }
             }
         }
     }
@@ -183,27 +248,42 @@ $activeModule = 'product';
                 </span>
             </div>
             <div class="card-body p-4">
-                <form action="addProduct.php" method="post" enctype="multipart/form-data">
+                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <form action="addProduct.php" method="post" enctype="multipart/form-data" novalidate>
                     
                     <div class="row g-3 mb-3">
                         <div class="col-md-5">
                             <label for="sku" class="form-label small fw-semibold text-muted">Product SKU <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white"><i class="fa-solid fa-barcode text-muted"></i></span>
-                                <input type="text" id="sku" name="sku" class="form-control font-monospace" value="<?php echo htmlspecialchars($_POST['sku'] ?? ''); ?>" placeholder="e.g. PROD-BIKE-021" required>
+                                <input type="text" id="sku" name="sku" 
+                                       class="form-control font-monospace <?php echo isset($fieldErrors['sku']) ? 'is-invalid border-danger' : ''; ?>" 
+                                       value="<?php echo htmlspecialchars($_POST['sku'] ?? ''); ?>" 
+                                       placeholder="e.g. PROD-BIKE-021">
                             </div>
-                            <div class="form-text small">Unique item code (letters, numbers, hyphens).</div>
+                            <?php if (isset($fieldErrors['sku'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['sku']); ?></div>
+                            <?php else: ?>
+                                <div class="form-text small">Unique item code (letters, numbers, hyphens).</div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-7">
                             <label for="name" class="form-label small fw-semibold text-muted">Product Title / Name <span class="text-danger">*</span></label>
-                            <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" placeholder="e.g. TrailMaster Hardtail 29er" required>
+                            <input type="text" id="name" name="name" 
+                                   class="form-control <?php echo isset($fieldErrors['name']) ? 'is-invalid border-danger' : ''; ?>" 
+                                   value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" 
+                                   placeholder="e.g. TrailMaster Hardtail 29er">
+                            <?php if (isset($fieldErrors['name'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['name']); ?></div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-4">
                             <label for="productCategoryID" class="form-label small fw-semibold text-muted">Category <span class="text-danger">*</span></label>
-                            <select id="productCategoryID" name="productCategoryID" class="form-select" required>
+                            <select id="productCategoryID" name="productCategoryID" 
+                                    class="form-select <?php echo isset($fieldErrors['productCategoryID']) ? 'is-invalid border-danger' : ''; ?>">
                                 <option value="">-- Select Category --</option>
                                 <?php foreach ($categories as $c): ?>
                                     <option value="<?php echo (int)$c['productCategoryID']; ?>" <?php echo ((isset($_POST['productCategoryID']) && (int)$_POST['productCategoryID'] === (int)$c['productCategoryID']) ? 'selected' : ''); ?>>
@@ -211,22 +291,44 @@ $activeModule = 'product';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php if (isset($fieldErrors['productCategoryID'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['productCategoryID']); ?></div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-4">
                             <label for="price" class="form-label small fw-semibold text-muted">Retail Price (&#8369;) <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white fw-bold">&#8369;</span>
-                                <input type="number" id="price" name="price" class="form-control font-monospace" step="0.01" min="0" value="<?php echo htmlspecialchars($_POST['price'] ?? '0.00'); ?>" required>
+                                <input type="text" id="price" name="price" 
+                                       class="form-control font-monospace <?php echo isset($fieldErrors['price']) ? 'is-invalid border-danger' : ''; ?>" 
+                                       value="<?php echo htmlspecialchars($_POST['price'] ?? ''); ?>" 
+                                       placeholder="0.00">
                             </div>
+                            <?php if (isset($fieldErrors['price'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['price']); ?></div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-2">
                             <label for="stock" class="form-label small fw-semibold text-muted">Initial Stock <span class="text-danger">*</span></label>
-                            <input type="number" id="stock" name="stock" class="form-control font-monospace" min="0" value="<?php echo htmlspecialchars($_POST['stock'] ?? '10'); ?>" required>
+                            <input type="text" id="stock" name="stock" 
+                                   class="form-control font-monospace <?php echo isset($fieldErrors['stock']) ? 'is-invalid border-danger' : ''; ?>" 
+                                   value="<?php echo htmlspecialchars($_POST['stock'] ?? ''); ?>" 
+                                   placeholder="10">
+                            <?php if (isset($fieldErrors['stock'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['stock']); ?></div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-2">
                             <label for="lowStockThreshold" class="form-label small fw-semibold text-muted">Alert At</label>
-                            <input type="number" id="lowStockThreshold" name="lowStockThreshold" class="form-control font-monospace" min="0" value="<?php echo htmlspecialchars($_POST['lowStockThreshold'] ?? '5'); ?>" required>
-                            <div class="form-text small">&le; Low stock</div>
+                            <input type="text" id="lowStockThreshold" name="lowStockThreshold" 
+                                   class="form-control font-monospace <?php echo isset($fieldErrors['lowStockThreshold']) ? 'is-invalid border-danger' : ''; ?>" 
+                                   value="<?php echo htmlspecialchars($_POST['lowStockThreshold'] ?? '5'); ?>" 
+                                   placeholder="5">
+                            <?php if (isset($fieldErrors['lowStockThreshold'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['lowStockThreshold']); ?></div>
+                            <?php else: ?>
+                                <div class="form-text small">&le; Low stock</div>
+                            <?php endif; ?>
                         </div>
                     </div>
 

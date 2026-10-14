@@ -5,6 +5,7 @@ include('../../includes/admin_auth.php');
 requireAdminRole(['Service & Repair Manager']);
 
 $errors = [];
+$fieldErrors = [];
 
 // Fetch service categories
 $categories = [];
@@ -30,39 +31,82 @@ if (is_dir($assetsDir)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
-    $sku = trim($_POST['sku'] ?? '');
-    $name = trim($_POST['name'] ?? '');
-    $categoryID = isset($_POST['serviceCategoryID']) ? (int)$_POST['serviceCategoryID'] : 0;
-    $price = isset($_POST['price']) ? (float)$_POST['price'] : -1;
-    $description = trim($_POST['description'] ?? '');
-    $imagePath = trim($_POST['image_select'] ?? '');
+    $rawSku         = $_POST['sku'] ?? '';
+    $rawName        = $_POST['name'] ?? '';
+    $rawCategoryID  = $_POST['serviceCategoryID'] ?? '';
+    $rawPrice       = $_POST['price'] ?? '';
+    $rawDescription = $_POST['description'] ?? '';
+    $rawImageSelect = $_POST['image_select'] ?? '';
 
-    // Validation
+    $sku         = trim($rawSku);
+    $name        = trim($rawName);
+    $categoryID  = ($rawCategoryID !== '') ? (int)$rawCategoryID : 0;
+    $price       = -1;
+    $description = trim($rawDescription);
+    $imagePath   = trim($rawImageSelect);
+
+    // 1. SKU validation
     if ($sku === '') {
+        $fieldErrors['sku'] = 'Service SKU is required.';
         $errors[] = 'Service SKU is required.';
     } elseif (!preg_match('/^[A-Za-z0-9\-_]+$/', $sku)) {
+        $fieldErrors['sku'] = 'SKU must only contain letters, numbers, hyphens, and underscores.';
         $errors[] = 'SKU must only contain letters, numbers, hyphens, and underscores.';
+    } elseif (strlen($sku) < 3 || strlen($sku) > 30) {
+        $fieldErrors['sku'] = 'SKU length must be between 3 and 30 characters.';
+        $errors[] = 'SKU length must be between 3 and 30 characters.';
     }
 
-    if ($name === '' || strlen($name) < 2) {
+    // 2. Name validation
+    if ($name === '') {
+        $fieldErrors['name'] = 'Service Package Title is required.';
+        $errors[] = 'Service Package Title is required.';
+    } elseif (strlen($name) < 2) {
+        $fieldErrors['name'] = 'Service Name must be at least 2 characters long.';
         $errors[] = 'Service Name must be at least 2 characters long.';
+    } elseif (strlen($name) > 100) {
+        $fieldErrors['name'] = 'Service Name cannot exceed 100 characters.';
+        $errors[] = 'Service Name cannot exceed 100 characters.';
     }
 
-    if ($categoryID <= 0) {
+    // 3. Category validation
+    if ($rawCategoryID === '' || $categoryID <= 0) {
+        $fieldErrors['serviceCategoryID'] = 'Please select a valid service category.';
         $errors[] = 'Please select a valid service category.';
+    } elseif ($conn) {
+        $chkCat = mysqli_prepare($conn, "SELECT serviceCategoryID FROM serviceCategory WHERE serviceCategoryID = ? LIMIT 1");
+        mysqli_stmt_bind_param($chkCat, 'i', $categoryID);
+        mysqli_stmt_execute($chkCat);
+        mysqli_stmt_store_result($chkCat);
+        if (mysqli_stmt_num_rows($chkCat) === 0) {
+            $fieldErrors['serviceCategoryID'] = 'The selected service category does not exist.';
+            $errors[] = 'The selected service category does not exist.';
+        }
+        mysqli_stmt_close($chkCat);
     }
 
-    if ($price < 0) {
-        $errors[] = 'Labor Fee / Price must be a valid non-negative amount.';
+    // 4. Labor Fee / Price validation
+    if (trim($rawPrice) === '') {
+        $fieldErrors['price'] = 'Standard Labor Fee is required.';
+        $errors[] = 'Standard Labor Fee is required.';
+    } elseif (!is_numeric($rawPrice)) {
+        $fieldErrors['price'] = 'Labor Fee must be a valid numeric amount (e.g. 500.00).';
+        $errors[] = 'Labor Fee must be a valid numeric amount.';
+    } elseif ((float)$rawPrice < 0) {
+        $fieldErrors['price'] = 'Labor Fee / Price cannot be negative.';
+        $errors[] = 'Labor Fee / Price cannot be negative.';
+    } else {
+        $price = round((float)$rawPrice, 2);
     }
 
-    // Check SKU uniqueness among active services
-    if (empty($errors) && $conn) {
+    // 5. Check SKU uniqueness among active services
+    if (!isset($fieldErrors['sku']) && $conn) {
         $chkStmt = mysqli_prepare($conn, "SELECT serviceID FROM service WHERE sku = ? AND endDate IS NULL LIMIT 1");
         mysqli_stmt_bind_param($chkStmt, 's', $sku);
         mysqli_stmt_execute($chkStmt);
         mysqli_stmt_store_result($chkStmt);
         if (mysqli_stmt_num_rows($chkStmt) > 0) {
+            $fieldErrors['sku'] = 'An active service with SKU "' . htmlspecialchars($sku) . '" already exists.';
             $errors[] = 'An active service with SKU "' . htmlspecialchars($sku) . '" already exists.';
         }
         mysqli_stmt_close($chkStmt);
@@ -173,27 +217,42 @@ $activeModule = 'service';
                 </span>
             </div>
             <div class="card-body p-4">
-                <form action="addService.php" method="post" enctype="multipart/form-data">
+                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <form action="addService.php" method="post" enctype="multipart/form-data" novalidate>
                     
                     <div class="row g-3 mb-3">
                         <div class="col-md-5">
                             <label for="sku" class="form-label small fw-semibold text-muted">Service SKU <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white"><i class="fa-solid fa-barcode text-muted"></i></span>
-                                <input type="text" id="sku" name="sku" class="form-control font-monospace" value="<?php echo htmlspecialchars($_POST['sku'] ?? ''); ?>" placeholder="e.g. SERV-TUNE-005" required>
+                                <input type="text" id="sku" name="sku" 
+                                       class="form-control font-monospace <?php echo isset($fieldErrors['sku']) ? 'is-invalid border-danger' : ''; ?>" 
+                                       value="<?php echo htmlspecialchars($_POST['sku'] ?? ''); ?>" 
+                                       placeholder="e.g. SERV-TUNE-005">
                             </div>
-                            <div class="form-text small">Unique service package code.</div>
+                            <?php if (isset($fieldErrors['sku'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['sku']); ?></div>
+                            <?php else: ?>
+                                <div class="form-text small">Unique service package code.</div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-7">
                             <label for="name" class="form-label small fw-semibold text-muted">Service Package Title <span class="text-danger">*</span></label>
-                            <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" placeholder="e.g. Complete Overhaul &amp; Brake Bleed" required>
+                            <input type="text" id="name" name="name" 
+                                   class="form-control <?php echo isset($fieldErrors['name']) ? 'is-invalid border-danger' : ''; ?>" 
+                                   value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" 
+                                   placeholder="e.g. Complete Overhaul &amp; Brake Bleed">
+                            <?php if (isset($fieldErrors['name'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['name']); ?></div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label for="serviceCategoryID" class="form-label small fw-semibold text-muted">Category <span class="text-danger">*</span></label>
-                            <select id="serviceCategoryID" name="serviceCategoryID" class="form-select" required>
+                            <select id="serviceCategoryID" name="serviceCategoryID" 
+                                    class="form-select <?php echo isset($fieldErrors['serviceCategoryID']) ? 'is-invalid border-danger' : ''; ?>">
                                 <option value="">-- Select Category --</option>
                                 <?php foreach ($categories as $sc): ?>
                                     <option value="<?php echo (int)$sc['serviceCategoryID']; ?>" <?php echo ((isset($_POST['serviceCategoryID']) && (int)$_POST['serviceCategoryID'] === (int)$sc['serviceCategoryID']) ? 'selected' : ''); ?>>
@@ -201,13 +260,22 @@ $activeModule = 'service';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php if (isset($fieldErrors['serviceCategoryID'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['serviceCategoryID']); ?></div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-6">
                             <label for="price" class="form-label small fw-semibold text-muted">Standard Labor Fee (&#8369;) <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white fw-bold">&#8369;</span>
-                                <input type="number" id="price" name="price" class="form-control font-monospace" step="0.01" min="0" value="<?php echo htmlspecialchars($_POST['price'] ?? '0.00'); ?>" required>
+                                <input type="text" id="price" name="price" 
+                                       class="form-control font-monospace <?php echo isset($fieldErrors['price']) ? 'is-invalid border-danger' : ''; ?>" 
+                                       value="<?php echo htmlspecialchars($_POST['price'] ?? ''); ?>" 
+                                       placeholder="0.00">
                             </div>
+                            <?php if (isset($fieldErrors['price'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['price']); ?></div>
+                            <?php endif; ?>
                         </div>
                     </div>
 

@@ -5,6 +5,7 @@ include('../../includes/admin_auth.php');
 requireAdminRole(['Service & Repair Manager']);
 
 $errors = [];
+$fieldErrors = [];
 
 $serviceID = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -125,47 +126,91 @@ if (is_dir($assetsDir)) {
 
 // Handle Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
-    $name = trim($_POST['name'] ?? '');
-    $categoryID = isset($_POST['serviceCategoryID']) ? (int)$_POST['serviceCategoryID'] : 0;
-    $newPrice = isset($_POST['price']) ? (float)$_POST['price'] : -1;
-    $description = trim($_POST['description'] ?? '');
-    $imagePath = trim($_POST['image_select'] ?? $service['image']);
+    $rawName        = $_POST['name'] ?? '';
+    $rawCategoryID  = $_POST['serviceCategoryID'] ?? '';
+    $rawPrice       = $_POST['price'] ?? '';
+    $rawDescription = $_POST['description'] ?? '';
+    $rawImageSelect = $_POST['image_select'] ?? '';
 
-    if ($name === '' || strlen($name) < 2) {
+    $name        = trim($rawName);
+    $categoryID  = ($rawCategoryID !== '') ? (int)$rawCategoryID : 0;
+    $newPrice    = -1;
+    $description = trim($rawDescription);
+    $imagePath   = trim($rawImageSelect ?: $service['image']);
+
+    // 1. Name validation
+    if ($name === '') {
+        $fieldErrors['name'] = 'Service Package Title is required.';
+        $errors[] = 'Service Package Title is required.';
+    } elseif (strlen($name) < 2) {
+        $fieldErrors['name'] = 'Service Name must be at least 2 characters long.';
         $errors[] = 'Service Name must be at least 2 characters long.';
+    } elseif (strlen($name) > 100) {
+        $fieldErrors['name'] = 'Service Name cannot exceed 100 characters.';
+        $errors[] = 'Service Name cannot exceed 100 characters.';
     }
-    if ($categoryID <= 0) {
+
+    // 2. Category validation
+    if ($rawCategoryID === '' || $categoryID <= 0) {
+        $fieldErrors['serviceCategoryID'] = 'Please select a valid service category.';
         $errors[] = 'Please select a valid service category.';
-    }
-    if ($newPrice < 0) {
-        $errors[] = 'Labor Fee / Price must be a valid non-negative amount.';
+    } elseif ($conn) {
+        $chkCat = mysqli_prepare($conn, "SELECT serviceCategoryID FROM serviceCategory WHERE serviceCategoryID = ? LIMIT 1");
+        mysqli_stmt_bind_param($chkCat, 'i', $categoryID);
+        mysqli_stmt_execute($chkCat);
+        mysqli_stmt_store_result($chkCat);
+        if (mysqli_stmt_num_rows($chkCat) === 0) {
+            $fieldErrors['serviceCategoryID'] = 'The selected service category does not exist.';
+            $errors[] = 'The selected service category does not exist.';
+        }
+        mysqli_stmt_close($chkCat);
     }
 
-    // Handle Image Upload if provided
-    if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
-        $fileTmp = $_FILES['image_file']['tmp_name'];
-        $fileName = $_FILES['image_file']['name'];
-        $fileSize = $_FILES['image_file']['size'];
-        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    // 3. Price validation
+    if (trim($rawPrice) === '') {
+        $fieldErrors['price'] = 'Standard Labor Fee is required.';
+        $errors[] = 'Standard Labor Fee is required.';
+    } elseif (!is_numeric($rawPrice)) {
+        $fieldErrors['price'] = 'Labor Fee must be a valid numeric amount (e.g. 500.00).';
+        $errors[] = 'Labor Fee must be a valid numeric amount.';
+    } elseif ((float)$rawPrice < 0) {
+        $fieldErrors['price'] = 'Labor Fee / Price cannot be negative.';
+        $errors[] = 'Labor Fee / Price cannot be negative.';
+    } else {
+        $newPrice = round((float)$rawPrice, 2);
+    }
 
-        $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
-        if (!in_array($ext, $allowedExts)) {
-            $errors[] = 'Invalid image file type. Allowed formats: JPG, JPEG, PNG, WEBP.';
-        } elseif ($fileSize > 5 * 1024 * 1024) {
-            $errors[] = 'Image file size exceeds the 5MB maximum limit.';
+    // 4. Handle Image Upload if provided
+    if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+        if ($_FILES['image_file']['error'] !== UPLOAD_ERR_OK) {
+            $errors[] = 'File upload error occurred (code: ' . (int)$_FILES['image_file']['error'] . ').';
         } else {
-            $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
-            if (!is_dir($uploadTargetDir)) {
-                mkdir($uploadTargetDir, 0777, true);
-            }
-            $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
-            $newFileName = 'serv_' . time() . '_' . $cleanBase . '.' . $ext;
-            $destination = $uploadTargetDir . $newFileName;
+            $fileTmp = $_FILES['image_file']['tmp_name'];
+            $fileName = $_FILES['image_file']['name'];
+            $fileSize = $_FILES['image_file']['size'];
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-            if (move_uploaded_file($fileTmp, $destination)) {
-                $imagePath = 'assets/images/uploads/' . $newFileName;
+            $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+            if (!in_array($ext, $allowedExts)) {
+                $fieldErrors['image_file'] = 'Invalid image file type. Allowed formats: JPG, JPEG, PNG, WEBP.';
+                $errors[] = 'Invalid image file type. Allowed formats: JPG, JPEG, PNG, WEBP.';
+            } elseif ($fileSize > 5 * 1024 * 1024) {
+                $fieldErrors['image_file'] = 'Image file size exceeds the 5MB maximum limit.';
+                $errors[] = 'Image file size exceeds the 5MB maximum limit.';
             } else {
-                $errors[] = 'Failed to upload image to server directory.';
+                $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
+                if (!is_dir($uploadTargetDir)) {
+                    mkdir($uploadTargetDir, 0777, true);
+                }
+                $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
+                $newFileName = 'serv_' . time() . '_' . $cleanBase . '.' . $ext;
+                $destination = $uploadTargetDir . $newFileName;
+
+                if (move_uploaded_file($fileTmp, $destination)) {
+                    $imagePath = 'assets/images/uploads/' . $newFileName;
+                } else {
+                    $errors[] = 'Failed to upload image to server directory.';
+                }
             }
         }
     }
@@ -285,7 +330,8 @@ $activeModule = 'service';
                 </span>
             </div>
             <div class="card-body p-4">
-                <form action="editService.php" method="post" enctype="multipart/form-data">
+                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <form action="editService.php" method="post" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="serviceID" value="<?php echo (int)$service['serviceID']; ?>">
 
                     <div class="row g-3 mb-3">
@@ -299,14 +345,20 @@ $activeModule = 'service';
                         </div>
                         <div class="col-md-8">
                             <label for="name" class="form-label small fw-semibold text-muted">Service Package Title <span class="text-danger">*</span></label>
-                            <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($_POST['name'] ?? $service['name']); ?>" required>
+                            <input type="text" id="name" name="name" 
+                                   class="form-control <?php echo isset($fieldErrors['name']) ? 'is-invalid border-danger' : ''; ?>" 
+                                   value="<?php echo htmlspecialchars($_POST['name'] ?? $service['name']); ?>">
+                            <?php if (isset($fieldErrors['name'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['name']); ?></div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label for="serviceCategoryID" class="form-label small fw-semibold text-muted">Category <span class="text-danger">*</span></label>
-                            <select id="serviceCategoryID" name="serviceCategoryID" class="form-select" required>
+                            <select id="serviceCategoryID" name="serviceCategoryID" 
+                                    class="form-select <?php echo isset($fieldErrors['serviceCategoryID']) ? 'is-invalid border-danger' : ''; ?>">
                                 <option value="">-- Select Category --</option>
                                 <?php 
                                 $selectedCat = isset($_POST['serviceCategoryID']) ? (int)$_POST['serviceCategoryID'] : (int)$service['serviceCategoryID'];
@@ -317,14 +369,24 @@ $activeModule = 'service';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php if (isset($fieldErrors['serviceCategoryID'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['serviceCategoryID']); ?></div>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-6">
                             <label for="price" class="form-label small fw-semibold text-muted">Standard Labor Fee (&#8369;) <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white fw-bold">&#8369;</span>
-                                <input type="number" id="price" name="price" class="form-control font-monospace" step="0.01" min="0" value="<?php echo htmlspecialchars($_POST['price'] ?? $service['price']); ?>" required>
+                                <input type="text" id="price" name="price" 
+                                       class="form-control font-monospace <?php echo isset($fieldErrors['price']) ? 'is-invalid border-danger' : ''; ?>" 
+                                       value="<?php echo htmlspecialchars($_POST['price'] ?? $service['price']); ?>" 
+                                       placeholder="0.00">
                             </div>
-                            <div class="form-text small text-info"><i class="fa-solid fa-clock-rotate-left me-1"></i>Modifying creates a new SCD Type 2 price record.</div>
+                            <?php if (isset($fieldErrors['price'])): ?>
+                                <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['price']); ?></div>
+                            <?php else: ?>
+                                <div class="form-text small text-info"><i class="fa-solid fa-clock-rotate-left me-1"></i>Modifying creates a new SCD Type 2 price record.</div>
+                            <?php endif; ?>
                         </div>
                     </div>
 

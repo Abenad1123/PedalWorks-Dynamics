@@ -5,6 +5,7 @@ include('../../includes/admin_auth.php');
 requireAdminRole(['Inventory Manager']);
 
 $errors = [];
+$fieldErrors = [];
 $successMessage = '';
 
 if (isset($_SESSION['success'])) {
@@ -20,16 +21,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Handle Stock Adjustment POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_stock'])) {
     $actionType = $_POST['action_type'] ?? 'add';
-    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 0;
+    $rawQuantity = $_POST['quantity'] ?? '';
 
     if ($selectedID <= 0) {
+        $fieldErrors['productID'] = 'Please select a valid product to adjust.';
         $errors[] = 'Please select a valid product.';
     }
-    if ($quantity < 0) {
-        $errors[] = 'Quantity must be zero or a positive number.';
+
+    if (trim($rawQuantity) === '') {
+        $fieldErrors['quantity'] = 'Adjustment quantity is required.';
+        $errors[] = 'Adjustment quantity is required.';
+    } elseif (!ctype_digit(strval(trim($rawQuantity)))) {
+        $fieldErrors['quantity'] = 'Quantity must be a non-negative whole integer.';
+        $errors[] = 'Quantity must be a non-negative whole integer.';
+    } else {
+        $quantity = (int)$rawQuantity;
     }
 
-    if (empty($errors) && $conn) {
+    if (!in_array($actionType, ['add', 'deduct', 'set'], true)) {
+        $errors[] = 'Invalid adjustment operation type.';
+    }
+
+    if (empty($fieldErrors) && $conn) {
         // Fetch current active product
         $stmt = mysqli_prepare($conn, "SELECT productID, name, sku, stock, lowStockThreshold FROM product WHERE productID = ? AND endDate IS NULL LIMIT 1");
         mysqli_stmt_bind_param($stmt, 'i', $selectedID);
@@ -39,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_stock'])) {
         mysqli_stmt_close($stmt);
 
         if (!$p) {
+            $fieldErrors['productID'] = 'Active product not found or has been archived.';
             $errors[] = 'Active product not found or has been archived.';
         } else {
             $currentStock = (int)$p['stock'];
@@ -48,17 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_stock'])) {
                 $newStock = $currentStock + $quantity;
             } elseif ($actionType === 'deduct') {
                 if ($quantity > $currentStock) {
+                    $fieldErrors['quantity'] = "Cannot deduct {$quantity} units. Current stock is only {$currentStock} units.";
                     $errors[] = "Cannot deduct {$quantity} units. Current stock is only {$currentStock} units.";
                 } else {
                     $newStock = $currentStock - $quantity;
                 }
             } elseif ($actionType === 'set') {
                 $newStock = $quantity;
-            } else {
-                $errors[] = 'Invalid action type selected.';
             }
 
-            if (empty($errors)) {
+            if (empty($fieldErrors)) {
                 $upStmt = mysqli_prepare($conn, "UPDATE product SET stock = ? WHERE productID = ? AND endDate IS NULL");
                 mysqli_stmt_bind_param($upStmt, 'ii', $newStock, $selectedID);
                 if (mysqli_stmt_execute($upStmt)) {
@@ -180,11 +193,14 @@ $activeModule = 'product';
                         </span>
                     </div>
                     <div class="card-body p-4">
-                        <form method="post" action="stockUpdate.php">
+                        <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                        <form method="post" action="stockUpdate.php" novalidate>
                             
                             <div class="mb-3">
                                 <label for="productID" class="form-label small fw-semibold text-muted">Select Item <span class="text-danger">*</span></label>
-                                <select id="productID" name="productID" class="form-select" onchange="window.location.href='stockUpdate.php?id=' + this.value;" required>
+                                <select id="productID" name="productID" 
+                                        class="form-select <?php echo isset($fieldErrors['productID']) ? 'is-invalid border-danger' : ''; ?>" 
+                                        onchange="window.location.href='stockUpdate.php?id=' + this.value;">
                                     <option value="">-- Choose Product to Adjust --</option>
                                     <?php foreach ($activeProducts as $p): ?>
                                         <option value="<?php echo (int)$p['productID']; ?>" <?php echo ($selectedID === (int)$p['productID']) ? 'selected' : ''; ?>>
@@ -195,6 +211,9 @@ $activeModule = 'product';
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <?php if (isset($fieldErrors['productID'])): ?>
+                                    <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['productID']); ?></div>
+                                <?php endif; ?>
                             </div>
 
                             <?php if ($currentSelected): ?>
@@ -223,21 +242,21 @@ $activeModule = 'product';
                                 <label class="form-label small fw-semibold text-muted mb-2">Adjustment Operation <span class="text-danger">*</span></label>
                                 <div class="d-flex flex-column gap-2">
                                     <div class="form-check p-3 border rounded bg-white">
-                                        <input class="form-check-input" type="radio" name="action_type" id="op_add" value="add" checked>
+                                        <input class="form-check-input" type="radio" name="action_type" id="op_add" value="add" <?php echo (!isset($_POST['action_type']) || $_POST['action_type'] === 'add') ? 'checked' : ''; ?>>
                                         <label class="form-check-label w-100" for="op_add">
                                             <strong class="text-success"><i class="fa-solid fa-plus-circle me-1"></i>Restock / Add (+)</strong>
                                             <div class="small text-muted">Increase available quantity with new shipment/delivery.</div>
                                         </label>
                                     </div>
                                     <div class="form-check p-3 border rounded bg-white">
-                                        <input class="form-check-input" type="radio" name="action_type" id="op_deduct" value="deduct">
+                                        <input class="form-check-input" type="radio" name="action_type" id="op_deduct" value="deduct" <?php echo (isset($_POST['action_type']) && $_POST['action_type'] === 'deduct') ? 'checked' : ''; ?>>
                                         <label class="form-check-label w-100" for="op_deduct">
                                             <strong class="text-danger"><i class="fa-solid fa-minus-circle me-1"></i>Dispatch / Deduct (-)</strong>
                                             <div class="small text-muted">Decrease quantity for damage, shrinkage, or offline sale.</div>
                                         </label>
                                     </div>
                                     <div class="form-check p-3 border rounded bg-white">
-                                        <input class="form-check-input" type="radio" name="action_type" id="op_set" value="set">
+                                        <input class="form-check-input" type="radio" name="action_type" id="op_set" value="set" <?php echo (isset($_POST['action_type']) && $_POST['action_type'] === 'set') ? 'checked' : ''; ?>>
                                         <label class="form-check-label w-100" for="op_set">
                                             <strong class="text-primary"><i class="fa-solid fa-pen-clip me-1"></i>Physical Audit (=)</strong>
                                             <div class="small text-muted">Directly override stock level to exact counted total.</div>
@@ -250,8 +269,14 @@ $activeModule = 'product';
                                 <label for="quantity" class="form-label small fw-semibold text-muted">Quantity (Units) <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="fa-solid fa-hashtag text-muted"></i></span>
-                                    <input type="number" id="quantity" name="quantity" class="form-control font-monospace" min="0" value="10" required>
+                                    <input type="text" id="quantity" name="quantity" 
+                                           class="form-control font-monospace <?php echo isset($fieldErrors['quantity']) ? 'is-invalid border-danger' : ''; ?>" 
+                                           value="<?php echo htmlspecialchars($_POST['quantity'] ?? '10'); ?>" 
+                                           placeholder="10">
                                 </div>
+                                <?php if (isset($fieldErrors['quantity'])): ?>
+                                    <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['quantity']); ?></div>
+                                <?php endif; ?>
                             </div>
 
                             <button type="submit" name="apply_stock" class="btn btn-warning text-dark w-100 fw-semibold py-2">

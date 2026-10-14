@@ -187,7 +187,8 @@ include('./includes/header.php');
                 </div>
             <?php endif; ?>
 
-            <form action="signup.php" method="POST" enctype="multipart/form-data" autocomplete="on">
+            <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+            <form action="signup.php" method="POST" enctype="multipart/form-data" autocomplete="on" novalidate>
                 <!-- Personal Details Section -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
