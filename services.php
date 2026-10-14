@@ -138,22 +138,17 @@ function getServiceIcon($categoryName) {
     <div class="pw-filter-card">
         <form method="GET" action="services.php" class="row g-3 align-items-center">
             <div class="col-lg-6 col-md-6">
-                <label for="search" class="form-label text-white-50 small mb-1 fw-semibold">
-                    <i class="fa-solid fa-magnifying-glass me-1"></i> Search Service or SKU
+                <label for="search" class="form-label text-secondary small mb-1 fw-semibold">
+                    Search Services
                 </label>
-                <div class="input-group pw-input-group">
-                    <span class="input-group-text pw-input-group-text">
-                        <i class="fa-solid fa-search"></i>
-                    </span>
-                    <input type="text" class="form-control pw-form-control" id="search" name="search" 
-                           value="<?php echo htmlspecialchars($search); ?>" 
-                           placeholder="e.g. Repair, Cleaning, SERV-REP-001...">
-                </div>
+                <input type="text" class="form-control pw-form-control" id="search" name="search" 
+                       value="<?php echo htmlspecialchars($search); ?>" 
+                       placeholder="Search by service name, SKU, or description...">
             </div>
 
             <div class="col-lg-3 col-md-3">
-                <label for="category" class="form-label text-white-50 small mb-1 fw-semibold">
-                    <i class="fa-solid fa-filter me-1"></i> Filter by Category
+                <label for="category" class="form-label text-secondary small mb-1 fw-semibold">
+                    Category
                 </label>
                 <select class="form-select pw-form-select" id="category" name="category">
                     <option value="">All Service Categories</option>
@@ -167,11 +162,11 @@ function getServiceIcon($categoryName) {
 
             <div class="col-lg-3 col-md-3 d-flex align-items-end gap-2 mt-md-4 pt-md-2">
                 <button type="submit" class="pw-btn-trail w-100">
-                    <i class="fa-solid fa-filter"></i> Apply
+                    Apply
                 </button>
                 <?php if ($search !== '' || $category !== ''): ?>
                     <a href="services.php" class="pw-btn-glass text-nowrap" title="Reset Filters">
-                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                        Reset
                     </a>
                 <?php endif; ?>
             </div>
@@ -181,12 +176,11 @@ function getServiceIcon($categoryName) {
         <div class="pw-category-strip mt-3 mb-0 pt-3 border-top border-secondary border-opacity-25 justify-content-start">
             <a href="services.php<?php echo !empty($search) ? '?search=' . urlencode($search) : ''; ?>" 
                class="pw-filter-pill <?php echo ($category === '') ? 'active' : ''; ?>">
-                <i class="fa-solid fa-toolbox"></i> All Services
+                All Services
             </a>
             <?php foreach ($categories as $cat): ?>
                 <a href="services.php?category=<?php echo urlencode($cat['name']); ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
                    class="pw-filter-pill <?php echo ($category === $cat['name']) ? 'active' : ''; ?>">
-                    <i class="fa-solid <?php echo getServiceIcon($cat['name']); ?> fa-xs"></i>
                     <?php echo htmlspecialchars($cat['name']); ?>
                 </a>
             <?php endforeach; ?>

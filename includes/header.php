@@ -40,24 +40,16 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav mx-auto align-items-lg-center pw-nav-list my-2 my-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php">
-                        <i class="fa-solid fa-compass me-1"></i> Home
-                    </a>
+                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php#about">
-                        <i class="fa-solid fa-circle-info me-1"></i> About
-                    </a>
+                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php#about">About</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/products.php">
-                        <i class="fa-solid fa-bicycle me-1"></i> Products
-                    </a>
+                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/products.php">Products</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/services.php">
-                        <i class="fa-solid fa-wrench me-1"></i> Services
-                    </a>
+                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/services.php">Services</a>
                 </li>
             </ul>
 
@@ -75,10 +67,19 @@ if (session_status() === PHP_SESSION_NONE) {
                     <?php endif; ?>
                     <div class="dropdown">
                         <button class="btn pw-btn-glass dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-circle-user"></i>
+                            <?php if (!empty($_SESSION['photo']) && file_exists(__DIR__ . '/../assets/images/uploads/users/' . $_SESSION['photo'])): ?>
+                                <img src="/project/PedalWorks-Dynamics/assets/images/uploads/users/<?php echo htmlspecialchars($_SESSION['photo']); ?>" 
+                                     alt="Profile" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover;">
+                            <?php else: ?>
+                                <i class="fa-solid fa-circle-user"></i>
+                            <?php endif; ?>
                             <span class="d-none d-md-inline"><?php echo htmlspecialchars($_SESSION['username'] ?? $_SESSION['email'] ?? 'Account'); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end pw-glass-dropdown">
+                            <?php if (!empty($_SESSION['customerAccountID']) || ($_SESSION['account_type'] ?? '') === 'customer'): ?>
+                                <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/profile.php"><i class="fa-solid fa-id-card me-2"></i>My Profile</a></li>
+                                <li><hr class="dropdown-divider pw-dropdown-divider"></li>
+                            <?php endif; ?>
                             <?php if (!empty($_SESSION['adminAccountID']) || ($_SESSION['account_type'] ?? '') === 'admin'): ?>
                                 <li><a class="dropdown-item pw-dropdown-item text-warning" href="/project/PedalWorks-Dynamics/admin/dashboard.php"><i class="fa-solid fa-gauge me-2"></i>Admin Dashboard</a></li>
                                 <li><hr class="dropdown-divider pw-dropdown-divider"></li>

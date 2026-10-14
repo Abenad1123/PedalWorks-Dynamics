@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `customer` (
   `birthDate` DATE NULL,
   `email` VARCHAR(255) NOT NULL,
   `address` TEXT NOT NULL,
+  `photo` VARCHAR(255) NULL,
   PRIMARY KEY (`customerID`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC)
 ) ENGINE = InnoDB;

@@ -4,11 +4,11 @@ include('./includes/config.php');
 
 $errors = [];
 $firstName = '';
-$lastName = '';
+$lastName  = '';
 $birthDate = '';
-$email = '';
-$address = '';
-$username = '';
+$email     = '';
+$address   = '';
+$username  = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
     $firstName       = trim($_POST['firstName'] ?? '');
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
     $password        = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirmPassword'] ?? '';
 
-    // Validation
+    // Validation (MP5: PHP server-side validation)
     if ($firstName === '') {
         $errors[] = 'First name is required.';
     }
@@ -43,6 +43,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
 
     if (!$conn) {
         $errors[] = 'Database is offline. Please check that MySQL is running in XAMPP.';
+    }
+
+    // Photo Upload Validation (MP2: User Registration upload a photo)
+    $uploadedPhotoFilename = null;
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+        $fileError = $_FILES['photo']['error'];
+        if ($fileError === UPLOAD_ERR_OK) {
+            $fileTmpName  = $_FILES['photo']['tmp_name'];
+            $fileSize     = $_FILES['photo']['size'];
+            $fileOriginal = $_FILES['photo']['name'];
+            $fileExt      = strtolower(pathinfo($fileOriginal, PATHINFO_EXTENSION));
+
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+            $maxFileSize       = 5 * 1024 * 1024; // 5 MB
+
+            if (!in_array($fileExt, $allowedExtensions, true)) {
+                $errors[] = 'Photo must be an image file (.jpg, .jpeg, .png, .webp, .gif).';
+            } elseif ($fileSize > $maxFileSize) {
+                $errors[] = 'Photo size cannot exceed 5 MB.';
+            } else {
+                // Verify image MIME type
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mimeType = finfo_file($finfo, $fileTmpName);
+                finfo_close($finfo);
+
+                $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                if (!in_array($mimeType, $allowedMimes, true)) {
+                    $errors[] = 'Invalid image format uploaded.';
+                } else {
+                    $uploadDir = __DIR__ . '/assets/images/uploads/users/';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0777, true);
+                    }
+                    $uniqueFilename = 'user_' . time() . '_' . bin2hex(random_bytes(6)) . '.' . $fileExt;
+                    $destination    = $uploadDir . $uniqueFilename;
+
+                    if (move_uploaded_file($fileTmpName, $destination)) {
+                        $uploadedPhotoFilename = $uniqueFilename;
+                    } else {
+                        $errors[] = 'Failed to upload user photo.';
+                    }
+                }
+            }
+        } else {
+            $errors[] = 'Error occurred during photo upload (code: ' . $fileError . ').';
+        }
     }
 
     if (empty($errors)) {
@@ -75,11 +121,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
     if (empty($errors)) {
         mysqli_begin_transaction($conn);
         try {
-            $dbLastName = ($lastName !== '') ? $lastName : null;
+            $dbLastName  = ($lastName !== '') ? $lastName : null;
             $dbBirthDate = ($birthDate !== '') ? $birthDate : null;
 
-            $insertCustomer = mysqli_prepare($conn, "INSERT INTO customer (firstName, lastName, birthDate, email, address) VALUES (?, ?, ?, ?, ?)");
-            mysqli_stmt_bind_param($insertCustomer, 'sssss', $firstName, $dbLastName, $dbBirthDate, $email, $address);
+            $insertCustomer = mysqli_prepare($conn, "INSERT INTO customer (firstName, lastName, birthDate, email, address, photo) VALUES (?, ?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($insertCustomer, 'ssssss', $firstName, $dbLastName, $dbBirthDate, $email, $address, $uploadedPhotoFilename);
             mysqli_stmt_execute($insertCustomer);
             $newCustomerID = mysqli_insert_id($conn);
             mysqli_stmt_close($insertCustomer);
@@ -94,12 +140,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
 
             mysqli_commit($conn);
 
-            $_SESSION['success'] = "Account successfully created for {$username}! You can now log in.";
+            $_SESSION['success'] = "Account successfully created for {$username}! You can now log in using your email or username.";
             header('Location: login.php');
             exit;
         } catch (Exception $e) {
             mysqli_rollback($conn);
+            if ($uploadedPhotoFilename && file_exists(__DIR__ . '/assets/images/uploads/users/' . $uploadedPhotoFilename)) {
+                unlink(__DIR__ . '/assets/images/uploads/users/' . $uploadedPhotoFilename);
+            }
             $errors[] = 'Failed to create account: ' . $e->getMessage();
+        }
+    } else {
+        // If validation errors occurred, remove uploaded photo to prevent orphaned files
+        if ($uploadedPhotoFilename && file_exists(__DIR__ . '/assets/images/uploads/users/' . $uploadedPhotoFilename)) {
+            unlink(__DIR__ . '/assets/images/uploads/users/' . $uploadedPhotoFilename);
         }
     }
 }
@@ -122,7 +176,7 @@ include('./includes/header.php');
                 <div class="alert alert-danger pw-glass-alert alert-dismissible fade show mb-4" role="alert">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <i class="fa-solid fa-circle-exclamation text-warning fs-5"></i>
-                        <strong class="text-white small">Registration Error</strong>
+                        <strong class="text-white small">Registration Notice</strong>
                     </div>
                     <ul class="mb-0 ps-3 small text-white-50">
                         <?php foreach ($errors as $error): ?>
@@ -133,34 +187,24 @@ include('./includes/header.php');
                 </div>
             <?php endif; ?>
 
-            <form action="signup.php" method="POST" autocomplete="on">
+            <form action="signup.php" method="POST" enctype="multipart/form-data" autocomplete="on">
                 <!-- Personal Details Section -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label for="firstName" class="form-label text-white-50 small fw-semibold">
                             First Name <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group pw-input-group">
-                            <span class="input-group-text pw-input-group-text">
-                                <i class="fa-solid fa-id-badge"></i>
-                            </span>
-                            <input type="text" class="form-control pw-form-control" id="firstName" name="firstName" 
-                                   value="<?php echo htmlspecialchars($firstName); ?>" 
-                                   placeholder="e.g. Alex" required autofocus>
-                        </div>
+                        <input type="text" class="form-control pw-form-control" id="firstName" name="firstName" 
+                               value="<?php echo htmlspecialchars($firstName); ?>" 
+                               placeholder="First name" required autofocus>
                     </div>
                     <div class="col-md-6">
                         <label for="lastName" class="form-label text-white-50 small fw-semibold">
-                            Last Name <span class="text-muted">(Optional)</span>
+                            Last Name <span class="text-white-50" style="font-size: 0.75rem;">(Optional)</span>
                         </label>
-                        <div class="input-group pw-input-group">
-                            <span class="input-group-text pw-input-group-text">
-                                <i class="fa-solid fa-user"></i>
-                            </span>
-                            <input type="text" class="form-control pw-form-control" id="lastName" name="lastName" 
-                                   value="<?php echo htmlspecialchars($lastName); ?>" 
-                                   placeholder="e.g. Vance">
-                        </div>
+                        <input type="text" class="form-control pw-form-control" id="lastName" name="lastName" 
+                               value="<?php echo htmlspecialchars($lastName); ?>" 
+                               placeholder="Last name">
                     </div>
                 </div>
 
@@ -170,41 +214,34 @@ include('./includes/header.php');
                         <label for="email" class="form-label text-white-50 small fw-semibold">
                             Email Address <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group pw-input-group">
-                            <span class="input-group-text pw-input-group-text">
-                                <i class="fa-solid fa-envelope"></i>
-                            </span>
-                            <input type="email" class="form-control pw-form-control" id="email" name="email" 
-                                   value="<?php echo htmlspecialchars($email); ?>" 
-                                   placeholder="rider@pedalworks.com" required>
-                        </div>
+                        <input type="email" class="form-control pw-form-control" id="email" name="email" 
+                               value="<?php echo htmlspecialchars($email); ?>" 
+                               placeholder="name@example.com" required>
                     </div>
                     <div class="col-md-5">
                         <label for="birthDate" class="form-label text-white-50 small fw-semibold">
-                            Birth Date <span class="text-muted">(Optional)</span>
+                            Birth Date <span class="text-white-50" style="font-size: 0.75rem;">(Optional)</span>
                         </label>
-                        <div class="input-group pw-input-group">
-                            <span class="input-group-text pw-input-group-text">
-                                <i class="fa-solid fa-calendar-days"></i>
-                            </span>
-                            <input type="date" class="form-control pw-form-control" id="birthDate" name="birthDate" 
-                                   value="<?php echo htmlspecialchars($birthDate); ?>">
-                        </div>
+                        <input type="date" class="form-control pw-form-control" id="birthDate" name="birthDate" 
+                               value="<?php echo htmlspecialchars($birthDate); ?>">
                     </div>
+                </div>
+
+                <!-- Photo Upload Section (MP2 Requirement) -->
+                <div class="mb-3">
+                    <label for="photo" class="form-label text-white-50 small fw-semibold">
+                        Profile Photo <span class="text-white-50" style="font-size: 0.75rem;">(Optional - JPG, PNG, WEBP, max 5MB)</span>
+                    </label>
+                    <input type="file" class="form-control pw-form-control" id="photo" name="photo" accept="image/*">
                 </div>
 
                 <!-- Address Section -->
                 <div class="mb-3">
                     <label for="address" class="form-label text-white-50 small fw-semibold">
-                        Delivery & Workshop Address <span class="text-danger">*</span>
+                        Address <span class="text-danger">*</span>
                     </label>
-                    <div class="input-group pw-input-group">
-                        <span class="input-group-text pw-input-group-text align-items-start pt-2">
-                            <i class="fa-solid fa-location-dot"></i>
-                        </span>
-                        <textarea class="form-control pw-form-control" id="address" name="address" rows="2" 
-                                  placeholder="House/Street, Barangay, City, Postal Code" required><?php echo htmlspecialchars($address); ?></textarea>
-                    </div>
+                    <textarea class="form-control pw-form-control" id="address" name="address" rows="2" 
+                              placeholder="House/Street, Barangay, City, Postal Code" required><?php echo htmlspecialchars($address); ?></textarea>
                 </div>
 
                 <!-- Account Credentials Section -->
@@ -212,14 +249,9 @@ include('./includes/header.php');
                     <label for="username" class="form-label text-white-50 small fw-semibold">
                         Account Username <span class="text-danger">*</span>
                     </label>
-                    <div class="input-group pw-input-group">
-                        <span class="input-group-text pw-input-group-text">
-                            <i class="fa-solid fa-at"></i>
-                        </span>
-                        <input type="text" class="form-control pw-form-control" id="username" name="username" 
-                               value="<?php echo htmlspecialchars($username); ?>" 
-                               placeholder="Choose a username (min 3 chars)" minlength="3" required>
-                    </div>
+                    <input type="text" class="form-control pw-form-control" id="username" name="username" 
+                           value="<?php echo htmlspecialchars($username); ?>" 
+                           placeholder="Choose a username (min 3 chars)" minlength="3" required>
                 </div>
 
                 <div class="row g-3 mb-4">
@@ -227,14 +259,11 @@ include('./includes/header.php');
                         <label for="password" class="form-label text-white-50 small fw-semibold">
                             Password <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group pw-input-group">
-                            <span class="input-group-text pw-input-group-text">
-                                <i class="fa-solid fa-lock"></i>
-                            </span>
+                        <div class="input-group">
                             <input type="password" class="form-control pw-form-control border-end-0" id="password" name="password" 
                                    placeholder="Min 6 characters" minlength="6" required>
-                            <button type="button" class="btn pw-password-toggle" id="togglePasswordBtn" title="Toggle password visibility">
-                                <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+                            <button type="button" class="btn pw-password-toggle" id="togglePasswordBtn" title="Toggle password visibility" tabindex="-1">
+                                <i class="fa-regular fa-eye" id="togglePasswordIcon"></i>
                             </button>
                         </div>
                     </div>
@@ -242,14 +271,11 @@ include('./includes/header.php');
                         <label for="confirmPassword" class="form-label text-white-50 small fw-semibold">
                             Confirm Password <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group pw-input-group">
-                            <span class="input-group-text pw-input-group-text">
-                                <i class="fa-solid fa-shield-halved"></i>
-                            </span>
+                        <div class="input-group">
                             <input type="password" class="form-control pw-form-control border-end-0" id="confirmPassword" name="confirmPassword" 
                                    placeholder="Re-enter password" minlength="6" required>
-                            <button type="button" class="btn pw-password-toggle" id="toggleConfirmPasswordBtn" title="Toggle password visibility">
-                                <i class="fa-solid fa-eye" id="toggleConfirmPasswordIcon"></i>
+                            <button type="button" class="btn pw-password-toggle" id="toggleConfirmPasswordBtn" title="Toggle password visibility" tabindex="-1">
+                                <i class="fa-regular fa-eye" id="toggleConfirmPasswordIcon"></i>
                             </button>
                         </div>
                     </div>
@@ -257,8 +283,8 @@ include('./includes/header.php');
 
                 <!-- Submit Button -->
                 <div class="d-grid gap-2 mb-3">
-                    <button type="submit" name="signup_customer" class="pw-btn-trail py-3">
-                        <i class="fa-solid fa-user-check me-1"></i> Complete Registration
+                    <button type="submit" name="signup_customer" class="pw-btn-trail py-3 fw-semibold">
+                        Create Account
                     </button>
                 </div>
             </form>

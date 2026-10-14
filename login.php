@@ -5,21 +5,21 @@ if (session_status() === PHP_SESSION_NONE) {
 include('./includes/config.php');
 
 $errors = [];
-$username = '';
+$identifier = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
+    $identifier = trim($_POST['identifier'] ?? $_POST['username'] ?? '');
+    $password   = trim($_POST['password'] ?? '');
 
-    if ($username === '' || $password === '') {
-        $errors[] = 'Please enter both username and password.';
+    if ($identifier === '' || $password === '') {
+        $errors[] = 'Please enter both your email/username and password.';
     } elseif (!$conn) {
         $errors[] = 'Database is offline. Please ensure MySQL is running in XAMPP.';
     } else {
-        // Query Admin account
+        // 1. Query Admin account (allows username or future email)
         $adminSql = "SELECT adminAccountID, username, password, role FROM adminAccount WHERE username = ? LIMIT 1";
         $adminStmt = mysqli_prepare($conn, $adminSql);
-        mysqli_stmt_bind_param($adminStmt, 's', $username);
+        mysqli_stmt_bind_param($adminStmt, 's', $identifier);
         mysqli_stmt_execute($adminStmt);
         $adminRes = mysqli_stmt_get_result($adminStmt);
         $admin = mysqli_fetch_assoc($adminRes);
@@ -37,14 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Query Customer account
+        // 2. Query Customer account by Email OR Username (MP3 Requirement: use email for user login)
         $custSql = "SELECT ca.customerAccountID, ca.customerID, ca.username, ca.password, ca.status, 
-                           c.firstName, c.lastName, c.email 
+                           c.firstName, c.lastName, c.email, c.photo 
                     FROM customerAccount ca 
                     JOIN customer c ON ca.customerID = c.customerID 
-                    WHERE ca.username = ? LIMIT 1";
+                    WHERE c.email = ? OR ca.username = ? LIMIT 1";
         $custStmt = mysqli_prepare($conn, $custSql);
-        mysqli_stmt_bind_param($custStmt, 's', $username);
+        mysqli_stmt_bind_param($custStmt, 'ss', $identifier, $identifier);
         mysqli_stmt_execute($custStmt);
         $custRes = mysqli_stmt_get_result($custStmt);
         $cust = mysqli_fetch_assoc($custRes);
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($cust && password_verify($password, $cust['password'])) {
             if ($cust['status'] === 'Disabled') {
-                $errors[] = 'Your account has been disabled. Please contact shop administration.';
+                $errors[] = 'Your account has been deactivated. Please contact administration.';
             } else {
                 $_SESSION['customerAccountID'] = (int)$cust['customerAccountID'];
                 $_SESSION['customerID']        = (int)$cust['customerID'];
@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['username']          = $cust['username'];
                 $_SESSION['email']             = $cust['email'];
                 $_SESSION['firstName']         = $cust['firstName'];
+                $_SESSION['photo']             = $cust['photo'] ?? null;
                 $_SESSION['role']              = 'customer';
                 $_SESSION['account_type']      = 'customer';
                 $_SESSION['success']           = 'Welcome back, ' . ($cust['firstName'] ?: $cust['username']) . '!';
@@ -70,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
-            $errors[] = 'Wrong username or password.';
+            $errors[] = 'Wrong email, username, or password.';
         }
     }
 }
@@ -80,7 +81,7 @@ include('./includes/header.php');
 
 <div class="container">
     <div class="pw-auth-wrapper">
-        <div class="pw-auth-card" style="max-width: 480px;">
+        <div class="pw-auth-card" style="max-width: 460px;">
             <div class="pw-auth-header">
                 <div class="pw-auth-icon">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
@@ -114,38 +115,30 @@ include('./includes/header.php');
 
             <form action="login.php" method="POST" autocomplete="on">
                 <div class="mb-3">
-                    <label for="username" class="form-label text-white-50 small fw-semibold">
-                        <i class="fa-solid fa-user me-1"></i> Username
+                    <label for="identifier" class="form-label text-white-50 small fw-semibold">
+                        Email Address or Username
                     </label>
-                    <div class="input-group pw-input-group">
-                        <span class="input-group-text pw-input-group-text">
-                            <i class="fa-solid fa-user-circle"></i>
-                        </span>
-                        <input type="text" class="form-control pw-form-control" id="username" name="username" 
-                               value="<?php echo htmlspecialchars($username); ?>" 
-                               placeholder="Enter your username" required autofocus>
-                    </div>
+                    <input type="text" class="form-control pw-form-control" id="identifier" name="identifier" 
+                           value="<?php echo htmlspecialchars($identifier); ?>" 
+                           placeholder="name@example.com or username" required autofocus>
                 </div>
 
                 <div class="mb-4">
                     <label for="password" class="form-label text-white-50 small fw-semibold">
-                        <i class="fa-solid fa-lock me-1"></i> Password
+                        Password
                     </label>
-                    <div class="input-group pw-input-group">
-                        <span class="input-group-text pw-input-group-text">
-                            <i class="fa-solid fa-key"></i>
-                        </span>
+                    <div class="input-group">
                         <input type="password" class="form-control pw-form-control border-end-0" id="password" name="password" 
                                placeholder="Enter your password" required>
-                        <button type="button" class="btn pw-password-toggle" id="togglePasswordBtn" title="Toggle password visibility">
-                            <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+                        <button type="button" class="btn pw-password-toggle" id="togglePasswordBtn" title="Toggle password visibility" tabindex="-1">
+                            <i class="fa-regular fa-eye" id="togglePasswordIcon"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 mb-3">
-                    <button type="submit" name="submit" class="pw-btn-trail py-3">
-                        <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In
+                    <button type="submit" name="submit" class="pw-btn-trail py-2 fw-semibold">
+                        Sign In
                     </button>
                 </div>
             </form>
