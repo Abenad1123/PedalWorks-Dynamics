@@ -36,24 +36,70 @@ if ($conn && ($productID > 0 || $sku !== '')) {
     }
 }
 
-// Check if user is logged in and if they have purchased this product (Preparation for MP4 Review CRUD)
+// Check if user is logged in and if they have purchased this product (MP4 Verified Customer Check)
 $hasPurchased = false;
 $customerAccountID = (int)($_SESSION['customerAccountID'] ?? 0);
-if ($conn && $product && $customerAccountID > 0) {
+$userReview = null;
+$reviews = [];
+$avgRating = 5.0;
+$totalReviews = 0;
+
+if ($conn && $product) {
     $pID = (int)$product['productID'];
-    $checkPurchaseSql = "SELECT COUNT(*) AS c 
-                         FROM productSale ps 
-                         JOIN orderLineProduct olp ON ps.productSaleID = olp.productSaleID 
-                         WHERE ps.customerAccountID = ? AND olp.productID = ?";
-    $cpStmt = mysqli_prepare($conn, $checkPurchaseSql);
-    if ($cpStmt) {
-        mysqli_stmt_bind_param($cpStmt, 'ii', $customerAccountID, $pID);
-        mysqli_stmt_execute($cpStmt);
-        $cpRes = mysqli_stmt_get_result($cpStmt);
-        if ($cpRow = mysqli_fetch_assoc($cpRes)) {
-            $hasPurchased = ((int)$cpRow['c'] > 0);
+
+    // 1. Check purchase verification
+    if ($customerAccountID > 0) {
+        $checkPurchaseSql = "SELECT COUNT(*) AS c 
+                             FROM productSale ps 
+                             JOIN orderLineProduct olp ON ps.productSaleID = olp.productSaleID 
+                             WHERE ps.customerAccountID = ? AND olp.productID = ?";
+        $cpStmt = mysqli_prepare($conn, $checkPurchaseSql);
+        if ($cpStmt) {
+            mysqli_stmt_bind_param($cpStmt, 'ii', $customerAccountID, $pID);
+            mysqli_stmt_execute($cpStmt);
+            $cpRes = mysqli_stmt_get_result($cpStmt);
+            if ($cpRow = mysqli_fetch_assoc($cpRes)) {
+                $hasPurchased = ((int)$cpRow['c'] > 0);
+            }
+            mysqli_stmt_close($cpStmt);
         }
-        mysqli_stmt_close($cpStmt);
+
+        // Fetch user's own review if already submitted
+        $urStmt = mysqli_prepare($conn, "SELECT reviewID, rating, reviewText, cleanText, createdAt, updatedAt FROM review WHERE customerAccountID = ? AND productID = ? LIMIT 1");
+        if ($urStmt) {
+            mysqli_stmt_bind_param($urStmt, 'ii', $customerAccountID, $pID);
+            mysqli_stmt_execute($urStmt);
+            $urRes = mysqli_stmt_get_result($urStmt);
+            $userReview = mysqli_fetch_assoc($urRes);
+            mysqli_stmt_close($urStmt);
+        }
+    }
+
+    // 2. Fetch all published reviews for this product
+    $revSql = "SELECT r.reviewID, r.customerAccountID, r.rating, r.cleanText, r.createdAt, r.updatedAt,
+                      ca.username,
+                      c.firstName, c.lastName, c.photo
+               FROM review r
+               JOIN customerAccount ca ON r.customerAccountID = ca.customerAccountID
+               JOIN customer c ON ca.customerID = c.customerID
+               WHERE r.productID = ?
+               ORDER BY r.createdAt DESC";
+    $rStmt = mysqli_prepare($conn, $revSql);
+    if ($rStmt) {
+        mysqli_stmt_bind_param($rStmt, 'i', $pID);
+        mysqli_stmt_execute($rStmt);
+        $rRes = mysqli_stmt_get_result($rStmt);
+        $ratingSum = 0;
+        while ($rRow = mysqli_fetch_assoc($rRes)) {
+            $reviews[] = $rRow;
+            $ratingSum += (int)$rRow['rating'];
+        }
+        mysqli_stmt_close($rStmt);
+
+        $totalReviews = count($reviews);
+        if ($totalReviews > 0) {
+            $avgRating = round($ratingSum / $totalReviews, 1);
+        }
     }
 }
 
@@ -286,12 +332,12 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
 
-        <!-- Section: Customer Reviews & Ratings (Preparation for MP4 Review CRUD) -->
+        <!-- Section: Customer Reviews & Ratings (MP4 Review CRUD) -->
         <div class="pw-cart-card p-4 p-md-5" id="reviews">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-white border-opacity-10 gap-3">
                 <div>
                     <h3 class="fw-bold text-white mb-1 d-flex align-items-center gap-2">
-                        <i class="fa-regular fa-star text-warning"></i>
+                        <i class="fa-solid fa-star text-warning"></i>
                         <span>Customer Reviews &amp; Ratings</span>
                     </h3>
                     <p class="text-white-50 small mb-0">
@@ -302,7 +348,7 @@ include __DIR__ . '/includes/header.php';
                 <div>
                     <?php if ($hasPurchased): ?>
                         <span class="badge rounded-pill bg-success bg-opacity-15 text-success border border-success border-opacity-25 px-3 py-2 small">
-                            <i class="fa-solid fa-badge-check me-1"></i> Verified Purchaser
+                            <i class="fa-solid fa-circle-check me-1"></i> Verified Purchaser
                         </span>
                     <?php else: ?>
                         <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 px-3 py-2 small">
@@ -315,28 +361,169 @@ include __DIR__ . '/includes/header.php';
             <!-- Review Summary Cards -->
             <div class="row g-4 align-items-center mb-4">
                 <div class="col-md-4 text-center border-end border-white border-opacity-10 py-3">
-                    <div class="h1 fw-bold text-white mb-1">5.0</div>
+                    <div class="h1 fw-bold text-white mb-1"><?php echo number_format($avgRating, 1); ?></div>
                     <div class="text-warning mb-2" style="letter-spacing: 2px;">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
+                        <?php 
+                        $fullStars = floor($avgRating);
+                        for ($s = 1; $s <= 5; $s++) {
+                            if ($s <= $fullStars) {
+                                echo '<i class="fa-solid fa-star"></i>';
+                            } else {
+                                echo '<i class="fa-regular fa-star text-white-50"></i>';
+                            }
+                        }
+                        ?>
                     </div>
-                    <span class="text-white-50 small">Verified Trail Rating</span>
+                    <span class="text-white-50 small">Based on <?php echo $totalReviews; ?> verified <?php echo ($totalReviews === 1) ? 'review' : 'reviews'; ?></span>
                 </div>
 
                 <div class="col-md-8">
-                    <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1);">
-                        <p class="text-white-50 mb-0 small" style="line-height: 1.6;">
-                            <i class="fa-solid fa-quote-left text-warning me-1"></i>
-                            PedalWorks Dynamics delivers authentic components tested on real Philippine trails. Reviews and ratings for this gear will be managed under the upcoming review module.
-                        </p>
-                    </div>
+                    <?php if ($hasPurchased): ?>
+                        <div class="p-4 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <h5 class="fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square text-warning"></i>
+                                <span><?php echo $userReview ? 'Update Your Review' : 'Share Your Rider Experience'; ?></span>
+                            </h5>
+                            <p class="text-white-50 small mb-3">
+                                Tell other mountain and trail riders how this gear performed in real conditions. Inappropriate language will be automatically masked.
+                            </p>
+
+                            <!-- Pure PHP Review Form (MP5 novalidate) -->
+                            <form action="review_action.php" method="POST" novalidate>
+                                <input type="hidden" name="action" value="<?php echo $userReview ? 'update' : 'create'; ?>">
+                                <input type="hidden" name="productID" value="<?php echo (int)$product['productID']; ?>">
+                                <?php if ($userReview): ?>
+                                    <input type="hidden" name="reviewID" value="<?php echo (int)$userReview['reviewID']; ?>">
+                                <?php endif; ?>
+
+                                <div class="row g-3">
+                                    <div class="col-sm-5 col-md-4">
+                                        <label class="form-label text-white-50 small text-uppercase fw-bold">Star Rating</label>
+                                        <select name="rating" class="form-select bg-dark text-white border-secondary">
+                                            <option value="5" <?php echo (($userReview['rating'] ?? 5) == 5) ? 'selected' : ''; ?>>★★★★★ (5 - Excellent)</option>
+                                            <option value="4" <?php echo (($userReview['rating'] ?? 5) == 4) ? 'selected' : ''; ?>>★★★★☆ (4 - Good)</option>
+                                            <option value="3" <?php echo (($userReview['rating'] ?? 5) == 3) ? 'selected' : ''; ?>>★★★☆☆ (3 - Average)</option>
+                                            <option value="2" <?php echo (($userReview['rating'] ?? 5) == 2) ? 'selected' : ''; ?>>★★☆☆☆ (2 - Below Expectation)</option>
+                                            <option value="1" <?php echo (($userReview['rating'] ?? 5) == 1) ? 'selected' : ''; ?>>★☆☆☆☆ (1 - Poor)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label text-white-50 small text-uppercase fw-bold">Your Review</label>
+                                        <textarea name="reviewText" rows="3" class="form-control bg-dark text-white border-secondary" placeholder="Write your thoughts about durability, trail performance, fit, and build quality..."><?php echo htmlspecialchars($userReview['reviewText'] ?? ''); ?></textarea>
+                                    </div>
+
+                                    <div class="col-12 d-flex flex-wrap gap-2">
+                                        <button type="submit" class="pw-btn-trail-sm px-4">
+                                            <i class="fa-solid fa-paper-plane me-1"></i>
+                                            <?php echo $userReview ? 'Save Updated Review' : 'Publish Review'; ?>
+                                        </button>
+                                        <?php if ($userReview): ?>
+                                            <button type="submit" name="action" value="delete" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete your review?');">
+                                                <i class="fa-solid fa-trash-can me-1"></i> Remove Review
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-4 rounded-3 text-center" style="background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.1);">
+                            <i class="fa-solid fa-cart-shopping text-warning fs-3 mb-2 d-block"></i>
+                            <h6 class="text-white fw-bold mb-1">Purchased This Product?</h6>
+                            <p class="text-white-50 small mb-2">
+                                Review submissions are exclusively unlocked for verified customers who have completed an order for this gear.
+                            </p>
+                            <?php if (empty($_SESSION['customerAccountID'])): ?>
+                                <a href="login.php" class="pw-btn-glass-sm px-3 py-1">
+                                    <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In to Check Purchase Status
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <div class="text-center pt-3">
+            <!-- Customer Reviews List -->
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10">
+                <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-comments text-warning"></i>
+                    <span>Rider Experiences (<?php echo count($reviews); ?>)</span>
+                </h5>
+
+                <?php if (empty($reviews)): ?>
+                    <div class="text-center py-4 text-white-50">
+                        <i class="fa-regular fa-message fa-2x mb-2 opacity-50 d-block"></i>
+                        <p class="small mb-0">No reviews have been submitted for this item yet. Be the first verified customer to share your thoughts!</p>
+                    </div>
+                <?php else: ?>
+                    <div class="row g-3">
+                        <?php foreach ($reviews as $rev): 
+                            $isMyReview = ($customerAccountID > 0 && (int)$rev['customerAccountID'] === $customerAccountID);
+                            $reviewerName = trim($rev['firstName'] . ' ' . $rev['lastName']);
+                            if ($reviewerName === '') {
+                                $reviewerName = $rev['username'];
+                            }
+                            $avatarInitial = strtoupper(substr($reviewerName, 0, 1));
+                        ?>
+                            <div class="col-12">
+                                <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, <?php echo $isMyReview ? '0.05' : '0.02'; ?>); border: 1px solid rgba(255, 255, 255, <?php echo $isMyReview ? '0.15' : '0.06'; ?>);">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <?php if (!empty($rev['photo']) && file_exists(__DIR__ . '/assets/images/uploads/users/' . $rev['photo'])): ?>
+                                                <img src="/project/PedalWorks-Dynamics/assets/images/uploads/users/<?php echo htmlspecialchars($rev['photo']); ?>" 
+                                                     alt="Reviewer" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                                            <?php else: ?>
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold small" 
+                                                     style="width: 32px; height: 32px; background: linear-gradient(135deg, #d97706, #ea580c);">
+                                                    <?php echo htmlspecialchars($avatarInitial); ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <div>
+                                                <div class="fw-semibold text-white small d-flex align-items-center gap-2">
+                                                    <span><?php echo htmlspecialchars($reviewerName); ?></span>
+                                                    <span class="badge rounded-pill bg-success bg-opacity-20 text-success border border-success border-opacity-25" style="font-size: 0.65rem;">
+                                                        <i class="fa-solid fa-check me-1"></i>Verified Purchaser
+                                                    </span>
+                                                    <?php if ($isMyReview): ?>
+                                                        <span class="badge rounded-pill bg-primary bg-opacity-20 text-primary border border-primary border-opacity-25" style="font-size: 0.65rem;">
+                                                            Your Review
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <small class="text-white-50" style="font-size: 0.72rem;">
+                                                    <?php echo date('M d, Y', strtotime($rev['createdAt'])); ?>
+                                                    <?php if ($rev['updatedAt'] && $rev['updatedAt'] !== $rev['createdAt']): ?>
+                                                        &bull; (Updated <?php echo date('M d, Y', strtotime($rev['updatedAt'])); ?>)
+                                                    <?php endif; ?>
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-warning small" style="letter-spacing: 1px;">
+                                            <?php 
+                                            for ($s = 1; $s <= 5; $s++) {
+                                                if ($s <= (int)$rev['rating']) {
+                                                    echo '<i class="fa-solid fa-star"></i>';
+                                                } else {
+                                                    echo '<i class="fa-regular fa-star text-white-50"></i>';
+                                                }
+                                            }
+                                            ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-light small mt-2" style="line-height: 1.6;">
+                                        <?php echo nl2br(htmlspecialchars($rev['cleanText'])); ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="text-center pt-4">
                 <a href="products.php" class="pw-btn-glass-sm px-4 py-2">
                     <i class="fa-solid fa-arrow-left me-1"></i> Explore More Products
                 </a>

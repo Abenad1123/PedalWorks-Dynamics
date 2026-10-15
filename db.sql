@@ -216,6 +216,35 @@ CREATE TABLE IF NOT EXISTS `expense` (
     CHECK (`category` <> 'Other' OR `description` IS NOT NULL)
 ) ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `review` (
+  `reviewID` INT NOT NULL AUTO_INCREMENT,
+  `customerAccountID` INT NOT NULL,
+  `productID` INT NULL,
+  `serviceID` INT NULL,
+  `rating` INT NOT NULL DEFAULT 5,
+  `reviewText` TEXT NOT NULL,
+  `cleanText` TEXT NOT NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`reviewID`),
+  INDEX `idx_review_customer` (`customerAccountID` ASC),
+  INDEX `idx_review_product` (`productID` ASC),
+  INDEX `idx_review_service` (`serviceID` ASC),
+  CONSTRAINT `fk_review_customerAccount`
+    FOREIGN KEY (`customerAccountID`) REFERENCES `customerAccount` (`customerAccountID`)
+    ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `fk_review_product`
+    FOREIGN KEY (`productID`) REFERENCES `product` (`productID`)
+    ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `fk_review_service`
+    FOREIGN KEY (`serviceID`) REFERENCES `service` (`serviceID`)
+    ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `chk_review_target`
+    CHECK ((`productID` IS NOT NULL AND `serviceID` IS NULL) OR (`productID` IS NULL AND `serviceID` IS NOT NULL)),
+  CONSTRAINT `chk_review_rating`
+    CHECK (`rating` >= 1 AND `rating` <= 5)
+) ENGINE = InnoDB;
+
 -- =====================================================================
 -- MySQL VIEWS for Order Transaction Details & Reporting (Unit 1 Rubric)
 -- =====================================================================

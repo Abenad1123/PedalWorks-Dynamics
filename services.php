@@ -63,6 +63,53 @@ if ($conn) {
     }
 }
 
+// Reviews and verified availed service lookups (MP4)
+$serviceReviews = [];
+$serviceRatingStats = [];
+$customerAccountID = (int)($_SESSION['customerAccountID'] ?? 0);
+$availedServices = [];
+$userReviewsByService = [];
+
+if ($conn) {
+    $revSql = "SELECT r.reviewID, r.serviceID, r.customerAccountID, r.rating, r.cleanText, r.reviewText, r.createdAt, r.updatedAt,
+                      ca.username,
+                      c.firstName, c.lastName, c.photo
+               FROM review r
+               JOIN customerAccount ca ON r.customerAccountID = ca.customerAccountID
+               JOIN customer c ON ca.customerID = c.customerID
+               WHERE r.serviceID IS NOT NULL
+               ORDER BY r.createdAt DESC";
+    $rRes = @mysqli_query($conn, $revSql);
+    if ($rRes) {
+        while ($rRow = mysqli_fetch_assoc($rRes)) {
+            $sId = (int)$rRow['serviceID'];
+            $serviceReviews[$sId][] = $rRow;
+            if (!isset($serviceRatingStats[$sId])) {
+                $serviceRatingStats[$sId] = ['total' => 0, 'sum' => 0];
+            }
+            $serviceRatingStats[$sId]['total']++;
+            $serviceRatingStats[$sId]['sum'] += (int)$rRow['rating'];
+            
+            if ($customerAccountID > 0 && (int)$rRow['customerAccountID'] === $customerAccountID) {
+                $userReviewsByService[$sId] = $rRow;
+            }
+        }
+    }
+
+    if ($customerAccountID > 0) {
+        $avStmt = mysqli_prepare($conn, "SELECT DISTINCT serviceID FROM customerService WHERE customerAccountID = ?");
+        if ($avStmt) {
+            mysqli_stmt_bind_param($avStmt, 'i', $customerAccountID);
+            mysqli_stmt_execute($avStmt);
+            $avRes = mysqli_stmt_get_result($avStmt);
+            while ($avRow = mysqli_fetch_assoc($avRes)) {
+                $availedServices[(int)$avRow['serviceID']] = true;
+            }
+            mysqli_stmt_close($avStmt);
+        }
+    }
+}
+
 // Helper function to pick icon by service category
 function getServiceIcon($categoryName) {
     switch ($categoryName) {
@@ -269,6 +316,17 @@ function getServiceIcon($categoryName) {
                             <?php echo htmlspecialchars($s['name']); ?>
                         </h4>
 
+                        <?php 
+                        $currSid = (int)$s['serviceID'];
+                        if (!empty($serviceRatingStats[$currSid]['total'])): 
+                            $sAvg = round($serviceRatingStats[$currSid]['sum'] / $serviceRatingStats[$currSid]['total'], 1);
+                        ?>
+                            <div class="d-flex align-items-center gap-1 mb-2 small">
+                                <span class="text-warning"><i class="fa-solid fa-star"></i> <?php echo number_format($sAvg, 1); ?></span>
+                                <span class="text-white-50">(<?php echo $serviceRatingStats[$currSid]['total']; ?> reviews)</span>
+                            </div>
+                        <?php endif; ?>
+
                         <!-- Description -->
                         <p class="pw-service-desc">
                             <?php echo htmlspecialchars($s['description'] ?? ''); ?>
@@ -383,6 +441,130 @@ function getServiceIcon($categoryName) {
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- Service Reviews Section (MP4) -->
+                                <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+                                <div class="mt-3">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                        <h6 class="text-white fw-bold mb-0 d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-star text-warning"></i>
+                                            <span>Customer Reviews (<?php echo count($serviceReviews[$currSid] ?? []); ?>)</span>
+                                        </h6>
+                                        <?php if (!empty($serviceRatingStats[$currSid]['total'])): ?>
+                                            <div class="small text-white-50">
+                                                Average Rating: <strong class="text-warning"><?php echo number_format($serviceRatingStats[$currSid]['sum'] / $serviceRatingStats[$currSid]['total'], 1); ?></strong> / 5.0
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <!-- Customer Availed Service Review Form -->
+                                    <?php 
+                                    $isServiceAvailed = !empty($availedServices[$currSid]);
+                                    $sUserReview = $userReviewsByService[$currSid] ?? null;
+                                    ?>
+                                    <?php if ($isServiceAvailed): ?>
+                                        <div class="p-3 mb-4 rounded-3" style="background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.25);">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="small fw-bold text-white d-flex align-items-center gap-1">
+                                                    <i class="fa-solid fa-pen-to-square text-warning"></i>
+                                                    <?php echo $sUserReview ? 'Update Your Workshop Experience' : 'Rate & Review This Service'; ?>
+                                                </span>
+                                                <span class="badge rounded-pill bg-success bg-opacity-25 text-success border border-success border-opacity-25 small" style="font-size: 0.65rem;">
+                                                    <i class="fa-solid fa-check me-1"></i>Verified Customer
+                                                </span>
+                                            </div>
+
+                                            <form action="review_action.php" method="POST" novalidate>
+                                                <input type="hidden" name="serviceID" value="<?php echo $currSid; ?>">
+                                                <input type="hidden" name="action" value="<?php echo $sUserReview ? 'update' : 'create'; ?>">
+                                                <?php if ($sUserReview): ?>
+                                                    <input type="hidden" name="reviewID" value="<?php echo (int)$sUserReview['reviewID']; ?>">
+                                                <?php endif; ?>
+
+                                                <div class="row g-2 mb-2 align-items-center">
+                                                    <div class="col-sm-4">
+                                                        <label class="form-label text-white-50 small mb-1">Your Rating</label>
+                                                        <select name="rating" class="form-select form-select-sm pw-form-select">
+                                                            <?php 
+                                                            $currentRating = $sUserReview ? (int)$sUserReview['rating'] : 5;
+                                                            for ($r = 5; $r >= 1; $r--): ?>
+                                                                <option value="<?php echo $r; ?>" <?php echo ($currentRating === $r) ? 'selected' : ''; ?>>
+                                                                    <?php echo str_repeat('★', $r) . str_repeat('☆', 5 - $r); ?> (<?php echo $r; ?> Star<?php echo $r > 1 ? 's' : ''; ?>)
+                                                                </option>
+                                                            <?php endfor; ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    <textarea name="reviewText" class="form-control form-control-sm pw-form-control" rows="2" 
+                                                              placeholder="Share feedback on technician skill, turnaround time, or ride feel..."><?php echo htmlspecialchars($sUserReview['reviewText'] ?? ''); ?></textarea>
+                                                </div>
+
+                                                <div class="d-flex gap-2">
+                                                    <button type="submit" class="btn btn-sm pw-btn-trail-sm py-1 px-3">
+                                                        <i class="fa-solid fa-paper-plane me-1"></i> <?php echo $sUserReview ? 'Save Changes' : 'Submit Review'; ?>
+                                                    </button>
+                                                    <?php if ($sUserReview): ?>
+                                                        <button type="submit" name="action" value="delete" class="btn btn-outline-danger btn-sm py-1 px-2" onclick="return confirm('Delete your review?');">
+                                                            <i class="fa-solid fa-trash-can me-1"></i> Remove
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="p-3 mb-3 rounded text-center" style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1);">
+                                            <span class="small text-white-50">
+                                                <i class="fa-solid fa-circle-check text-warning me-1"></i>
+                                                Reviews are unlocked for verified riders who have availed this workshop service.
+                                            </span>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- Reviews List -->
+                                    <?php $currentReviews = $serviceReviews[$currSid] ?? []; ?>
+                                    <?php if (empty($currentReviews)): ?>
+                                        <p class="text-white-50 small mb-0 fst-italic">No reviews yet for this workshop service. Be the first to share your experience!</p>
+                                    <?php else: ?>
+                                        <div class="d-flex flex-column gap-2" style="max-height: 250px; overflow-y: auto;">
+                                            <?php foreach ($currentReviews as $sRev): 
+                                                $sRevName = trim($sRev['firstName'] . ' ' . $sRev['lastName']);
+                                                if ($sRevName === '') $sRevName = $sRev['username'];
+                                                $sAvatar = strtoupper(substr($sRevName, 0, 1));
+                                            ?>
+                                                <div class="p-2 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" 
+                                                                 style="width: 24px; height: 24px; font-size: 0.7rem; background: linear-gradient(135deg, #d97706, #ea580c);">
+                                                                <?php echo htmlspecialchars($sAvatar); ?>
+                                                            </div>
+                                                            <span class="small fw-semibold text-white"><?php echo htmlspecialchars($sRevName); ?></span>
+                                                            <span class="badge rounded-pill bg-success bg-opacity-20 text-success border border-success border-opacity-25" style="font-size: 0.6rem;">Verified</span>
+                                                        </div>
+                                                        <div class="text-warning small" style="font-size: 0.75rem;">
+                                                            <?php 
+                                                            for ($st = 1; $st <= 5; $st++) {
+                                                                echo ($st <= (int)$sRev['rating']) ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star text-white-50"></i>';
+                                                            }
+                                                            ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-white-50 small ps-4">
+                                                        <?php echo nl2br(htmlspecialchars($sRev['cleanText'])); ?>
+                                                    </div>
+                                                    <div class="text-end text-white-50" style="font-size: 0.65rem;">
+                                                        <?php echo date('M d, Y', strtotime($sRev['createdAt'])); ?>
+                                                        <?php if ($sRev['updatedAt'] && $sRev['updatedAt'] !== $sRev['createdAt']): ?>
+                                                            &bull; (Updated)
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div class="modal-footer pw-modal-footer text-muted small justify-content-between">
