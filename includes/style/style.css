@@ -1531,4 +1531,174 @@ a:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* --------------------------------------------------------------------------
+   Cart, Checkout & Order History (Apple HIG Styling)
+   -------------------------------------------------------------------------- */
+.pw-cart-card,
+.pw-checkout-card,
+.pw-order-card {
+    background: rgba(16, 22, 30, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: var(--pw-radius-lg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.pw-order-card:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.pw-cart-item-row {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.pw-cart-item-row:last-child {
+    border-bottom: none;
+}
+
+.pw-cart-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--pw-radius-md);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pw-cart-thumb img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+/* Apple HIG Stepper Pill */
+.pw-stepper-group {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--pw-radius-pill);
+    padding: 2px;
+}
+
+.pw-stepper-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--pw-text-primary);
+    border-radius: var(--pw-radius-pill);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pw-stepper-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.pw-stepper-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.pw-stepper-input {
+    width: 44px;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: var(--pw-font-display);
+    outline: none;
+    -moz-appearance: textfield;
+}
+
+.pw-stepper-input::-webkit-outer-spin-button,
+.pw-stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Segmented Picker (Apple Radio Style) */
+.pw-segmented-option {
+    display: block;
+    cursor: pointer;
+    margin: 0;
+}
+
+.pw-segmented-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pw-segmented-box {
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--pw-radius-md);
+    transition: all 0.2s ease;
+}
+
+.pw-segmented-option input[type="radio"]:checked + .pw-segmented-box {
+    background: rgba(209, 102, 41, 0.12);
+    border-color: var(--pw-trail-earth);
+    box-shadow: 0 0 0 1px var(--pw-trail-earth);
+}
+
+/* Subtle Apple HIG Badges */
+.pw-badge-status-pending {
+    background: rgba(245, 155, 88, 0.15);
+    border: 1px solid rgba(245, 155, 88, 0.35);
+    color: #f59b58;
+}
+
+.pw-badge-status-received {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+}
+
+.pw-badge-status-inprogress {
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #c084fc;
+}
+
+.pw-badge-status-ready {
+    background: rgba(45, 212, 191, 0.15);
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    color: #2dd4bf;
+}
+
+.pw-badge-status-completed {
+    background: rgba(52, 211, 153, 0.15);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    color: #34d399;
+}
+
+.pw-badge-status-cancelled {
+    background: rgba(248, 113, 113, 0.15);
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    color: #f87171;
+}
+
+
 

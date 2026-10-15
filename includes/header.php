@@ -54,17 +54,31 @@ if (session_status() === PHP_SESSION_NONE) {
             </ul>
 
             <div class="d-flex align-items-center gap-2 pw-nav-actions">
+                <?php 
+                $headerCartCount = 0;
+                if (!empty($_SESSION['customerAccountID']) && isset($conn) && $conn) {
+                    $hcStmt = mysqli_prepare($conn, "SELECT COALESCE(SUM(quantity), 0) FROM customerCart WHERE customerAccountID = ?");
+                    if ($hcStmt) {
+                        mysqli_stmt_bind_param($hcStmt, "i", $_SESSION['customerAccountID']);
+                        mysqli_stmt_execute($hcStmt);
+                        mysqli_stmt_bind_result($hcStmt, $headerCartCount);
+                        mysqli_stmt_fetch($hcStmt);
+                        mysqli_stmt_close($hcStmt);
+                    }
+                }
+                ?>
+                <?php if (!empty($_SESSION['customerAccountID']) || ($_SESSION['account_type'] ?? '') === 'customer'): ?>
+                    <a class="btn pw-btn-glass-icon position-relative" href="/project/PedalWorks-Dynamics/cart.php" title="Shopping Cart">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <?php if ($headerCartCount > 0): ?>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill pw-badge-cart">
+                                <?php echo (int)$headerCartCount; ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+                <?php endif; ?>
+
                 <?php if (isset($_SESSION['customerAccountID']) || isset($_SESSION['adminAccountID']) || isset($_SESSION['user_id'])): ?>
-                    <?php if (file_exists(__DIR__ . '/../view_cart.php')): ?>
-                        <a class="btn pw-btn-glass-icon position-relative" href="/project/PedalWorks-Dynamics/view_cart.php" title="Shopping Cart">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <?php if (isset($_SESSION['cart_products']) && count($_SESSION['cart_products']) > 0): ?>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill pw-badge-cart">
-                                    <?php echo count($_SESSION['cart_products']); ?>
-                                </span>
-                            <?php endif; ?>
-                        </a>
-                    <?php endif; ?>
                     <div class="dropdown">
                         <button class="btn pw-btn-glass dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <?php if (!empty($_SESSION['photo']) && file_exists(__DIR__ . '/../assets/images/uploads/users/' . $_SESSION['photo'])): ?>
@@ -78,6 +92,8 @@ if (session_status() === PHP_SESSION_NONE) {
                         <ul class="dropdown-menu dropdown-menu-end pw-glass-dropdown">
                             <?php if (!empty($_SESSION['customerAccountID']) || ($_SESSION['account_type'] ?? '') === 'customer'): ?>
                                 <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/profile.php"><i class="fa-solid fa-id-card me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/cart.php"><i class="fa-solid fa-cart-shopping me-2"></i>Shopping Cart</a></li>
+                                <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/orders.php"><i class="fa-solid fa-clock-rotate-left me-2"></i>Order History</a></li>
                                 <li><hr class="dropdown-divider pw-dropdown-divider"></li>
                             <?php endif; ?>
                             <?php if (!empty($_SESSION['adminAccountID']) || ($_SESSION['account_type'] ?? '') === 'admin'): ?>

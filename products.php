@@ -236,18 +236,31 @@ if ($conn) {
                             </p>
 
                             <!-- Product Card Footer -->
-                            <div class="pw-product-footer">
+                            <div class="pw-product-footer d-flex align-items-center justify-content-between gap-2">
                                 <div class="pw-product-price">
                                     <span class="pw-price-label">PRICE</span>
                                     <span class="pw-price-amount">&#8369;<?php echo number_format($p['price'], 2); ?></span>
                                 </div>
-                                <button type="button" class="pw-btn-product-action" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#<?php echo $modalId; ?>"
-                                        title="View Details">
-                                    <span>Details</span>
-                                    <i class="fa-solid fa-arrow-right fa-xs"></i>
-                                </button>
+                                <div class="d-flex align-items-center gap-1">
+                                    <?php if (!$isOutOfStock): ?>
+                                        <form action="cart_action.php" method="POST" class="m-0">
+                                            <input type="hidden" name="action" value="add">
+                                            <input type="hidden" name="productID" value="<?php echo (int)$p['productID']; ?>">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <input type="hidden" name="redirect" value="products.php">
+                                            <button type="submit" class="btn btn-sm pw-btn-glass rounded-pill px-2 py-1 text-white" title="Add 1 to Cart">
+                                                <i class="fa-solid fa-cart-plus"></i>
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <button type="button" class="pw-btn-product-action" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#<?php echo $modalId; ?>"
+                                            title="View Details">
+                                        <span>Details</span>
+                                        <i class="fa-solid fa-arrow-right fa-xs"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -310,9 +323,35 @@ if ($conn) {
                                             <?php echo nl2br(htmlspecialchars($p['description'] ?? 'No description provided.')); ?>
                                         </p>
 
+                                        <?php if (!$isOutOfStock): ?>
+                                            <form action="cart_action.php" method="POST" class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                                                <input type="hidden" name="action" value="add">
+                                                <input type="hidden" name="productID" value="<?php echo (int)$p['productID']; ?>">
+                                                <input type="hidden" name="redirect" value="products.php">
+
+                                                <div class="pw-stepper-group">
+                                                    <button type="button" class="pw-stepper-btn" onclick="let input=this.nextElementSibling; if(parseInt(input.value)>1) input.value=parseInt(input.value)-1;">
+                                                        <i class="fa-solid fa-minus"></i>
+                                                    </button>
+                                                    <input type="number" name="quantity" class="pw-stepper-input" value="1" min="1" max="<?php echo (int)$p['stock']; ?>" readonly>
+                                                    <button type="button" class="pw-stepper-btn" onclick="let input=this.previousElementSibling; if(parseInt(input.value)< <?php echo (int)$p['stock']; ?>) input.value=parseInt(input.value)+1;">
+                                                        <i class="fa-solid fa-plus"></i>
+                                                    </button>
+                                                </div>
+
+                                                <button type="submit" class="pw-btn-trail-sm py-2 px-3">
+                                                    <i class="fa-solid fa-cart-shopping me-1"></i> Add to Cart
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <div class="alert alert-secondary bg-white bg-opacity-10 text-white border-0 py-2 px-3 rounded-pill small mb-4">
+                                                <i class="fa-solid fa-circle-info me-1"></i> This item is currently out of stock.
+                                            </div>
+                                        <?php endif; ?>
+
                                         <div class="d-flex flex-wrap gap-2">
-                                            <a href="index.php#workshop-basecamp" class="pw-btn-trail-sm py-2 px-3">
-                                                <i class="fa-solid fa-location-dot me-1"></i> Inquire at Basecamp
+                                            <a href="index.php#workshop-basecamp" class="pw-btn-glass-sm py-2 px-3">
+                                                <i class="fa-solid fa-location-dot me-1"></i> Basecamp Details
                                             </a>
                                             <button type="button" class="pw-btn-glass-sm py-2 px-3" data-bs-dismiss="modal">
                                                 Close

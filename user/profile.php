@@ -236,9 +236,15 @@ include('../includes/header.php');
                 </ol>
             </nav>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="orders.php" class="pw-btn-glass-sm py-1 px-3">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> My Orders
+            </a>
+            <a href="../cart.php" class="pw-btn-glass-sm py-1 px-3">
+                <i class="fa-solid fa-cart-shopping me-1"></i> Cart
+            </a>
             <a href="../index.php" class="btn btn-sm btn-outline-secondary text-white-50 px-3 py-1" style="border-radius: 6px; font-size: 0.825rem;">
-                <i class="fa-solid fa-arrow-left me-1"></i> Back to Store
+                <i class="fa-solid fa-arrow-left me-1"></i> Store
             </a>
         </div>
     </div>

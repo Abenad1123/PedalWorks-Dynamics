@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS `productSale` (
   `paymentMethod` ENUM('Cash on Delivery', 'Cash on Pickup') NOT NULL,
   `pickupMethod` ENUM('Delivery', 'In-Store Pickup') NOT NULL,
   `deliveryAddress` TEXT NULL,
-  `status` ENUM('Received', 'In Progress', 'Ready for Pickup') NOT NULL,
+  `status` ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Received',
   `orderDate` DATETIME NOT NULL,
   PRIMARY KEY (`productSaleID`),
   INDEX `fk_productSale_customerAccount1_idx` (`customerAccountID` ASC),
@@ -215,6 +215,74 @@ CREATE TABLE IF NOT EXISTS `expense` (
   CONSTRAINT `chk_expense_other_desc`
     CHECK (`category` <> 'Other' OR `description` IS NOT NULL)
 ) ENGINE = InnoDB;
+
+-- =====================================================================
+-- MySQL VIEWS for Order Transaction Details & Reporting (Unit 1 Rubric)
+-- =====================================================================
+
+CREATE OR REPLACE VIEW `vw_order_transaction_details` AS
+SELECT 
+  ps.productSaleID,
+  ps.orderDate,
+  ps.status AS orderStatus,
+  ps.paymentMethod,
+  ps.pickupMethod,
+  ps.deliveryAddress,
+  ca.customerAccountID,
+  ca.username AS customerUsername,
+  c.customerID,
+  CONCAT(c.firstName, IF(c.lastName IS NOT NULL AND c.lastName <> '', CONCAT(' ', c.lastName), '')) AS customerName,
+  c.email AS customerEmail,
+  c.address AS customerRegisteredAddress,
+  olp.orderLineProductID,
+  olp.productID,
+  olp.quantity,
+  p.sku,
+  p.name AS productName,
+  p.image AS productImage,
+  p.price AS unitPrice,
+  (olp.quantity * p.price) AS lineSubtotal,
+  pc.name AS categoryName
+FROM `productSale` ps
+JOIN `customerAccount` ca ON ps.customerAccountID = ca.customerAccountID
+JOIN `customer` c ON ca.customerID = c.customerID
+JOIN `orderLineProduct` olp ON ps.productSaleID = olp.productSaleID
+JOIN `product` p ON olp.productID = p.productID
+LEFT JOIN `productCategory` pc ON p.productCategoryID = pc.productCategoryID;
+
+CREATE OR REPLACE VIEW `vw_order_summary` AS
+SELECT 
+  ps.productSaleID,
+  ps.orderDate,
+  ps.status AS orderStatus,
+  ps.paymentMethod,
+  ps.pickupMethod,
+  ps.deliveryAddress,
+  ca.customerAccountID,
+  ca.username AS customerUsername,
+  c.customerID,
+  CONCAT(c.firstName, IF(c.lastName IS NOT NULL AND c.lastName <> '', CONCAT(' ', c.lastName), '')) AS customerName,
+  c.email AS customerEmail,
+  COUNT(olp.orderLineProductID) AS totalDistinctItems,
+  COALESCE(SUM(olp.quantity), 0) AS totalItemCount,
+  COALESCE(SUM(olp.quantity * p.price), 0.00) AS grandTotal
+FROM `productSale` ps
+JOIN `customerAccount` ca ON ps.customerAccountID = ca.customerAccountID
+JOIN `customer` c ON ca.customerID = c.customerID
+LEFT JOIN `orderLineProduct` olp ON ps.productSaleID = olp.productSaleID
+LEFT JOIN `product` p ON olp.productID = p.productID
+GROUP BY 
+  ps.productSaleID,
+  ps.orderDate,
+  ps.status,
+  ps.paymentMethod,
+  ps.pickupMethod,
+  ps.deliveryAddress,
+  ca.customerAccountID,
+  ca.username,
+  c.customerID,
+  customerName,
+  c.email;
 
 -- =====================================================================
 -- Notes for the application code (not executed)
