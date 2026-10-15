@@ -101,6 +101,26 @@ if ($conn && $product) {
             $avgRating = round($ratingSum / $totalReviews, 1);
         }
     }
+
+    // 3. Fetch all photos for multiple photo viewing (MP1)
+    $productImages = [];
+    $imgStmt = mysqli_prepare($conn, "SELECT productImageID, imagePath, isPrimary FROM productImage WHERE productID = ? ORDER BY isPrimary DESC, productImageID ASC");
+    if ($imgStmt) {
+        mysqli_stmt_bind_param($imgStmt, 'i', $pID);
+        mysqli_stmt_execute($imgStmt);
+        $imgRes = mysqli_stmt_get_result($imgStmt);
+        while ($iRow = mysqli_fetch_assoc($imgRes)) {
+            $productImages[] = $iRow;
+        }
+        mysqli_stmt_close($imgStmt);
+    }
+    if (empty($productImages) && !empty($product['image'])) {
+        $productImages[] = [
+            'productImageID' => 0,
+            'imagePath' => $product['image'],
+            'isPrimary' => 1
+        ];
+    }
 }
 
 include __DIR__ . '/includes/header.php';
@@ -141,7 +161,7 @@ include __DIR__ . '/includes/header.php';
 
         <!-- Product Primary Showcase -->
         <div class="row g-4 mb-5">
-            <!-- Left: Product Image Stage -->
+            <!-- Left: Product Image Stage & Multi-Photo Showcase (MP1) -->
             <div class="col-lg-6">
                 <div class="pw-cart-card p-4 p-md-5 d-flex align-items-center justify-content-center position-relative" 
                      style="min-height: 440px; background: #ffffff; border-radius: 20px;">
@@ -149,6 +169,11 @@ include __DIR__ . '/includes/header.php';
                         <span class="badge rounded-pill bg-dark text-white px-3 py-2 fw-semibold" style="letter-spacing: 0.03em;">
                             <?php echo htmlspecialchars($catName); ?>
                         </span>
+                        <?php if (count($productImages) > 1): ?>
+                            <span class="badge rounded-pill bg-secondary text-white px-3 py-2 fw-semibold">
+                                <i class="fa-solid fa-images me-1"></i><?php echo count($productImages); ?> Photos
+                            </span>
+                        <?php endif; ?>
                     </div>
 
                     <div class="position-absolute top-0 end-0 m-3">
@@ -166,10 +191,14 @@ include __DIR__ . '/includes/header.php';
                         </span>
                     </div>
 
-                    <?php if (!empty($product['image']) && file_exists(__DIR__ . '/' . $product['image'])): ?>
-                        <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($product['image']); ?>" 
+                    <?php 
+                    $mainImageSrc = !empty($productImages) ? $productImages[0]['imagePath'] : $product['image'];
+                    ?>
+                    <?php if (!empty($mainImageSrc) && file_exists(__DIR__ . '/' . $mainImageSrc)): ?>
+                        <img id="pwMainProductImage" 
+                             src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($mainImageSrc); ?>" 
                              alt="<?php echo htmlspecialchars($product['name']); ?>" 
-                             class="img-fluid" style="max-height: 380px; object-fit: contain;">
+                             class="img-fluid" style="max-height: 380px; object-fit: contain; transition: opacity 0.2s ease;">
                     <?php else: ?>
                         <div class="text-center text-muted py-5">
                             <i class="fa-solid fa-bicycle fa-4x mb-3 text-secondary"></i>
@@ -177,6 +206,40 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <!-- Multiple Photo Thumbnails Strip (MP1: View Multiple Photos) -->
+                <?php if (count($productImages) > 1): ?>
+                    <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
+                        <?php foreach ($productImages as $tIdx => $tImg): ?>
+                            <button type="button" 
+                                    class="btn p-1 rounded-3 pw-thumb-btn <?php echo ($tIdx === 0) ? 'active' : ''; ?>" 
+                                    style="width: 72px; height: 72px; background: #ffffff; border: 2px solid <?php echo ($tIdx === 0) ? '#ea580c' : 'rgba(255,255,255,0.2)'; ?>; overflow: hidden; cursor: pointer; transition: all 0.2s;"
+                                    onclick="pwSwitchMainImage('/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($tImg['imagePath']); ?>', this)">
+                                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($tImg['imagePath']); ?>" 
+                                     alt="Photo <?php echo $tIdx + 1; ?>" 
+                                     style="width: 100%; height: 100%; object-fit: contain;">
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                    <script>
+                    function pwSwitchMainImage(src, btn) {
+                        const mainImg = document.getElementById('pwMainProductImage');
+                        if (mainImg) {
+                            mainImg.style.opacity = '0.3';
+                            setTimeout(() => {
+                                mainImg.src = src;
+                                mainImg.style.opacity = '1';
+                            }, 150);
+                        }
+                        document.querySelectorAll('.pw-thumb-btn').forEach(b => {
+                            b.style.borderColor = 'rgba(255,255,255,0.2)';
+                            b.classList.remove('active');
+                        });
+                        btn.style.borderColor = '#ea580c';
+                        btn.classList.add('active');
+                    }
+                    </script>
+                <?php endif; ?>
             </div>
 
             <!-- Right: Product Purchasing & Overview -->

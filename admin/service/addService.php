@@ -147,7 +147,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         mysqli_stmt_bind_param($insStmt, 'ssssdi', $sku, $name, $imagePath, $description, $price, $categoryID);
 
         if (mysqli_stmt_execute($insStmt)) {
-            $_SESSION['success'] = 'Service "' . htmlspecialchars($name) . '" (SKU: ' . htmlspecialchars($sku) . ') has been added successfully.';
+            $newServiceID = mysqli_insert_id($conn);
+
+            // Record primary image in serviceImage table
+            if (!empty($imagePath)) {
+                $siStmt = mysqli_prepare($conn, "INSERT INTO serviceImage (serviceID, imagePath, isPrimary) VALUES (?, ?, 1)");
+                if ($siStmt) {
+                    mysqli_stmt_bind_param($siStmt, 'is', $newServiceID, $imagePath);
+                    mysqli_stmt_execute($siStmt);
+                    mysqli_stmt_close($siStmt);
+                }
+            }
+
+            // Handle multiple gallery photos upload (MP1)
+            if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
+                $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
+                if (!is_dir($uploadTargetDir)) {
+                    mkdir($uploadTargetDir, 0777, true);
+                }
+                $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+
+                foreach ($_FILES['gallery_images']['name'] as $idx => $gName) {
+                    if ($_FILES['gallery_images']['error'][$idx] === UPLOAD_ERR_OK && !empty($gName)) {
+                        $gTmp  = $_FILES['gallery_images']['tmp_name'][$idx];
+                        $gSize = $_FILES['gallery_images']['size'][$idx];
+                        $gExt  = strtolower(pathinfo($gName, PATHINFO_EXTENSION));
+
+                        if (in_array($gExt, $allowedExts) && $gSize <= 5 * 1024 * 1024) {
+                            $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($gName, PATHINFO_FILENAME));
+                            $gFileName = 'serv_gal_' . time() . '_' . $idx . '_' . $cleanBase . '.' . $gExt;
+                            $gDest = $uploadTargetDir . $gFileName;
+
+                            if (move_uploaded_file($gTmp, $gDest)) {
+                                $galleryPath = 'assets/images/uploads/' . $gFileName;
+                                $gStmt = mysqli_prepare($conn, "INSERT INTO serviceImage (serviceID, imagePath, isPrimary) VALUES (?, ?, 0)");
+                                if ($gStmt) {
+                                    mysqli_stmt_bind_param($gStmt, 'is', $newServiceID, $galleryPath);
+                                    mysqli_stmt_execute($gStmt);
+                                    mysqli_stmt_close($gStmt);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            $_SESSION['success'] = 'Service "' . htmlspecialchars($name) . '" (SKU: ' . htmlspecialchars($sku) . ') has been added successfully with photos.';
             header('Location: index.php');
             exit;
         } else {
@@ -307,6 +352,20 @@ $activeModule = 'service';
                                         <?php endforeach; ?>
                                     </select>
                                     <div class="form-text small">Uses preloaded workshop images.</div>
+                                </div>
+                            </div>
+
+                            <hr class="my-3 text-secondary opacity-25">
+
+                            <!-- Multiple Gallery Photos Upload (MP1) -->
+                            <div>
+                                <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
+                                    <i class="fa-solid fa-images text-info"></i>
+                                    <span>Additional Service Gallery Photos (Upload Multiple)</span>
+                                </label>
+                                <input type="file" id="gallery_images" name="gallery_images[]" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp" multiple>
+                                <div class="form-text small">
+                                    Select multiple photos at once (workshop tools, bench setup, before/after). Allowed: JPG, PNG, WEBP (Max 5MB each).
                                 </div>
                             </div>
                         </div>

@@ -178,7 +178,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         mysqli_stmt_bind_param($insStmt, 'sssissdi', $sku, $name, $description, $categoryID, $imagePath, $price, $stock, $lowStockThreshold);
 
         if (mysqli_stmt_execute($insStmt)) {
-            $_SESSION['success'] = 'Product "' . htmlspecialchars($name) . '" (SKU: ' . htmlspecialchars($sku) . ') has been added successfully.';
+            $newProductID = mysqli_insert_id($conn);
+
+            // Record primary image in productImage table
+            if (!empty($imagePath)) {
+                $piStmt = mysqli_prepare($conn, "INSERT INTO productImage (productID, imagePath, isPrimary) VALUES (?, ?, 1)");
+                if ($piStmt) {
+                    mysqli_stmt_bind_param($piStmt, 'is', $newProductID, $imagePath);
+                    mysqli_stmt_execute($piStmt);
+                    mysqli_stmt_close($piStmt);
+                }
+            }
+
+            // Handle multiple gallery photos upload (MP1)
+            if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
+                $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
+                if (!is_dir($uploadTargetDir)) {
+                    mkdir($uploadTargetDir, 0777, true);
+                }
+                $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+
+                foreach ($_FILES['gallery_images']['name'] as $idx => $gName) {
+                    if ($_FILES['gallery_images']['error'][$idx] === UPLOAD_ERR_OK && !empty($gName)) {
+                        $gTmp  = $_FILES['gallery_images']['tmp_name'][$idx];
+                        $gSize = $_FILES['gallery_images']['size'][$idx];
+                        $gExt  = strtolower(pathinfo($gName, PATHINFO_EXTENSION));
+
+                        if (in_array($gExt, $allowedExts) && $gSize <= 5 * 1024 * 1024) {
+                            $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($gName, PATHINFO_FILENAME));
+                            $gFileName = 'prod_gal_' . time() . '_' . $idx . '_' . $cleanBase . '.' . $gExt;
+                            $gDest = $uploadTargetDir . $gFileName;
+
+                            if (move_uploaded_file($gTmp, $gDest)) {
+                                $galleryPath = 'assets/images/uploads/' . $gFileName;
+                                $gStmt = mysqli_prepare($conn, "INSERT INTO productImage (productID, imagePath, isPrimary) VALUES (?, ?, 0)");
+                                if ($gStmt) {
+                                    mysqli_stmt_bind_param($gStmt, 'is', $newProductID, $galleryPath);
+                                    mysqli_stmt_execute($gStmt);
+                                    mysqli_stmt_close($gStmt);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            $_SESSION['success'] = 'Product "' . htmlspecialchars($name) . '" (SKU: ' . htmlspecialchars($sku) . ') has been added successfully with photos.';
             header('Location: index.php');
             exit;
         } else {
@@ -360,6 +405,20 @@ $activeModule = 'product';
                                         <?php endforeach; ?>
                                     </select>
                                     <div class="form-text small">Uses preloaded photography assets.</div>
+                                </div>
+                            </div>
+
+                            <hr class="my-3 text-secondary opacity-25">
+
+                            <!-- Multiple Gallery Photos Upload (MP1) -->
+                            <div>
+                                <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
+                                    <i class="fa-solid fa-images text-info"></i>
+                                    <span>Additional Product Gallery Photos (Upload Multiple)</span>
+                                </label>
+                                <input type="file" id="gallery_images" name="gallery_images[]" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp" multiple>
+                                <div class="form-text small">
+                                    Select multiple photos at once (Ctrl+click or drag multiple files). Allowed: JPG, PNG, WEBP (Max 5MB each).
                                 </div>
                             </div>
                         </div>

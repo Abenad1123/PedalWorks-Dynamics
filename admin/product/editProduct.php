@@ -124,6 +124,76 @@ if (is_dir($assetsDir)) {
     }
 }
 
+// Handle Set Primary Image Action
+if (isset($_GET['set_primary_img']) && $conn) {
+    $targetImgID = (int)$_GET['set_primary_img'];
+    $findStmt = mysqli_prepare($conn, "SELECT imagePath FROM productImage WHERE productImageID = ? AND productID = ? LIMIT 1");
+    if ($findStmt) {
+        mysqli_stmt_bind_param($findStmt, 'ii', $targetImgID, $productID);
+        mysqli_stmt_execute($findStmt);
+        $findRes = mysqli_stmt_get_result($findStmt);
+        if ($targetRow = mysqli_fetch_assoc($findRes)) {
+            $newPrimaryPath = $targetRow['imagePath'];
+            // Reset old primary
+            mysqli_query($conn, "UPDATE productImage SET isPrimary = 0 WHERE productID = " . (int)$productID);
+            // Set new primary
+            mysqli_query($conn, "UPDATE productImage SET isPrimary = 1 WHERE productImageID = " . (int)$targetImgID);
+            // Update product.image
+            $uProdStmt = mysqli_prepare($conn, "UPDATE product SET image = ? WHERE productID = ?");
+            mysqli_stmt_bind_param($uProdStmt, 'si', $newPrimaryPath, $productID);
+            mysqli_stmt_execute($uProdStmt);
+            mysqli_stmt_close($uProdStmt);
+
+            $_SESSION['success'] = 'Primary product photo updated.';
+        }
+        mysqli_stmt_close($findStmt);
+    }
+    header('Location: editProduct.php?id=' . $productID);
+    exit;
+}
+
+// Handle Delete Image Action
+if (isset($_GET['delete_img']) && $conn) {
+    $targetImgID = (int)$_GET['delete_img'];
+    $delStmt = mysqli_prepare($conn, "DELETE FROM productImage WHERE productImageID = ? AND productID = ?");
+    if ($delStmt) {
+        mysqli_stmt_bind_param($delStmt, 'ii', $targetImgID, $productID);
+        mysqli_stmt_execute($delStmt);
+        mysqli_stmt_close($delStmt);
+
+        // Check if any primary image remains
+        $chkPri = mysqli_query($conn, "SELECT imagePath FROM productImage WHERE productID = " . (int)$productID . " ORDER BY isPrimary DESC, productImageID ASC LIMIT 1");
+        if ($chkRow = mysqli_fetch_assoc($chkPri)) {
+            mysqli_query($conn, "UPDATE productImage SET isPrimary = 1 WHERE productID = " . (int)$productID . " AND imagePath = '" . mysqli_real_escape_string($conn, $chkRow['imagePath']) . "'");
+            $uProd = mysqli_prepare($conn, "UPDATE product SET image = ? WHERE productID = ?");
+            mysqli_stmt_bind_param($uProd, 'si', $chkRow['imagePath'], $productID);
+            mysqli_stmt_execute($uProd);
+            mysqli_stmt_close($uProd);
+        } else {
+            mysqli_query($conn, "UPDATE product SET image = '' WHERE productID = " . (int)$productID);
+        }
+
+        $_SESSION['success'] = 'Photo removed from product gallery.';
+    }
+    header('Location: editProduct.php?id=' . $productID);
+    exit;
+}
+
+// Fetch all photos for this product
+$productImages = [];
+if ($conn) {
+    $imgStmt = mysqli_prepare($conn, "SELECT productImageID, imagePath, isPrimary FROM productImage WHERE productID = ? ORDER BY isPrimary DESC, productImageID ASC");
+    if ($imgStmt) {
+        mysqli_stmt_bind_param($imgStmt, 'i', $productID);
+        mysqli_stmt_execute($imgStmt);
+        $imgRes = mysqli_stmt_get_result($imgStmt);
+        while ($iRow = mysqli_fetch_assoc($imgRes)) {
+            $productImages[] = $iRow;
+        }
+        mysqli_stmt_close($imgStmt);
+    }
+}
+
 // Handle Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     $rawName              = $_POST['name'] ?? '';
@@ -248,7 +318,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
                 $insStmt = mysqli_prepare($conn, "INSERT INTO product (sku, name, description, productCategoryID, image, price, stock, lowStockThreshold, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NULL)");
                 mysqli_stmt_bind_param($insStmt, 'sssissdi', $sku, $name, $description, $categoryID, $imagePath, $newPrice, $currentStock, $lowStockThreshold);
                 mysqli_stmt_execute($insStmt);
+                $newProductID = mysqli_insert_id($conn);
                 mysqli_stmt_close($insStmt);
+
+                // Copy previous images to new product version
+                mysqli_query($conn, "INSERT INTO productImage (productID, imagePath, isPrimary)
+                    SELECT $newProductID, imagePath, isPrimary FROM productImage WHERE productID = " . (int)$productID);
+
+                // Update primary if changed
+                if (!empty($imagePath)) {
+                    mysqli_query($conn, "UPDATE productImage SET isPrimary = 0 WHERE productID = $newProductID");
+                    $chkImg = mysqli_query($conn, "SELECT productImageID FROM productImage WHERE productID = $newProductID AND imagePath = '" . mysqli_real_escape_string($conn, $imagePath) . "' LIMIT 1");
+                    if ($chkRow = mysqli_fetch_assoc($chkImg)) {
+                        mysqli_query($conn, "UPDATE productImage SET isPrimary = 1 WHERE productImageID = " . (int)$chkRow['productImageID']);
+                    } else {
+                        mysqli_query($conn, "INSERT INTO productImage (productID, imagePath, isPrimary) VALUES ($newProductID, '" . mysqli_real_escape_string($conn, $imagePath) . "', 1)");
+                    }
+                }
+
+                // Upload additional gallery photos for new version
+                if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
+                    $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
+                    if (!is_dir($uploadTargetDir)) mkdir($uploadTargetDir, 0777, true);
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+                    foreach ($_FILES['gallery_images']['name'] as $idx => $gName) {
+                        if ($_FILES['gallery_images']['error'][$idx] === UPLOAD_ERR_OK && !empty($gName)) {
+                            $gTmp  = $_FILES['gallery_images']['tmp_name'][$idx];
+                            $gSize = $_FILES['gallery_images']['size'][$idx];
+                            $gExt  = strtolower(pathinfo($gName, PATHINFO_EXTENSION));
+                            if (in_array($gExt, $allowedExts) && $gSize <= 5 * 1024 * 1024) {
+                                $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($gName, PATHINFO_FILENAME));
+                                $gFileName = 'prod_gal_' . time() . '_' . $idx . '_' . $cleanBase . '.' . $gExt;
+                                if (move_uploaded_file($gTmp, $uploadTargetDir . $gFileName)) {
+                                    $galPath = 'assets/images/uploads/' . $gFileName;
+                                    mysqli_query($conn, "INSERT INTO productImage (productID, imagePath, isPrimary) VALUES ($newProductID, '$galPath', 0)");
+                                }
+                            }
+                        }
+                    }
+                }
 
                 mysqli_commit($conn);
                 $_SESSION['success'] = 'Product "' . htmlspecialchars($name) . '" updated with new price &#8369;' . number_format($newPrice, 2) . ' (New price history version created).';
@@ -264,6 +372,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
             mysqli_stmt_bind_param($upStmt, 'ssisii', $name, $description, $categoryID, $imagePath, $lowStockThreshold, $productID);
 
             if (mysqli_stmt_execute($upStmt)) {
+                // Sync primary image in productImage
+                if (!empty($imagePath)) {
+                    mysqli_query($conn, "UPDATE productImage SET isPrimary = 0 WHERE productID = " . (int)$productID);
+                    $chkImg = mysqli_query($conn, "SELECT productImageID FROM productImage WHERE productID = " . (int)$productID . " AND imagePath = '" . mysqli_real_escape_string($conn, $imagePath) . "' LIMIT 1");
+                    if ($chkRow = mysqli_fetch_assoc($chkImg)) {
+                        mysqli_query($conn, "UPDATE productImage SET isPrimary = 1 WHERE productImageID = " . (int)$chkRow['productImageID']);
+                    } else {
+                        mysqli_query($conn, "INSERT INTO productImage (productID, imagePath, isPrimary) VALUES (" . (int)$productID . ", '" . mysqli_real_escape_string($conn, $imagePath) . "', 1)");
+                    }
+                }
+
+                // Handle additional gallery images upload
+                if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
+                    $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
+                    if (!is_dir($uploadTargetDir)) mkdir($uploadTargetDir, 0777, true);
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+                    foreach ($_FILES['gallery_images']['name'] as $idx => $gName) {
+                        if ($_FILES['gallery_images']['error'][$idx] === UPLOAD_ERR_OK && !empty($gName)) {
+                            $gTmp  = $_FILES['gallery_images']['tmp_name'][$idx];
+                            $gSize = $_FILES['gallery_images']['size'][$idx];
+                            $gExt  = strtolower(pathinfo($gName, PATHINFO_EXTENSION));
+                            if (in_array($gExt, $allowedExts) && $gSize <= 5 * 1024 * 1024) {
+                                $cleanBase = preg_replace('/[^a-zA-Z0-9_\-]/', '_', pathinfo($gName, PATHINFO_FILENAME));
+                                $gFileName = 'prod_gal_' . time() . '_' . $idx . '_' . $cleanBase . '.' . $gExt;
+                                if (move_uploaded_file($gTmp, $uploadTargetDir . $gFileName)) {
+                                    $galPath = 'assets/images/uploads/' . $gFileName;
+                                    mysqli_query($conn, "INSERT INTO productImage (productID, imagePath, isPrimary) VALUES (" . (int)$productID . ", '$galPath', 0)");
+                                }
+                            }
+                        }
+                    }
+                }
+
                 $_SESSION['success'] = 'Product "' . htmlspecialchars($name) . '" updated successfully.';
                 header('Location: index.php');
                 exit;
@@ -438,41 +579,84 @@ $activeModule = 'product';
                         <textarea id="description" name="description" class="form-control" rows="4"><?php echo htmlspecialchars($_POST['description'] ?? $product['description'] ?? ''); ?></textarea>
                     </div>
 
-                    <!-- Media Assets Box -->
+                    <!-- Media Assets Box (MP1: Multiple Photos) -->
                     <div class="card bg-light border mb-4">
                         <div class="card-body">
-                            <h6 class="fw-semibold text-dark mb-3">
-                                <i class="fa-solid fa-image text-primary me-2"></i>Product Media Assets
-                            </h6>
-                            
-                            <div class="row align-items-center g-3">
-                                <div class="col-md-3 text-center">
-                                    <div class="small fw-semibold text-muted mb-2">Current Photo Preview</div>
-                                    <?php if (!empty($product['image']) && file_exists(__DIR__ . '/../../' . $product['image'])): ?>
-                                        <img src="../../<?php echo htmlspecialchars($product['image']); ?>" alt="Current preview" class="img-thumbnail shadow-sm rounded" style="max-height: 110px; object-fit: cover;">
-                                    <?php else: ?>
-                                        <div class="bg-secondary bg-opacity-10 text-secondary rounded py-4 border">
-                                            <i class="fa-solid fa-image fa-2x d-block mb-1"></i>
-                                            <span class="small">No Image</span>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-semibold text-dark mb-0">
+                                    <i class="fa-solid fa-images text-primary me-2"></i>Product Gallery Photos (<?php echo count($productImages); ?>)
+                                </h6>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                    MP1 Multi-Photo Support
+                                </span>
+                            </div>
+
+                            <!-- Current Gallery Photos Grid -->
+                            <?php if (!empty($productImages)): ?>
+                                <div class="row g-3 mb-4">
+                                    <?php foreach ($productImages as $pi): ?>
+                                        <div class="col-6 col-sm-4 col-md-3">
+                                            <div class="card h-100 border text-center p-2 shadow-sm position-relative <?php echo $pi['isPrimary'] ? 'border-primary border-2 bg-white' : 'bg-white'; ?>">
+                                                <div class="d-flex align-items-center justify-content-center bg-light rounded mb-2" style="height: 110px; overflow: hidden;">
+                                                    <?php if (file_exists(__DIR__ . '/../../' . $pi['imagePath'])): ?>
+                                                        <img src="../../<?php echo htmlspecialchars($pi['imagePath']); ?>" class="img-fluid rounded" style="max-height: 100%; object-fit: contain;">
+                                                    <?php else: ?>
+                                                        <div class="text-muted small"><i class="fa-solid fa-image fa-2x mb-1 d-block opacity-50"></i><?php echo htmlspecialchars(basename($pi['imagePath'])); ?></div>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="mt-auto">
+                                                    <?php if ($pi['isPrimary']): ?>
+                                                        <span class="badge bg-success w-100 py-1 mb-1"><i class="fa-solid fa-star me-1"></i>Primary Photo</span>
+                                                    <?php else: ?>
+                                                        <a href="editProduct.php?id=<?php echo $productID; ?>&set_primary_img=<?php echo $pi['productImageID']; ?>" class="btn btn-outline-primary btn-sm w-100 py-1 mb-1" style="font-size: 0.72rem;">
+                                                            Set as Primary
+                                                        </a>
+                                                        <a href="editProduct.php?id=<?php echo $productID; ?>&delete_img=<?php echo $pi['productImageID']; ?>" class="btn btn-outline-danger btn-sm w-100 py-1" style="font-size: 0.72rem;" onclick="return confirm('Remove this photo from product gallery?');">
+                                                            <i class="fa-solid fa-trash me-1"></i>Delete
+                                                        </a>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
                                         </div>
-                                    <?php endif; ?>
+                                    <?php endforeach; ?>
                                 </div>
-                                <div class="col-md-9">
-                                    <div class="mb-3">
-                                        <label for="image_file" class="form-label small fw-semibold text-muted">Upload New Image File (Replaces current)</label>
-                                        <input type="file" id="image_file" name="image_file" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp">
-                                    </div>
-                                    <div>
-                                        <label for="image_select" class="form-label small fw-semibold text-muted">Or Select Existing Asset Path</label>
-                                        <select id="image_select" name="image_select" class="form-select form-select-sm">
-                                            <option value="">-- Keep Current Image (<?php echo htmlspecialchars($product['image'] ?? 'None'); ?>) --</option>
-                                            <?php foreach ($existingImages as $img): ?>
-                                                <option value="<?php echo htmlspecialchars($img); ?>" <?php echo (($product['image'] === $img) ? 'selected' : ''); ?>>
-                                                    <?php echo htmlspecialchars($img); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
+                            <?php else: ?>
+                                <div class="alert alert-secondary py-3 text-center small mb-3">
+                                    <i class="fa-solid fa-image me-1"></i> No photos linked to this product yet. Upload photos below.
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="image_file" class="form-label small fw-semibold text-muted">Upload / Replace Primary Image</label>
+                                    <input type="file" id="image_file" name="image_file" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp">
+                                    <div class="form-text small">Sets the main cover photo for the product card.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="image_select" class="form-label small fw-semibold text-muted">Or Select Asset Path</label>
+                                    <select id="image_select" name="image_select" class="form-select form-select-sm">
+                                        <option value="">-- Keep Current Image (<?php echo htmlspecialchars($product['image'] ?? 'None'); ?>) --</option>
+                                        <?php foreach ($existingImages as $img): ?>
+                                            <option value="<?php echo htmlspecialchars($img); ?>" <?php echo (($product['image'] === $img) ? 'selected' : ''); ?>>
+                                                <?php echo htmlspecialchars($img); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="form-text small">Uses preloaded photography assets.</div>
+                                </div>
+                            </div>
+
+                            <hr class="my-3 text-secondary opacity-25">
+
+                            <!-- Add Multiple Additional Photos to Gallery -->
+                            <div>
+                                <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
+                                    <i class="fa-solid fa-cloud-arrow-up text-info"></i>
+                                    <span>Upload Additional Gallery Photos (Multiple)</span>
+                                </label>
+                                <input type="file" id="gallery_images" name="gallery_images[]" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp" multiple>
+                                <div class="form-text small">
+                                    Select multiple files to append to the product gallery (Ctrl+Click or drag files). Allowed: JPG, PNG, WEBP (Max 5MB each).
                                 </div>
                             </div>
                         </div>

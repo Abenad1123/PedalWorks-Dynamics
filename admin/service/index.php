@@ -72,9 +72,11 @@ if ($conn) {
     }
 
     $sql = "SELECT s.*, sc.name AS categoryName,
-                   (SELECT COUNT(*) FROM customerService cs WHERE cs.serviceID = s.serviceID) AS usageCount
+                   (SELECT COUNT(*) FROM customerService cs WHERE cs.serviceID = s.serviceID) AS usageCount,
+                   COALESCE(sic.photoCount, 0) AS photoCount
             FROM service s 
-            LEFT JOIN serviceCategory sc ON s.serviceCategoryID = sc.serviceCategoryID ";
+            LEFT JOIN serviceCategory sc ON s.serviceCategoryID = sc.serviceCategoryID 
+            LEFT JOIN (SELECT serviceID, COUNT(*) AS photoCount FROM serviceImage GROUP BY serviceID) sic ON s.serviceID = sic.serviceID ";
 
     if (!empty($where)) {
         $sql .= " WHERE " . implode(" AND ", $where);
@@ -274,6 +276,13 @@ $activeModule = 'service';
                                         <?php else: ?>
                                             <div class="bg-secondary bg-opacity-10 text-secondary rounded d-flex align-items-center justify-content-center mx-auto" style="width: 55px; height: 42px;">
                                                 <i class="fa-solid fa-wrench"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ((int)($s['photoCount'] ?? 0) > 1): ?>
+                                            <div class="mt-1">
+                                                <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;" title="<?php echo (int)$s['photoCount']; ?> gallery photos">
+                                                    <i class="fa-solid fa-images me-1"></i><?php echo (int)$s['photoCount']; ?>
+                                                </span>
                                             </div>
                                         <?php endif; ?>
                                     </td>

@@ -342,6 +342,42 @@ JOIN `customerAccount` ca ON cs.customerAccountID = ca.customerAccountID
 JOIN `customer` c ON ca.customerID = c.customerID
 LEFT JOIN `adminAccount` adm ON cs.adminAccountID = adm.adminAccountID;
 
+-- -----------------------------------------------------
+-- Table `productImage` (MP1: Multiple Product Photos)
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `productImage` (
+  `productImageID` INT NOT NULL AUTO_INCREMENT,
+  `productID` INT NOT NULL,
+  `imagePath` VARCHAR(255) NOT NULL,
+  `isPrimary` TINYINT(1) NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`productImageID`),
+  INDEX `idx_productImage_product` (`productID` ASC),
+  CONSTRAINT `fk_productImage_product`
+    FOREIGN KEY (`productID`)
+    REFERENCES `product` (`productID`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `serviceImage` (MP1: Multiple Service Photos)
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `serviceImage` (
+  `serviceImageID` INT NOT NULL AUTO_INCREMENT,
+  `serviceID` INT NOT NULL,
+  `imagePath` VARCHAR(255) NOT NULL,
+  `isPrimary` TINYINT(1) NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`serviceImageID`),
+  INDEX `idx_serviceImage_service` (`serviceID` ASC),
+  CONSTRAINT `fk_serviceImage_service`
+    FOREIGN KEY (`serviceID`)
+    REFERENCES `service` (`serviceID`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+
 -- =====================================================================
 -- Notes for the application code (not executed)
 --

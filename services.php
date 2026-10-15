@@ -108,6 +108,15 @@ if ($conn) {
             mysqli_stmt_close($avStmt);
         }
     }
+
+    // Fetch all service gallery photos (MP1)
+    $serviceAllImages = [];
+    $siQuery = @mysqli_query($conn, "SELECT serviceImageID, serviceID, imagePath, isPrimary FROM serviceImage ORDER BY isPrimary DESC, serviceImageID ASC");
+    if ($siQuery) {
+        while ($siRow = mysqli_fetch_assoc($siQuery)) {
+            $serviceAllImages[(int)$siRow['serviceID']][] = $siRow;
+        }
+    }
 }
 
 // Helper function to pick icon by service category
@@ -379,12 +388,30 @@ function getServiceIcon($categoryName) {
                             <div class="modal-body p-4">
                                 <div class="row g-4 align-items-center">
                                     <div class="col-md-5">
-                                        <?php if (!empty($s['image']) && file_exists(__DIR__ . '/' . $s['image'])): ?>
+                                        <?php 
+                                        $sImgs = $serviceAllImages[$s['serviceID']] ?? [];
+                                        $sMainImg = !empty($sImgs) ? $sImgs[0]['imagePath'] : ($s['image'] ?? '');
+                                        ?>
+                                        <?php if (!empty($sMainImg) && file_exists(__DIR__ . '/' . $sMainImg)): ?>
                                             <div class="pw-service-img-box" style="height: 240px;">
-                                                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($s['image']); ?>" 
+                                                <img id="servMainImg_<?php echo $s['serviceID']; ?>" 
+                                                     src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($sMainImg); ?>" 
                                                      alt="<?php echo htmlspecialchars($s['name']); ?>" 
-                                                     class="pw-service-img">
+                                                     class="pw-service-img" style="transition: opacity 0.2s ease;">
                                             </div>
+                                            <?php if (count($sImgs) > 1): ?>
+                                                <div class="d-flex flex-wrap gap-2 mt-2 justify-content-center">
+                                                    <?php foreach ($sImgs as $sIdx => $sImg): ?>
+                                                        <button type="button" 
+                                                                class="btn p-0 rounded-2 border overflow-hidden" 
+                                                                style="width: 48px; height: 48px; border-color: <?php echo ($sIdx === 0) ? '#ea580c' : 'rgba(255,255,255,0.2)'; ?> !important;"
+                                                                onclick="document.getElementById('servMainImg_<?php echo $s['serviceID']; ?>').src = '/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($sImg['imagePath']); ?>'; this.parentElement.querySelectorAll('button').forEach(b => b.style.borderColor = 'rgba(255,255,255,0.2)'); this.style.borderColor = '#ea580c';">
+                                                            <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($sImg['imagePath']); ?>" 
+                                                                 style="width: 100%; height: 100%; object-fit: cover;">
+                                                        </button>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php endif; ?>
                                         <?php else: ?>
                                             <div class="pw-hero-placeholder-inner" style="min-height: 240px;">
                                                 <i class="fa-solid <?php echo $iconClass; ?> fa-3x text-warning mb-2"></i>

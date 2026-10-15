@@ -152,6 +152,44 @@ try {
             CONSTRAINT `chk_review_rating`
                 CHECK (`rating` >= 1 AND `rating` <= 5)
         ) ENGINE = InnoDB");
+
+        @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `productImage` (
+            `productImageID` INT NOT NULL AUTO_INCREMENT,
+            `productID` INT NOT NULL,
+            `imagePath` VARCHAR(255) NOT NULL,
+            `isPrimary` TINYINT(1) NOT NULL DEFAULT 0,
+            `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`productImageID`),
+            INDEX `idx_productImage_product` (`productID` ASC),
+            CONSTRAINT `fk_productImage_product`
+                FOREIGN KEY (`productID`) REFERENCES `product` (`productID`)
+                ON DELETE CASCADE ON UPDATE NO ACTION
+        ) ENGINE = InnoDB");
+
+        @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `serviceImage` (
+            `serviceImageID` INT NOT NULL AUTO_INCREMENT,
+            `serviceID` INT NOT NULL,
+            `imagePath` VARCHAR(255) NOT NULL,
+            `isPrimary` TINYINT(1) NOT NULL DEFAULT 0,
+            `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`serviceImageID`),
+            INDEX `idx_serviceImage_service` (`serviceID` ASC),
+            CONSTRAINT `fk_serviceImage_service`
+                FOREIGN KEY (`serviceID`) REFERENCES `service` (`serviceID`)
+                ON DELETE CASCADE ON UPDATE NO ACTION
+        ) ENGINE = InnoDB");
+
+        @mysqli_query($conn, "INSERT INTO `productImage` (`productID`, `imagePath`, `isPrimary`)
+            SELECT p.productID, p.image, 1 
+            FROM `product` p
+            LEFT JOIN `productImage` pi ON p.productID = pi.productID
+            WHERE p.image IS NOT NULL AND p.image != '' AND pi.productImageID IS NULL");
+
+        @mysqli_query($conn, "INSERT INTO `serviceImage` (`serviceID`, `imagePath`, `isPrimary`)
+            SELECT s.serviceID, s.image, 1 
+            FROM `service` s
+            LEFT JOIN `serviceImage` si ON s.serviceID = si.serviceID
+            WHERE s.image IS NOT NULL AND s.image != '' AND si.serviceImageID IS NULL");
     }
 } catch (mysqli_sql_exception $e) {
     $conn = false;

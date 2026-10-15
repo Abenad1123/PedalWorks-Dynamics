@@ -83,9 +83,10 @@ if ($conn) {
         $where[] = "p.stock > p.lowStockThreshold";
     }
 
-    $sql = "SELECT p.*, pc.name AS categoryName 
+    $sql = "SELECT p.*, pc.name AS categoryName, COALESCE(pic.photoCount, 0) AS photoCount 
             FROM product p 
-            LEFT JOIN productCategory pc ON p.productCategoryID = pc.productCategoryID ";
+            LEFT JOIN productCategory pc ON p.productCategoryID = pc.productCategoryID 
+            LEFT JOIN (SELECT productID, COUNT(*) AS photoCount FROM productImage GROUP BY productID) pic ON p.productID = pic.productID ";
     
     if (!empty($where)) {
         $sql .= " WHERE " . implode(" AND ", $where);
@@ -312,6 +313,13 @@ $activeModule = 'product';
                                         <?php else: ?>
                                             <div class="bg-secondary bg-opacity-10 text-secondary rounded d-flex align-items-center justify-content-center mx-auto" style="width: 55px; height: 42px;">
                                                 <i class="fa-solid fa-image"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ((int)($p['photoCount'] ?? 0) > 1): ?>
+                                            <div class="mt-1">
+                                                <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;" title="<?php echo (int)$p['photoCount']; ?> gallery photos">
+                                                    <i class="fa-solid fa-images me-1"></i><?php echo (int)$p['photoCount']; ?>
+                                                </span>
                                             </div>
                                         <?php endif; ?>
                                     </td>
