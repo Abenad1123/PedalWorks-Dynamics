@@ -1,7 +1,7 @@
 <?php
 session_start();
-include('./includes/header.php');
 include('./includes/config.php');
+include('./includes/header.php');
 ?>
 
 <link rel="stylesheet" href="/project/PedalWorks-Dynamics/includes/style/homepage-animations.css">
@@ -215,7 +215,7 @@ include('./includes/config.php');
                 <div class="col-lg-3 col-sm-6">
                     <a href="products.php?category=<?php echo urlencode($cName); ?>" class="pw-category-card pw-tilt-card">
                         <div class="pw-category-img-wrapper">
-                            <img src="<?php echo htmlspecialchars($cImg); ?>" alt="<?php echo htmlspecialchars($cName); ?>" class="pw-category-img">
+                            <img src="<?php echo htmlspecialchars($cImg); ?>" alt="<?php echo htmlspecialchars($cName); ?>" class="pw-category-img" loading="lazy" decoding="async">
                             <div class="pw-category-overlay">
                                 <h3 class="pw-category-title">
                                     <span><?php echo htmlspecialchars($cName); ?></span>
@@ -283,7 +283,7 @@ include('./includes/config.php');
                             </span>
                             
                             <?php if (!empty($product['image']) && file_exists(__DIR__ . '/' . $product['image'])): ?>
-                                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="pw-product-img">
+                                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="pw-product-img" loading="lazy" decoding="async">
                             <?php else: ?>
                                 <div class="pw-product-img-icon">
                                     <i class="fa-solid fa-bicycle"></i>

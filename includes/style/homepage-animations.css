@@ -25,6 +25,8 @@
     z-index: 0;
     overflow: hidden;
     background-color: #0d1e17;
+    contain: layout paint;
+    transform: translateZ(0);
 }
 
 /* Layer Base: Stacks all 7 mountain depth planes */
@@ -38,6 +40,8 @@
     background-repeat: no-repeat;
     background-size: cover;
     will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
     transform-origin: center bottom;
 }
 
@@ -365,7 +369,9 @@
    -------------------------------------------------------------------------- */
 .pw-tilt-card {
     transform-style: preserve-3d;
-    transition: transform 0.15s ease-out, box-shadow 0.25s ease;
+    will-change: transform;
+    backface-visibility: hidden;
+    transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
 }
 
 .pw-tilt-card:hover {
