@@ -72,11 +72,32 @@ if ($conn && $customerID > 0) {
     }
 }
 
+// Fetch available workshop services for labor attachment (FR15)
+$availableServices = [];
+if ($conn) {
+    $svcRes = @mysqli_query($conn, "SELECT s.serviceID, s.sku, s.name, s.price, sc.name AS categoryName 
+                                     FROM service s 
+                                     LEFT JOIN serviceCategory sc ON s.serviceCategoryID = sc.serviceCategoryID 
+                                     WHERE s.endDate IS NULL 
+                                     ORDER BY sc.name ASC, s.name ASC");
+    if ($svcRes) {
+        while ($svcRow = mysqli_fetch_assoc($svcRes)) {
+            $availableServices[] = $svcRow;
+        }
+    }
+}
+
 // Handle Form Submission
 $errors = [];
-$pickupMethod   = $_POST['pickupMethod'] ?? 'Delivery';
+$pickupMethod    = $_POST['pickupMethod'] ?? 'Delivery';
 $deliveryAddress = $_POST['deliveryAddress'] ?? ($customerData['address'] ?? '');
-$paymentMethod  = $_POST['paymentMethod'] ?? 'Cash on Delivery';
+$paymentMethod   = $_POST['paymentMethod'] ?? 'Cash on Delivery';
+
+// Labor Attachment Fields (FR15)
+$attachLabor         = !empty($_POST['attachLabor']) && $_POST['attachLabor'] === '1';
+$laborServiceID      = isset($_POST['laborServiceID']) ? (int)$_POST['laborServiceID'] : 0;
+$laborScheduledRaw   = isset($_POST['laborScheduledDate']) ? trim($_POST['laborScheduledDate']) : '';
+$laborNotes          = isset($_POST['laborNotes']) ? trim($_POST['laborNotes']) : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Pure PHP Form Validation without HTML5 (MP5 Compliance)
@@ -99,6 +120,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $validPayments = ['Cash on Delivery', 'Cash on Pickup'];
     if (!in_array($paymentMethod, $validPayments, true)) {
         $errors['paymentMethod'] = 'Please select a supported payment method.';
+    }
+
+    // Labor Request Validation (FR15)
+    $laborScheduledFormatted = null;
+    if ($attachLabor) {
+        if ($laborServiceID <= 0) {
+            $errors['laborServiceID'] = 'Please select a workshop service to attach.';
+        }
+        if ($laborScheduledRaw !== '') {
+            $ts = strtotime($laborScheduledRaw);
+            if (!$ts || $ts < strtotime(date('Y-m-d 08:00:00'))) {
+                $errors['laborScheduledDate'] = 'Preferred service schedule date must not be in the past.';
+            } else {
+                $laborScheduledFormatted = date('Y-m-d H:i:s', $ts);
+            }
+        }
     }
 
     if (empty($errors) && $conn) {
@@ -162,7 +199,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_close($lineStmt);
             mysqli_stmt_close($stockStmt);
 
-            // 4. Clear Customer's Cart
+            // 4. Attach workshop labor request to order if selected (FR15)
+            if ($attachLabor && $laborServiceID > 0) {
+                $laborStmt = mysqli_prepare($conn, "INSERT INTO customerService (serviceID, customerAccountID, productSaleID, requestDate, scheduledDate, notes, status) 
+                                                    VALUES (?, ?, ?, NOW(), ?, ?, 'Pending')");
+                if ($laborStmt) {
+                    mysqli_stmt_bind_param($laborStmt, 'iiiss', $laborServiceID, $customerAccountID, $productSaleID, $laborScheduledFormatted, $laborNotes);
+                    if (!mysqli_stmt_execute($laborStmt)) {
+                        throw new Exception('Failed to attach labor request to order: ' . mysqli_stmt_error($laborStmt));
+                    }
+                    mysqli_stmt_close($laborStmt);
+                }
+            }
+
+            // 5. Clear Customer's Cart
             $clearStmt = mysqli_prepare($conn, "DELETE FROM customerCart WHERE customerAccountID = ?");
             mysqli_stmt_bind_param($clearStmt, 'i', $customerAccountID);
             mysqli_stmt_execute($clearStmt);
@@ -171,7 +221,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Commit Transaction
             mysqli_commit($conn);
 
-            $_SESSION['success'] = 'Your order #PW-ORD-' . $productSaleID . ' has been placed successfully!';
+            $successMsg = 'Your order #PW-ORD-' . $productSaleID . ' has been placed successfully!';
+            if ($attachLabor) {
+                $successMsg .= ' An attached workshop service request was also scheduled with our mechanics.';
+            }
+            $_SESSION['success'] = $successMsg;
             header('Location: user/orders.php?order_id=' . $productSaleID . '&placed=1');
             exit;
 
@@ -297,6 +351,59 @@ include __DIR__ . '/includes/header.php';
                                 <span class="text-white-50 small">Km. 14 East Service Road, Western Bicutan, Taguig City 1630</span>
                                 <div class="text-warning small mt-1"><i class="fa-solid fa-clock me-1"></i> Ready for pickup within 24 hours of order receipt.</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workshop Labor & Installation Request (FR15) -->
+                <div class="pw-checkout-card p-4 mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-screwdriver-wrench text-warning"></i>
+                            <span>Workshop Labor Request</span>
+                        </h5>
+                        <span class="badge rounded-pill bg-warning text-dark small fw-bold">Optional &bull; FR15</span>
+                    </div>
+                    <p class="text-white-50 small mb-3">
+                        Would you like our certified mechanics to professionally assemble or install the components in this order?
+                    </p>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" role="switch" id="attachLaborSwitch" name="attachLabor" value="1" <?php echo $attachLabor ? 'checked' : ''; ?> onchange="document.getElementById('laborDetailsGroup').style.display = this.checked ? 'block' : 'none';">
+                        <label class="form-check-label text-white fw-semibold" for="attachLaborSwitch">
+                            Attach a labor or parts installation request to this order
+                        </label>
+                    </div>
+
+                    <div id="laborDetailsGroup" class="p-3 rounded mt-2" style="background: rgba(255,255,255,0.03); border: 1px solid var(--pw-glass-border); <?php echo $attachLabor ? '' : 'display: none;'; ?>">
+                        <div class="mb-3">
+                            <label class="form-label text-white small fw-bold">Select Workshop Service</label>
+                            <select name="laborServiceID" class="form-select pw-form-control <?php echo isset($errors['laborServiceID']) ? 'is-invalid' : ''; ?>">
+                                <option value="">-- Choose Workshop Service --</option>
+                                <?php foreach ($availableServices as $svc): ?>
+                                    <option value="<?php echo (int)$svc['serviceID']; ?>" <?php echo ($laborServiceID === (int)$svc['serviceID']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($svc['name']); ?> (&#8369;<?php echo number_format($svc['price'], 2); ?> &bull; <?php echo htmlspecialchars($svc['categoryName'] ?? 'Workshop'); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php if (isset($errors['laborServiceID'])): ?>
+                                <div class="text-danger small mt-1"><?php echo htmlspecialchars($errors['laborServiceID']); ?></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-white small fw-bold">Preferred Service Date &amp; Time</label>
+                            <input type="datetime-local" name="laborScheduledDate" class="form-control pw-form-control <?php echo isset($errors['laborScheduledDate']) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($laborScheduledRaw); ?>" min="<?php echo date('Y-m-d\TH:i'); ?>">
+                            <?php if (isset($errors['laborScheduledDate'])): ?>
+                                <div class="text-danger small mt-1"><?php echo htmlspecialchars($errors['laborScheduledDate']); ?></div>
+                            <?php else: ?>
+                                <div class="text-white-50 small mt-1">Target date to bring your bike or complete parts installation.</div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div>
+                            <label class="form-label text-white small fw-bold">Technician Notes / Bike Model</label>
+                            <textarea name="laborNotes" class="form-control pw-form-control" rows="2" placeholder="e.g. Please install the ordered brake set and pedals on my 29er hardtail."><?php echo htmlspecialchars($laborNotes); ?></textarea>
                         </div>
                     </div>
                 </div>

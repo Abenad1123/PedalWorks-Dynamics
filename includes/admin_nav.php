@@ -12,7 +12,13 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 $activeModule = $activeModule ?? '';
 
 if (!$activeModule) {
-    if (strpos($currentUri, '/admin/product/') !== false || strpos($currentUri, 'product.php') !== false) {
+    if (strpos($currentUri, '/admin/service_requests/') !== false) {
+        $activeModule = 'service_requests';
+    } elseif (strpos($currentUri, '/admin/expenses/') !== false) {
+        $activeModule = 'expenses';
+    } elseif (strpos($currentUri, '/admin/reports/') !== false) {
+        $activeModule = 'reports';
+    } elseif (strpos($currentUri, '/admin/product/') !== false || strpos($currentUri, 'product.php') !== false) {
         $activeModule = 'product';
     } elseif (strpos($currentUri, '/admin/service/') !== false || strpos($currentUri, 'service.php') !== false) {
         $activeModule = 'service';
@@ -28,6 +34,8 @@ if (!$activeModule) {
 // Role checks for each navigation tab
 $canAccessProducts  = hasAdminRole(['Inventory Manager']);
 $canAccessServices  = hasAdminRole(['Service & Repair Manager']);
+$canAccessExpenses  = hasAdminRole(['Accounting Administrator']);
+$canAccessReports   = hasAdminRole(['Accounting Administrator', 'Inventory Manager']);
 $canAccessCustomers = hasAdminRole(['Accounting Administrator']);
 $canAccessAdmins    = hasAdminRole(['Super Administrator']);
 ?>
@@ -62,6 +70,27 @@ $canAccessAdmins    = hasAdminRole(['Super Administrator']);
                     <li class="nav-item">
                         <a class="nav-link <?php echo ($activeModule === 'service') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/service/index.php">
                             <i class="fa-solid fa-screwdriver-wrench me-1"></i> Services
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'service_requests') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/service_requests/index.php">
+                            <i class="fa-solid fa-clock-rotate-left me-1"></i> Service Tracking
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if ($canAccessExpenses): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'expenses') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/expenses/index.php">
+                            <i class="fa-solid fa-receipt me-1"></i> Expenses
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if ($canAccessReports): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'reports') ? 'active fw-bold text-white' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/reports/financial.php">
+                            <i class="fa-solid fa-chart-line me-1"></i> Reports
                         </a>
                     </li>
                 <?php endif; ?>

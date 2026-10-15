@@ -91,6 +91,38 @@ try {
                 c.customerID,
                 customerName,
                 c.email");
+
+        @mysqli_query($conn, "ALTER TABLE `customerService` MODIFY COLUMN `status` 
+            ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Pending'");
+
+        @mysqli_query($conn, "CREATE OR REPLACE VIEW `vw_service_request_details` AS
+            SELECT 
+                cs.customerServiceID,
+                cs.requestDate,
+                cs.scheduledDate,
+                cs.notes,
+                cs.status AS serviceStatus,
+                cs.productSaleID,
+                s.serviceID,
+                s.sku AS serviceSku,
+                s.name AS serviceName,
+                s.description AS serviceDescription,
+                s.price AS servicePrice,
+                sc.name AS serviceCategoryName,
+                ca.customerAccountID,
+                ca.username AS customerUsername,
+                c.customerID,
+                CONCAT(c.firstName, IF(c.lastName IS NOT NULL AND c.lastName <> '', CONCAT(' ', c.lastName), '')) AS customerName,
+                c.email AS customerEmail,
+                c.address AS customerAddress,
+                adm.adminAccountID,
+                adm.username AS technicianUsername
+            FROM `customerService` cs
+            JOIN `service` s ON cs.serviceID = s.serviceID
+            LEFT JOIN `serviceCategory` sc ON s.serviceCategoryID = sc.serviceCategoryID
+            JOIN `customerAccount` ca ON cs.customerAccountID = ca.customerAccountID
+            JOIN `customer` c ON ca.customerID = c.customerID
+            LEFT JOIN `adminAccount` adm ON cs.adminAccountID = adm.adminAccountID");
     }
 } catch (mysqli_sql_exception $e) {
     $conn = false;

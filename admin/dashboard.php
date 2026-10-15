@@ -50,11 +50,28 @@ if ($conn) {
     if ($lsRes && ($r = mysqli_fetch_assoc($lsRes))) {
         $lowStockCount = (int)$r['c'];
     }
+
+    // Pending repair service requests (FR16)
+    $pendingServicesCount = 0;
+    $srvRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM customerService WHERE status = 'Pending'");
+    if ($srvRes && ($r = mysqli_fetch_assoc($srvRes))) {
+        $pendingServicesCount = (int)$r['c'];
+    }
+
+    // Current month expenses (FR17)
+    $thisMonthExpenses = 0.0;
+    $nowMonth = date('Y-m');
+    $expRes = mysqli_query($conn, "SELECT COALESCE(SUM(amount), 0.0) as amt FROM expense WHERE DATE_FORMAT(expenseDate, '%Y-%m') = '{$nowMonth}'");
+    if ($expRes && ($r = mysqli_fetch_assoc($expRes))) {
+        $thisMonthExpenses = (float)$r['amt'];
+    }
 }
 
 // Module access checks
 $canManageProducts  = hasAdminRole(['Inventory Manager']);
 $canManageServices  = hasAdminRole(['Service & Repair Manager']);
+$canManageExpenses  = hasAdminRole(['Accounting Administrator']);
+$canManageReports   = hasAdminRole(['Accounting Administrator', 'Inventory Manager']);
 $canManageCustomers = hasAdminRole(['Accounting Administrator']);
 $canManageAdmins    = hasAdminRole(['Super Administrator']);
 $currentRole        = $_SESSION['role'] ?? 'Staff Member';
@@ -320,6 +337,103 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                             <?php else: ?>
                                 <button class="btn btn-outline-secondary btn-sm" disabled>
                                     <i class="fa-solid fa-ban me-1"></i>Super Admin Only
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Service Status Tracking Module (FR16) -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100 <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-primary fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Service Tracking</h5>
+                            </div>
+                            <?php if ($pendingServicesCount > 0): ?>
+                                <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i><?php echo $pendingServicesCount; ?> Pending</span>
+                            <?php endif; ?>
+                        </div>
+                        <p class="card-text text-muted small flex-grow-1">
+                            Monitor customer repair requests, assign workshop technicians, and update stages (Received, In Progress, Ready for Pickup).
+                        </p>
+                        <div class="d-grid gap-2">
+                            <?php if ($canManageServices): ?>
+                                <a href="service_requests/index.php" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-sliders me-1"></i>Track &amp; Update Requests (FR16)
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Service Manager Only
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Expense Recording Module (FR17) -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100 <?php echo !$canManageExpenses ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-receipt text-danger fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Overhead Expenses</h5>
+                            </div>
+                            <span class="badge bg-light text-dark border small">&#8369;<?php echo number_format($thisMonthExpenses, 2); ?> this mo.</span>
+                        </div>
+                        <p class="card-text text-muted small flex-grow-1">
+                            Record and categorize shop overhead bills (Rent, Electricity, Water, Employee Salaries, and shop supplies).
+                        </p>
+                        <div class="d-grid gap-2">
+                            <?php if ($canManageExpenses): ?>
+                                <a href="expenses/index.php" class="btn btn-outline-danger btn-sm">
+                                    <i class="fa-solid fa-money-bill-transfer me-1"></i>Manage Expenses (FR17)
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Accounting Admin Only
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Reports & Printable Statements (FR18, FR19, FR20) -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100 <?php echo !$canManageReports ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-success fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Financial &amp; Print Reports</h5>
+                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success small fw-bold">FR18-20</span>
+                        </div>
+                        <p class="card-text text-muted small flex-grow-1">
+                            Track automated sales income, analyze net operating profit vs overhead expenses, and generate printable statements.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <?php if ($canManageReports): ?>
+                                <a href="reports/financial.php" class="btn btn-outline-success btn-sm">
+                                    <i class="fa-solid fa-chart-pie me-1"></i>Financial Report (FR19)
+                                </a>
+                                <div class="d-flex gap-2">
+                                    <a href="reports/print_financial.php" target="_blank" class="btn btn-light btn-sm text-secondary flex-grow-1">
+                                        <i class="fa-solid fa-print me-1"></i>Print Statement
+                                    </a>
+                                    <a href="reports/print_inventory.php" target="_blank" class="btn btn-light btn-sm text-secondary flex-grow-1">
+                                        <i class="fa-solid fa-boxes-stacked me-1"></i>Print Inventory
+                                    </a>
+                                </div>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Accounting / Inventory Only
                                 </button>
                             <?php endif; ?>
                         </div>

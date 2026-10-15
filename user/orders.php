@@ -80,6 +80,22 @@ if (!empty($orders) && $conn) {
             mysqli_stmt_close($iStmt);
         }
     }
+
+    // Fetch attached workshop labor requests (FR15)
+    $attachedServices = [];
+    $saleIds = array_map(function($o) { return (int)$o['productSaleID']; }, $orders);
+    if (!empty($saleIds)) {
+        $inClause = implode(',', $saleIds);
+        $sRes = mysqli_query($conn, "SELECT cs.customerServiceID, cs.productSaleID, cs.status as serviceStatus, cs.scheduledDate, s.name as serviceName 
+                                     FROM customerService cs 
+                                     JOIN service s ON cs.serviceID = s.serviceID 
+                                     WHERE cs.productSaleID IN ({$inClause})");
+        if ($sRes) {
+            while ($sRow = mysqli_fetch_assoc($sRes)) {
+                $attachedServices[(int)$sRow['productSaleID']] = $sRow;
+            }
+        }
+    }
 }
 
 $highlightOrderID = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
@@ -187,6 +203,13 @@ include __DIR__ . '/../includes/header.php';
                                     <span class="badge rounded-pill <?php echo $badgeClass; ?> px-3 py-1 small fw-semibold">
                                         <i class="fa-solid <?php echo $badgeIcon; ?> me-1"></i><?php echo htmlspecialchars($status); ?>
                                     </span>
+                                    <?php if (isset($attachedServices[$saleId])): 
+                                        $attSvc = $attachedServices[$saleId];
+                                    ?>
+                                        <a href="services.php#req-<?php echo $attSvc['customerServiceID']; ?>" class="badge rounded-pill bg-warning text-dark text-decoration-none small px-2 py-1" title="View attached workshop service request">
+                                            <i class="fa-solid fa-wrench me-1"></i> Attached Labor: <?php echo htmlspecialchars($attSvc['serviceName']); ?> (<?php echo htmlspecialchars($attSvc['serviceStatus']); ?>) &rarr;
+                                        </a>
+                                    <?php endif; ?>
                                 </div>
                                 <span class="text-white-50 small">
                                     Placed on <?php echo date('M d, Y \a\t h:i A', strtotime($order['orderDate'])); ?>

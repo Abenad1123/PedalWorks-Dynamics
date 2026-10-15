@@ -280,13 +280,27 @@ function getServiceIcon($categoryName) {
                                 <span>Base Labor Fee</span>
                                 &#8369;<?php echo number_format($s['price'], 2); ?>
                             </div>
-                            <button type="button" class="pw-btn-product-action" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#<?php echo $modalId; ?>"
-                                    title="View Service Details">
-                                <span>Details</span>
-                                <i class="fa-solid fa-arrow-right fa-xs"></i>
-                            </button>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="pw-btn-product-action" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#<?php echo $modalId; ?>"
+                                        title="View Service Details">
+                                    <span>Details</span>
+                                    <i class="fa-solid fa-arrow-right fa-xs"></i>
+                                </button>
+                                <?php if (!empty($_SESSION['customerAccountID'])): ?>
+                                    <button type="button" class="btn btn-sm pw-btn-trail-sm py-2 px-3" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#bookModal_<?php echo $s['serviceID']; ?>"
+                                            title="Schedule this service">
+                                        <i class="fa-solid fa-calendar-check me-1"></i> Book
+                                    </button>
+                                <?php else: ?>
+                                    <a href="login.php?redirect=services.php" class="btn btn-sm pw-btn-trail-sm py-2 px-3" title="Sign in to schedule service">
+                                        <i class="fa-solid fa-calendar-check me-1"></i> Book
+                                    </a>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -355,9 +369,15 @@ function getServiceIcon($categoryName) {
                                         </div>
 
                                         <div class="d-flex flex-wrap gap-2">
-                                            <a href="#basecamp-info" class="pw-btn-trail-sm py-2 px-3" data-bs-dismiss="modal">
-                                                <i class="fa-solid fa-location-dot me-1"></i> View Basecamp Location
-                                            </a>
+                                            <?php if (!empty($_SESSION['customerAccountID'])): ?>
+                                                <button type="button" class="pw-btn-trail py-2 px-3" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#bookModal_<?php echo $s['serviceID']; ?>">
+                                                    <i class="fa-solid fa-calendar-check me-1"></i> Book Appointment
+                                                </button>
+                                            <?php else: ?>
+                                                <a href="login.php?redirect=services.php" class="pw-btn-trail py-2 px-3">
+                                                    <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In to Book
+                                                </a>
+                                            <?php endif; ?>
                                             <button type="button" class="pw-btn-glass-sm py-2 px-3" data-bs-dismiss="modal">
                                                 Close
                                             </button>
@@ -372,6 +392,73 @@ function getServiceIcon($categoryName) {
                         </div>
                     </div>
                 </div>
+
+                <!-- Standalone Appointment Booking Modal (FR15) -->
+                <?php if (!empty($_SESSION['customerAccountID'])): ?>
+                <div class="modal fade" id="bookModal_<?php echo $s['serviceID']; ?>" tabindex="-1" aria-labelledby="bookModalLabel_<?php echo $s['serviceID']; ?>" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content pw-modal-content">
+                            <form action="service_booking_action.php" method="POST" novalidate>
+                                <input type="hidden" name="serviceID" value="<?php echo (int)$s['serviceID']; ?>">
+                                <div class="modal-header pw-modal-header">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fa-solid fa-calendar-plus text-warning"></i>
+                                        <h5 class="modal-title fw-bold text-white mb-0" id="bookModalLabel_<?php echo $s['serviceID']; ?>">
+                                            Schedule Workshop Service
+                                        </h5>
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-4">
+                                    <!-- Service Summary Card -->
+                                    <div class="p-3 mb-3 rounded d-flex align-items-center justify-content-between" style="background: rgba(255,255,255,0.04); border: 1px solid var(--pw-glass-border);">
+                                        <div>
+                                            <div class="small text-white-50"><?php echo htmlspecialchars($catName); ?></div>
+                                            <div class="fw-bold text-white"><?php echo htmlspecialchars($s['name']); ?></div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="small text-white-50">Base Labor Fee</div>
+                                            <div class="fw-bold" style="color: var(--pw-trail-amber); font-size: 1.15rem;">&#8369;<?php echo number_format($s['price'], 2); ?></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Preferred Scheduled Date & Time -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-white small fw-bold">
+                                            <i class="fa-solid fa-clock me-1 text-warning"></i> Preferred Date &amp; Time
+                                        </label>
+                                        <input type="datetime-local" 
+                                               name="scheduledDate" 
+                                               class="form-control pw-form-control" 
+                                               min="<?php echo date('Y-m-d\TH:i'); ?>"
+                                               value="<?php echo date('Y-m-d\TH:00', strtotime('+1 day 09:00')); ?>"
+                                               required>
+                                        <div class="form-text text-white-50 small">Workshop operates Monday to Saturday, 8:00 AM - 6:00 PM.</div>
+                                    </div>
+
+                                    <!-- Bike Model & Issue Description -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-white small fw-bold">
+                                            <i class="fa-solid fa-bicycle me-1 text-warning"></i> Bike Model &amp; Issue Notes
+                                        </label>
+                                        <textarea name="notes" 
+                                                  class="form-control pw-form-control" 
+                                                  rows="3" 
+                                                  placeholder="e.g., Specialized Rockhopper 29er. Rear hydraulic brake lever feels spongy, needs bleeding and new organic pads."></textarea>
+                                        <div class="form-text text-white-50 small">Briefly describe the symptoms or specific parts you'd like us to inspect.</div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer pw-modal-footer">
+                                    <button type="button" class="pw-btn-glass-sm py-2 px-3" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="pw-btn-trail py-2 px-3">
+                                        <i class="fa-solid fa-paper-plane me-1"></i> Submit Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
             <?php endforeach; ?>
         </div>

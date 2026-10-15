@@ -94,6 +94,7 @@ if (session_status() === PHP_SESSION_NONE) {
                                 <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/profile.php"><i class="fa-solid fa-id-card me-2"></i>My Profile</a></li>
                                 <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/cart.php"><i class="fa-solid fa-cart-shopping me-2"></i>Shopping Cart</a></li>
                                 <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/orders.php"><i class="fa-solid fa-clock-rotate-left me-2"></i>Order History</a></li>
+                                <li><a class="dropdown-item pw-dropdown-item" href="/project/PedalWorks-Dynamics/user/services.php"><i class="fa-solid fa-screwdriver-wrench me-2"></i>Workshop Requests</a></li>
                                 <li><hr class="dropdown-divider pw-dropdown-divider"></li>
                             <?php endif; ?>
                             <?php if (!empty($_SESSION['adminAccountID']) || ($_SESSION['account_type'] ?? '') === 'admin'): ?>
