@@ -129,8 +129,8 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    padding: 0.45rem;
-    min-width: 230px;
+    padding: 0.35rem;
+    min-width: 200px;
     margin-top: 0.45rem;
     animation: pwDropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -285,15 +285,11 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                             <span>Catalog</span>
                         </a>
                         <ul class="dropdown-menu shadow-lg" aria-labelledby="catalogDropdown">
-                            <li class="dropdown-header">Store Inventory &amp; Offerings</li>
                             <?php if ($canAccessProducts): ?>
                                 <li>
                                     <a class="dropdown-item <?php echo ($activeModule === 'product') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/product/index.php">
                                         <i class="fa-solid fa-bicycle"></i>
-                                        <div>
-                                            <div class="fw-semibold">Products &amp; Inventory</div>
-                                            <small class="text-muted d-block" style="font-size: 0.72rem;">Manage bikes, components &amp; stock</small>
-                                        </div>
+                                        <span>Products &amp; Inventory</span>
                                     </a>
                                 </li>
                             <?php endif; ?>
@@ -301,10 +297,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                                 <li>
                                     <a class="dropdown-item <?php echo ($activeModule === 'service') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/service/index.php">
                                         <i class="fa-solid fa-screwdriver-wrench"></i>
-                                        <div>
-                                            <div class="fw-semibold">Workshop Services</div>
-                                            <small class="text-muted d-block" style="font-size: 0.72rem;">Tune-ups, overhauls &amp; labor pricing</small>
-                                        </div>
+                                        <span>Workshop Services</span>
                                     </a>
                                 </li>
                             <?php endif; ?>
@@ -320,15 +313,11 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                             <span>Operations</span>
                         </a>
                         <ul class="dropdown-menu shadow-lg" aria-labelledby="operationsDropdown">
-                            <li class="dropdown-header">Workshop &amp; Store Management</li>
                             <?php if ($canAccessServices): ?>
                                 <li>
                                     <a class="dropdown-item <?php echo ($activeModule === 'service_requests') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/service_requests/index.php">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
-                                        <div>
-                                            <div class="fw-semibold">Service Tracking</div>
-                                            <small class="text-muted d-block" style="font-size: 0.72rem;">Monitor customer repair lifecycle</small>
-                                        </div>
+                                        <span>Service Tracking</span>
                                     </a>
                                 </li>
                             <?php endif; ?>
@@ -336,10 +325,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                                 <li>
                                     <a class="dropdown-item <?php echo ($activeModule === 'expenses') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/expenses/index.php">
                                         <i class="fa-solid fa-receipt"></i>
-                                        <div>
-                                            <div class="fw-semibold">Overhead Expenses</div>
-                                            <small class="text-muted d-block" style="font-size: 0.72rem;">Record rent, utilities, salaries</small>
-                                        </div>
+                                        <span>Overhead Expenses</span>
                                     </a>
                                 </li>
                             <?php endif; ?>
@@ -347,7 +333,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                     </li>
                 <?php endif; ?>
 
-                <!-- 4. Reports (Standalone link or quick dropdown) -->
+                <!-- 4. Reports (Standalone link or clean dropdown) -->
                 <?php if ($canAccessReports): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?php echo $isReportsActive ? 'active' : ''; ?>" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -355,34 +341,23 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                             <span>Reports</span>
                         </a>
                         <ul class="dropdown-menu shadow-lg" aria-labelledby="reportsDropdown">
-                            <li class="dropdown-header">Financial &amp; Inventory Analytics</li>
                             <li>
                                 <a class="dropdown-item <?php echo ($activeModule === 'reports') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/reports/financial.php">
                                     <i class="fa-solid fa-chart-pie"></i>
-                                    <div>
-                                        <div class="fw-semibold">Income &amp; Expenses</div>
-                                        <small class="text-muted d-block" style="font-size: 0.72rem;">Revenue analytics &amp; profit margins</small>
-                                    </div>
+                                    <span>Income &amp; Expenses</span>
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li class="dropdown-header">Printable Statements</li>
                             <li>
                                 <a class="dropdown-item" href="/project/PedalWorks-Dynamics/admin/reports/print_financial.php" target="_blank">
                                     <i class="fa-solid fa-print"></i>
-                                    <div>
-                                        <div class="fw-semibold">Print Financial Statement</div>
-                                        <small class="text-muted d-block" style="font-size: 0.72rem;">Official P&amp;L print view</small>
-                                    </div>
+                                    <span>Print Financial Statement</span>
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="/project/PedalWorks-Dynamics/admin/reports/print_inventory.php" target="_blank">
                                     <i class="fa-solid fa-file-invoice"></i>
-                                    <div>
-                                        <div class="fw-semibold">Print Inventory Audit</div>
-                                        <small class="text-muted d-block" style="font-size: 0.72rem;">Valuation &amp; stock audit report</small>
-                                    </div>
+                                    <span>Print Inventory Audit</span>
                                 </a>
                             </li>
                         </ul>
@@ -397,15 +372,11 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                             <span>Users</span>
                         </a>
                         <ul class="dropdown-menu shadow-lg" aria-labelledby="usersDropdown">
-                            <li class="dropdown-header">Account Management</li>
                             <?php if ($canAccessCustomers): ?>
                                 <li>
                                     <a class="dropdown-item <?php echo ($activeModule === 'customer') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/customerAccount/index.php">
                                         <i class="fa-solid fa-users"></i>
-                                        <div>
-                                            <div class="fw-semibold">Customer Accounts</div>
-                                            <small class="text-muted d-block" style="font-size: 0.72rem;">Profiles &amp; client directory</small>
-                                        </div>
+                                        <span>Customer Accounts</span>
                                     </a>
                                 </li>
                             <?php endif; ?>
@@ -413,10 +384,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                                 <li>
                                     <a class="dropdown-item <?php echo ($activeModule === 'admin') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/adminAccount/index.php">
                                         <i class="fa-solid fa-user-shield"></i>
-                                        <div>
-                                            <div class="fw-semibold">Staff &amp; Role Access</div>
-                                            <small class="text-muted d-block" style="font-size: 0.72rem;">Staff RBAC &amp; credentials</small>
-                                        </div>
+                                        <span>Staff Accounts</span>
                                     </a>
                                 </li>
                             <?php endif; ?>

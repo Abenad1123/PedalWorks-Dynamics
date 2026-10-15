@@ -236,7 +236,7 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
                 <h2 class="fw-bold mb-0 text-dark">PedalWorks Dynamics</h2>
                 <div class="text-muted small">High-Performance Bicycles &amp; Precision Maintenance Lab</div>
                 <div class="text-muted small">Km. 14 East Service Road, Western Bicutan, Taguig City, Philippines</div>
-                <div class="text-muted small">Tel: (02) 8823-2457 &bull; Email: dispatch@pedalworks.local</div>
+                <div class="text-muted small">Tel: (02) 8823-2457 &bull; Email: dispatch@pedalworks.ph</div>
             </div>
             <div class="text-end">
                 <div class="report-title text-dark">Financial Statement</div>
