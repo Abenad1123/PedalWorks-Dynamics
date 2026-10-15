@@ -201,15 +201,19 @@ if ($conn) {
                             </span>
 
                             <?php if (!empty($p['image']) && file_exists(__DIR__ . '/' . $p['image'])): ?>
-                                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($p['image']); ?>" 
-                                     alt="<?php echo htmlspecialchars($p['name']); ?>" 
-                                     class="pw-product-img">
+                                <a href="product_details.php?id=<?php echo (int)$p['productID']; ?>" class="d-block w-100 h-100 text-decoration-none">
+                                    <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($p['image']); ?>" 
+                                         alt="<?php echo htmlspecialchars($p['name']); ?>" 
+                                         class="pw-product-img">
+                                </a>
                             <?php else: ?>
-                                <div class="pw-product-img-icon">
-                                    <i class="fa-solid fa-bicycle"></i>
-                                </div>
-                                <div class="pw-product-img-text"><?php echo htmlspecialchars($p['name']); ?></div>
-                                <div class="pw-product-dim">SKU: <?php echo htmlspecialchars($p['sku']); ?></div>
+                                <a href="product_details.php?id=<?php echo (int)$p['productID']; ?>" class="d-block w-100 text-decoration-none">
+                                    <div class="pw-product-img-icon">
+                                        <i class="fa-solid fa-bicycle"></i>
+                                    </div>
+                                    <div class="pw-product-img-text"><?php echo htmlspecialchars($p['name']); ?></div>
+                                    <div class="pw-product-dim">SKU: <?php echo htmlspecialchars($p['sku']); ?></div>
+                                </a>
                             <?php endif; ?>
                         </div>
 
@@ -225,7 +229,9 @@ if ($conn) {
                             </div>
 
                             <h5 class="pw-product-title" title="<?php echo htmlspecialchars($p['name']); ?>">
-                                <?php echo htmlspecialchars($p['name']); ?>
+                                <a href="product_details.php?id=<?php echo (int)$p['productID']; ?>" class="text-white text-decoration-none">
+                                    <?php echo htmlspecialchars($p['name']); ?>
+                                </a>
                             </h5>
 
                             <p class="pw-product-spec">
@@ -248,7 +254,7 @@ if ($conn) {
                                             <input type="hidden" name="productID" value="<?php echo (int)$p['productID']; ?>">
                                             <input type="hidden" name="quantity" value="1">
                                             <input type="hidden" name="redirect" value="products.php">
-                                            <button type="submit" class="btn btn-sm pw-btn-glass rounded-pill px-2 py-1 text-white" title="Add 1 to Cart">
+                                            <button type="submit" class="btn btn-sm pw-btn-glass rounded-pill px-2 py-1 text-white" title="Quick Add 1 to Cart">
                                                 <i class="fa-solid fa-cart-plus"></i>
                                             </button>
                                         </form>
@@ -256,9 +262,9 @@ if ($conn) {
                                     <button type="button" class="pw-btn-product-action" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#<?php echo $modalId; ?>"
-                                            title="View Details">
+                                            title="Quick View Details">
                                         <span>Details</span>
-                                        <i class="fa-solid fa-arrow-right fa-xs"></i>
+                                        <i class="fa-solid fa-expand fa-xs"></i>
                                     </button>
                                 </div>
                             </div>
@@ -350,8 +356,8 @@ if ($conn) {
                                         <?php endif; ?>
 
                                         <div class="d-flex flex-wrap gap-2">
-                                            <a href="index.php#workshop-basecamp" class="pw-btn-glass-sm py-2 px-3">
-                                                <i class="fa-solid fa-location-dot me-1"></i> Basecamp Details
+                                            <a href="product_details.php?id=<?php echo (int)$p['productID']; ?>" class="pw-btn-trail-sm py-2 px-3 text-white text-decoration-none">
+                                                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Full Details &amp; Reviews
                                             </a>
                                             <button type="button" class="pw-btn-glass-sm py-2 px-3" data-bs-dismiss="modal">
                                                 Close
@@ -362,7 +368,7 @@ if ($conn) {
                             </div>
                             <div class="modal-footer pw-modal-footer text-muted small justify-content-between">
                                 <span><i class="fa-solid fa-shield-halved me-1 text-success"></i> Genuine Gear Guarantee</span>
-                                <span>Item ID: #<?php echo (int)$p['productID']; ?></span>
+                                <span><i class="fa-solid fa-truck-fast me-1 text-primary"></i> Doorstep Delivery &bull; Basecamp Pickup</span>
                             </div>
                         </div>
                     </div>

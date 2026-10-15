@@ -54,7 +54,7 @@ switch ($action) {
 
         $availableStock = (int)$product['stock'];
         if ($availableStock <= 0) {
-            $_SESSION['error'] = 'Sorry, "' . htmlspecialchars($product['name']) . '" is currently out of stock.';
+            $_SESSION['error'] = 'Sorry, "' . $product['name'] . '" is currently out of stock.';
             header('Location: ' . $redirect);
             exit;
         }
@@ -72,9 +72,9 @@ switch ($action) {
 
         if ($newQty > $availableStock) {
             $newQty = $availableStock;
-            $_SESSION['warning'] = 'Quantity adjusted to maximum available stock (' . $availableStock . ') for "' . htmlspecialchars($product['name']) . '".';
+            $_SESSION['warning'] = 'Quantity adjusted to maximum available stock (' . $availableStock . ') for "' . $product['name'] . '".';
         } else {
-            $_SESSION['success'] = 'Added ' . $quantity . ' &times; <strong>' . htmlspecialchars($product['name']) . '</strong> to your cart!';
+            $_SESSION['success'] = 'Added ' . $quantity . ' × "' . $product['name'] . '" to your cart!';
         }
 
         // Upsert cart item
