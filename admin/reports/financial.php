@@ -177,7 +177,7 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Report (FR18 & FR19) - PedalWorks Dynamics</title>
+    <title>Financial Report - PedalWorks Dynamics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -198,22 +198,22 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1 small">
                         <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Income &amp; Expense Reporting (FR19)</li>
+                        <li class="breadcrumb-item active" aria-current="page">Income &amp; Expense Reporting</li>
                     </ol>
                 </nav>
                 <h1 class="h3 mb-0 fw-bold">
                     <i class="fa-solid fa-chart-line text-success me-2"></i>Financial Performance &amp; Income Tracking
                 </h1>
-                <p class="text-muted small mb-0">FR18 &amp; FR19: Automated revenue logging and summary report of total income versus expenses</p>
+                <p class="text-muted small mb-0">Automated revenue logging and summary report of total income versus expenses.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <!-- Printable Reports Buttons (FR20) -->
+                <!-- Printable Reports Buttons -->
                 <a href="print_financial.php?preset=<?php echo urlencode($preset); ?>&start_date=<?php echo urlencode(substr($startDate, 0, 10)); ?>&end_date=<?php echo urlencode(substr($endDate, 0, 10)); ?>" 
                    target="_blank" class="btn btn-outline-dark btn-sm px-3 shadow-sm">
-                    <i class="fa-solid fa-print me-1 text-primary"></i> Print Financial Summary (FR20)
+                    <i class="fa-solid fa-print me-1 text-primary"></i> Print Financial Summary
                 </a>
                 <a href="print_inventory.php" target="_blank" class="btn btn-outline-dark btn-sm px-3 shadow-sm">
-                    <i class="fa-solid fa-boxes-stacked me-1 text-info"></i> Print Inventory List (FR20)
+                    <i class="fa-solid fa-boxes-stacked me-1 text-info"></i> Print Inventory List
                 </a>
                 <a href="../expenses/index.php" class="btn btn-danger btn-sm px-3">
                     <i class="fa-solid fa-receipt me-1"></i> Record Expense
@@ -236,7 +236,7 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
                         </div>
                     </div>
                     <div class="col-md-7">
-                        <label class="form-label small text-muted text-uppercase fw-bold mb-1">Custom Date Range (FR19)</label>
+                        <label class="form-label small text-muted text-uppercase fw-bold mb-1">Custom Date Range</label>
                         <div class="input-group input-group-sm">
                             <input type="hidden" name="preset" value="custom">
                             <span class="input-group-text">From</span>
@@ -264,13 +264,13 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
             </span>
         </div>
 
-        <!-- KPI Financial Summary Cards (FR18 & FR19) -->
+        <!-- KPI Financial Summary Cards -->
         <div class="row g-3 mb-4">
             <!-- 1. Total Product Sales Income -->
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm kpi-card h-100 border-start border-info border-4">
                     <div class="card-body">
-                        <span class="text-muted small text-uppercase fw-semibold d-block">Product Sales Income (FR18)</span>
+                        <span class="text-muted small text-uppercase fw-semibold d-block">Product Sales Income</span>
                         <h3 class="fw-bold mb-1 text-info">&#8369;<?php echo number_format($incomeMetrics['product_sales'], 2); ?></h3>
                         <span class="small text-muted">
                             <i class="fa-solid fa-box me-1"></i><?php echo $incomeMetrics['completed_orders']; ?> completed orders (<?php echo $incomeMetrics['units_sold']; ?> items)
@@ -283,7 +283,7 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm kpi-card h-100 border-start border-warning border-4">
                     <div class="card-body">
-                        <span class="text-muted small text-uppercase fw-semibold d-block">Service Labor Income (FR18)</span>
+                        <span class="text-muted small text-uppercase fw-semibold d-block">Service Labor Income</span>
                         <h3 class="fw-bold mb-1 text-warning">&#8369;<?php echo number_format($incomeMetrics['service_labor'], 2); ?></h3>
                         <span class="small text-muted">
                             <i class="fa-solid fa-wrench me-1"></i><?php echo $incomeMetrics['completed_services']; ?> completed repairs
@@ -296,7 +296,7 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm kpi-card h-100 border-start border-danger border-4">
                     <div class="card-body">
-                        <span class="text-muted small text-uppercase fw-semibold d-block">Total Overhead Expenses (FR17)</span>
+                        <span class="text-muted small text-uppercase fw-semibold d-block">Total Overhead Expenses</span>
                         <h3 class="fw-bold mb-1 text-danger">&#8369;<?php echo number_format($expenseMetrics['total_expense'], 2); ?></h3>
                         <span class="small text-muted">
                             <i class="fa-solid fa-receipt me-1"></i><?php echo count($expenseList); ?> recorded bill entries

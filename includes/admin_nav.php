@@ -326,7 +326,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                                     <a class="dropdown-item <?php echo ($activeModule === 'service_requests') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/service_requests/index.php">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                         <div>
-                                            <div class="fw-semibold">Service Tracking (FR16)</div>
+                                            <div class="fw-semibold">Service Tracking</div>
                                             <small class="text-muted d-block" style="font-size: 0.72rem;">Monitor customer repair lifecycle</small>
                                         </div>
                                     </a>
@@ -337,7 +337,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                                     <a class="dropdown-item <?php echo ($activeModule === 'expenses') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/expenses/index.php">
                                         <i class="fa-solid fa-receipt"></i>
                                         <div>
-                                            <div class="fw-semibold">Overhead Expenses (FR17)</div>
+                                            <div class="fw-semibold">Overhead Expenses</div>
                                             <small class="text-muted d-block" style="font-size: 0.72rem;">Record rent, utilities, salaries</small>
                                         </div>
                                     </a>
@@ -360,13 +360,13 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                                 <a class="dropdown-item <?php echo ($activeModule === 'reports') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/reports/financial.php">
                                     <i class="fa-solid fa-chart-pie"></i>
                                     <div>
-                                        <div class="fw-semibold">Income &amp; Expenses (FR19)</div>
+                                        <div class="fw-semibold">Income &amp; Expenses</div>
                                         <small class="text-muted d-block" style="font-size: 0.72rem;">Revenue analytics &amp; profit margins</small>
                                     </div>
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li class="dropdown-header">Printable Statements (FR20)</li>
+                            <li class="dropdown-header">Printable Statements</li>
                             <li>
                                 <a class="dropdown-item" href="/project/PedalWorks-Dynamics/admin/reports/print_financial.php" target="_blank">
                                     <i class="fa-solid fa-print"></i>
@@ -414,7 +414,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                                     <a class="dropdown-item <?php echo ($activeModule === 'admin') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/adminAccount/index.php">
                                         <i class="fa-solid fa-user-shield"></i>
                                         <div>
-                                            <div class="fw-semibold">Staff &amp; Role Access (MP2)</div>
+                                            <div class="fw-semibold">Staff &amp; Role Access</div>
                                             <small class="text-muted d-block" style="font-size: 0.72rem;">Staff RBAC &amp; credentials</small>
                                         </div>
                                     </a>

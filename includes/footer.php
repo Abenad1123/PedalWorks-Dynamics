@@ -63,7 +63,7 @@
                 &copy; <?php echo date('Y'); ?> <strong>PedalWorks Dynamics</strong>. Designed for the adventurous trail rider. All rights reserved.
             </p>
             <div class="d-flex align-items-center gap-3">
-                <span class="text-secondary small">TUP Taguig BSIT-2B Information Management Project</span>
+                <span class="text-secondary small"><i class="fa-solid fa-circle-check text-success me-1"></i>Official Workshop &amp; Pro Shop</span>
             </div>
         </div>
     </div>

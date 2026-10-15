@@ -344,7 +344,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 5. Service Status Tracking Module (FR16) -->
+            <!-- 5. Service Status Tracking Module -->
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card shadow-sm h-100 <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -363,7 +363,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                         <div class="d-grid gap-2">
                             <?php if ($canManageServices): ?>
                                 <a href="service_requests/index.php" class="btn btn-outline-primary btn-sm">
-                                    <i class="fa-solid fa-sliders me-1"></i>Track &amp; Update Requests (FR16)
+                                    <i class="fa-solid fa-sliders me-1"></i>Track &amp; Update Requests
                                 </a>
                             <?php else: ?>
                                 <button class="btn btn-outline-secondary btn-sm" disabled>
@@ -375,7 +375,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 6. Expense Recording Module (FR17) -->
+            <!-- 6. Expense Recording Module -->
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card shadow-sm h-100 <?php echo !$canManageExpenses ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -392,7 +392,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                         <div class="d-grid gap-2">
                             <?php if ($canManageExpenses): ?>
                                 <a href="expenses/index.php" class="btn btn-outline-danger btn-sm">
-                                    <i class="fa-solid fa-money-bill-transfer me-1"></i>Manage Expenses (FR17)
+                                    <i class="fa-solid fa-money-bill-transfer me-1"></i>Manage Expenses
                                 </a>
                             <?php else: ?>
                                 <button class="btn btn-outline-secondary btn-sm" disabled>
@@ -404,16 +404,16 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 7. Reports & Printable Statements (FR18, FR19, FR20) -->
+            <!-- 7. Reports & Printable Statements -->
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card shadow-sm h-100 <?php echo !$canManageReports ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-chart-line text-success fs-4"></i>
-                                <h5 class="card-title mb-0 fw-bold">Financial &amp; Print Reports</h5>
+                                <h5 class="card-title mb-0 fw-bold">Financial &amp; Reports</h5>
                             </div>
-                            <span class="badge bg-success bg-opacity-10 text-success small fw-bold">FR18-20</span>
+                            <span class="badge bg-success bg-opacity-10 text-success small fw-bold">Analytics</span>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
                             Track automated sales income, analyze net operating profit vs overhead expenses, and generate printable statements.
@@ -421,7 +421,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                         <div class="d-grid gap-2">
                             <?php if ($canManageReports): ?>
                                 <a href="reports/financial.php" class="btn btn-outline-success btn-sm">
-                                    <i class="fa-solid fa-chart-pie me-1"></i>Financial Report (FR19)
+                                    <i class="fa-solid fa-chart-pie me-1"></i>Financial Report
                                 </a>
                                 <div class="d-flex gap-2">
                                     <a href="reports/print_financial.php" target="_blank" class="btn btn-light btn-sm text-secondary flex-grow-1">
@@ -445,7 +445,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
 
         <!-- Footer Info -->
         <div class="mt-5 pt-3 border-top text-center text-muted small">
-            <p class="mb-0">PedalWorks Dynamics &bull; Bicycle Shop Management System &bull; BSIT-2B-T</p>
+            <p class="mb-0">PedalWorks Dynamics &bull; Store &amp; Workshop Operations Management System</p>
         </div>
 
     </div>

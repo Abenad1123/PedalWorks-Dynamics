@@ -187,7 +187,7 @@ function getCategoryBadge($cat) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Recording (FR17) - PedalWorks Dynamics</title>
+    <title>Expense Recording - PedalWorks Dynamics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -206,20 +206,20 @@ function getCategoryBadge($cat) {
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1 small">
                         <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Expense Recording (FR17)</li>
+                        <li class="breadcrumb-item active" aria-current="page">Expense Recording</li>
                     </ol>
                 </nav>
                 <h1 class="h3 mb-0 fw-bold">
                     <i class="fa-solid fa-money-bill-transfer text-danger me-2"></i>Shop Overhead Expenses
                 </h1>
-                <p class="text-muted small mb-0">FR17: Manually input and categorize shop overhead expenses (electricity, rent, water, salaries)</p>
+                <p class="text-muted small mb-0">Record and categorize shop overhead expenses (electricity, rent, water, salaries).</p>
             </div>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-danger btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
                     <i class="fa-solid fa-plus me-1"></i> Record New Expense
                 </button>
                 <a href="../reports/financial.php" class="btn btn-outline-success btn-sm px-3">
-                    <i class="fa-solid fa-chart-pie me-1"></i> Income &amp; Expense Reports (FR19)
+                    <i class="fa-solid fa-chart-pie me-1"></i> Income &amp; Expense Reports
                 </a>
             </div>
         </div>
@@ -474,7 +474,7 @@ function getCategoryBadge($cat) {
                     <input type="hidden" name="action" value="add">
                     <div class="modal-header">
                         <h5 class="modal-title fw-bold">
-                            <i class="fa-solid fa-receipt text-danger me-2"></i>Record Shop Expense (FR17)
+                            <i class="fa-solid fa-receipt text-danger me-2"></i>Record Shop Expense
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>

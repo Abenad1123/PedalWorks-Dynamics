@@ -216,7 +216,7 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
         <div class="container d-flex justify-content-between align-items-center">
             <span class="small">
                 <i class="fa-solid fa-file-invoice-dollar text-success me-1"></i>
-                PedalWorks Dynamics &bull; Printable Statement Preview (FR20)
+                PedalWorks Dynamics &bull; Printable Statement Preview
             </span>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-success btn-sm px-3" onclick="window.print()">
@@ -240,7 +240,7 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </div>
             <div class="text-end">
                 <div class="report-title text-dark">Financial Statement</div>
-                <span class="badge bg-dark text-white text-uppercase px-2 py-1">FR19 &amp; FR20 Report</span>
+                <span class="badge bg-dark text-white text-uppercase px-2 py-1">Official Statement</span>
             </div>
         </div>
 
@@ -297,8 +297,8 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </tbody>
         </table>
 
-        <!-- 2. Revenue Breakdown (FR18) -->
-        <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3">2. Recognized Revenue Breakdown (FR18)</h6>
+        <!-- 2. Revenue Breakdown -->
+        <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3">2. Recognized Revenue Breakdown</h6>
         <table class="table table-bordered mb-4">
             <thead class="table-light small">
                 <tr>
@@ -325,8 +325,8 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </tbody>
         </table>
 
-        <!-- 3. Overhead Expenses Breakdown (FR17) -->
-        <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3">3. Operating Overhead Expenses (FR17)</h6>
+        <!-- 3. Overhead Expenses Breakdown -->
+        <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3">3. Operating Overhead Expenses</h6>
         <table class="table table-bordered mb-4">
             <thead class="table-light small">
                 <tr>

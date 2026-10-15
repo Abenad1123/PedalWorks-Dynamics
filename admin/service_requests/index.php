@@ -170,7 +170,7 @@ function getAdminStatusBadge($status) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Service Status Tracking (FR16) - PedalWorks Dynamics</title>
+    <title>Service Status Tracking - PedalWorks Dynamics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -190,13 +190,13 @@ function getAdminStatusBadge($status) {
                     <ol class="breadcrumb mb-1 small">
                         <li class="breadcrumb-item"><a href="../dashboard.php">Dashboard</a></li>
                         <li class="breadcrumb-item"><a href="../service/index.php">Services</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Service Tracking (FR16)</li>
+                        <li class="breadcrumb-item active" aria-current="page">Service Tracking</li>
                     </ol>
                 </nav>
                 <h1 class="h3 mb-0 fw-bold">
                     <i class="fa-solid fa-screwdriver-wrench text-primary me-2"></i>Service &amp; Repair Status Tracking
                 </h1>
-                <p class="text-muted small mb-0">FR16: Manually update and monitor customer repair requests throughout workshop lifecycle</p>
+                <p class="text-muted small mb-0">Update and monitor customer repair requests throughout the workshop lifecycle.</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="../service/index.php" class="btn btn-outline-secondary btn-sm">
@@ -325,7 +325,7 @@ function getAdminStatusBadge($status) {
                             <th>Labor Fee</th>
                             <th>Requested / Target Date</th>
                             <th>Assigned Tech</th>
-                            <th>Status (FR16)</th>
+                            <th>Status</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>

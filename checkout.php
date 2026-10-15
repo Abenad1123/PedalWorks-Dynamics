@@ -362,7 +362,7 @@ include __DIR__ . '/includes/header.php';
                             <i class="fa-solid fa-screwdriver-wrench text-warning"></i>
                             <span>Workshop Labor Request</span>
                         </h5>
-                        <span class="badge rounded-pill bg-warning text-dark small fw-bold">Optional &bull; FR15</span>
+                        <span class="badge rounded-pill bg-warning text-dark small fw-bold">Optional Service</span>
                     </div>
                     <p class="text-white-50 small mb-3">
                         Would you like our certified mechanics to professionally assemble or install the components in this order?

@@ -117,7 +117,7 @@ if ($conn) {
         <div class="container d-flex justify-content-between align-items-center">
             <span class="small">
                 <i class="fa-solid fa-boxes-stacked text-warning me-1"></i>
-                PedalWorks Dynamics &bull; Printable Inventory Manifest Preview (FR20)
+                PedalWorks Dynamics &bull; Printable Inventory Manifest Preview
             </span>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-primary btn-sm px-3" onclick="window.print()">
@@ -140,7 +140,7 @@ if ($conn) {
             </div>
             <div class="text-end">
                 <div class="report-title text-dark">Inventory Manifest</div>
-                <span class="badge bg-dark text-white text-uppercase px-2 py-1">FR20 Inventory View</span>
+                <span class="badge bg-dark text-white text-uppercase px-2 py-1">Official Audit</span>
             </div>
         </div>
 
