@@ -203,7 +203,7 @@ include __DIR__ . '/../includes/header.php';
                     </div>
 
                     <!-- Order Fulfillment & Payment Metadata -->
-                    <div class="px-4 py-3 bg-white bg-opacity-5 border-bottom border-white border-opacity-10">
+                    <div class="pw-order-meta-bar">
                         <div class="row g-3 small">
                             <div class="col-md-4">
                                 <span class="text-white-50 d-block mb-1">Fulfillment Method</span>

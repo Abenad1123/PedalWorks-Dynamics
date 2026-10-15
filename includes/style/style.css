@@ -1694,6 +1694,13 @@ a:hover {
     color: #34d399;
 }
 
+.pw-order-meta-bar {
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.035) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: var(--pw-text-primary) !important;
+}
+
 .pw-badge-status-cancelled {
     background: rgba(248, 113, 113, 0.15);
     border: 1px solid rgba(248, 113, 113, 0.35);
