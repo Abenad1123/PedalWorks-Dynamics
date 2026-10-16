@@ -84,6 +84,23 @@ include('./includes/header.php');
                     <p class="pw-hero-desc">
                         Explore high-performance bicycles, expedition components, attachments, and certified safety gear. From rugged mountain descents to daily city rides, our Taguig workshop keeps your journey running smoothly.
                     </p>
+
+                    <!-- Homepage Catalog Search Form (Quiz 3 Requirement) -->
+                    <form action="products.php" method="GET" class="pw-hero-search mb-4" style="max-width: 500px;">
+                        <div class="input-group">
+                            <span class="input-group-text pw-input-group-text" style="background: rgba(13, 18, 25, 0.85); border-color: rgba(255, 255, 255, 0.15);">
+                                <i class="fa-solid fa-magnifying-glass text-warning"></i>
+                            </span>
+                            <input type="text" name="search" class="form-control pw-form-control" 
+                                   placeholder="Search bikes, parts, or gear..." 
+                                   style="border-left: none; border-right: none;"
+                                   aria-label="Search Catalog">
+                            <button type="submit" class="pw-btn-trail-sm" style="border-top-left-radius: 0; border-bottom-left-radius: 0; min-height: 44px; padding-left: 1.25rem; padding-right: 1.25rem;">
+                                Search
+                            </button>
+                        </div>
+                    </form>
+
                     <div class="d-flex flex-wrap gap-3 pw-hero-actions">
                         <a href="#products" class="pw-btn-trail">
                             <i class="fa-solid fa-compass"></i> Explore Trail Catalog
