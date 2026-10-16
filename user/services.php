@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/../includes/config.php';
+include('../includes/config.php');
 
 // Auth Guard: Customer Login Required (FR15/FR16 Live Tracking)
 if (empty($_SESSION['customerAccountID'])) {
@@ -85,7 +85,7 @@ function getServiceStatusMeta($status) {
     }
 }
 
-include __DIR__ . '/../includes/header.php';
+include('../includes/header.php');
 ?>
 
 <div class="container py-5">
@@ -112,7 +112,7 @@ include __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <?php include __DIR__ . '/../includes/alert.php'; ?>
+    <?php include('../includes/alert.php'); ?>
 
     <!-- Filter Pills -->
     <div class="d-flex flex-wrap gap-2 mb-4">
@@ -315,4 +315,4 @@ include __DIR__ . '/../includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php include('../includes/footer.php'); ?>

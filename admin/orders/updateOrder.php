@@ -1,17 +1,15 @@
 <?php
-/**
- * Update Order Status Controller
- * ITIM211 Term Test Lab Requirements:
- * - Update order status using prepared statements (10 pts + 5 pts)
- * - Send email notification via Mailtrap (5 pts)
- * - Email contains products/services, subtotal, and grand total (5 pts)
- * - Attach PDF transaction receipt (5 pts)
- * Reference: itim211-2b-shop/admin/updateOrder.php
- */
 session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
-include('../../includes/order_mailer.php');
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require '../../PHPMailer/src/Exception.php';
+require '../../PHPMailer/src/PHPMailer.php';
+require '../../PHPMailer/src/SMTP.php';
+require '../../includes/fpdf/fpdf.php';
 
 // Access Control
 requireAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
@@ -38,16 +36,14 @@ if (!in_array($status, $validStatuses, true)) {
     exit;
 }
 
-// 1. Update status using Prepared Statements (Term Test Lab rubric: 10 pts prepared statements, 5 pts update status)
+// 1. Update status using Prepared Statements (Term Test Lab rubric)
 $sql = "UPDATE productSale SET status = ? WHERE productSaleID = ?";
 $stmt = mysqli_prepare($conn, $sql);
-
 if (!$stmt) {
     $_SESSION['actionError'] = "Database error: " . mysqli_error($conn);
     header("Location: orderDetails.php?id={$orderId}");
     exit;
 }
-
 mysqli_stmt_bind_param($stmt, 'si', $status, $orderId);
 $executed = mysqli_stmt_execute($stmt);
 mysqli_stmt_close($stmt);
@@ -58,16 +54,182 @@ if (!$executed) {
     exit;
 }
 
-// 2. Send transaction update notification with PDF receipt via Mailtrap (Term Test Lab: 15 pts)
-$emailResult = sendOrderTransactionEmail($conn, $orderId, $status);
+// 2. Fetch order & customer info using Prepared Statements
+$stmt = mysqli_prepare($conn, "SELECT 
+        ps.productSaleID,
+        ps.orderDate,
+        ps.status,
+        ps.paymentMethod,
+        ps.pickupMethod,
+        ps.deliveryAddress,
+        CONCAT(c.firstName, ' ', COALESCE(c.lastName, '')) AS customerName,
+        c.email AS customerEmail
+    FROM productSale ps
+    JOIN customerAccount ca ON ps.customerAccountID = ca.customerAccountID
+    JOIN customer c ON ca.customerID = c.customerID
+    WHERE ps.productSaleID = ?
+    LIMIT 1");
+mysqli_stmt_bind_param($stmt, 'i', $orderId);
+mysqli_stmt_execute($stmt);
+$order = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+mysqli_stmt_close($stmt);
 
-$orderRef = '#PW-ORD-' . str_pad($orderId, 5, '0', STR_PAD_LEFT);
+// 3. Fetch line items using Prepared Statements
+$items = [];
+$stmt = mysqli_prepare($conn, "SELECT 
+        p.name AS productName,
+        olp.quantity,
+        p.price,
+        (olp.quantity * p.price) AS subtotal
+    FROM orderLineProduct olp
+    JOIN product p ON olp.productID = p.productID
+    WHERE olp.productSaleID = ?");
+mysqli_stmt_bind_param($stmt, 'i', $orderId);
+mysqli_stmt_execute($stmt);
+$res = mysqli_stmt_get_result($stmt);
+while ($row = mysqli_fetch_assoc($res)) {
+    $items[] = $row;
+}
+mysqli_stmt_close($stmt);
 
-if ($emailResult['success']) {
-    $_SESSION['actionSuccess'] = "Order {$orderRef} status updated to '{$status}'! Notification email with PDF receipt was successfully delivered to {$emailResult['email']} via Mailtrap.";
-} else {
-    // If SMTP failed, still report status updated, with mail warning
-    $_SESSION['actionSuccess'] = "Order {$orderRef} status updated to '{$status}', but Mailtrap email notification could not be sent: " . htmlspecialchars($emailResult['message']);
+// Fetch linked workshop services if any
+$services = [];
+$stmt = mysqli_prepare($conn, "SELECT 
+        s.name AS serviceName,
+        s.price
+    FROM customerService cs
+    JOIN service s ON cs.serviceID = s.serviceID
+    WHERE cs.productSaleID = ?");
+mysqli_stmt_bind_param($stmt, 'i', $orderId);
+mysqli_stmt_execute($stmt);
+$sRes = mysqli_stmt_get_result($stmt);
+while ($sRow = mysqli_fetch_assoc($sRes)) {
+    $services[] = $sRow;
+}
+mysqli_stmt_close($stmt);
+
+// Calculate totals
+$grandTotal = 0;
+foreach ($items as $it) {
+    $grandTotal += (float)$it['subtotal'];
+}
+foreach ($services as $srv) {
+    $grandTotal += (float)$srv['price'];
+}
+
+// 4. Generate PDF receipt using FPDF (5 pts attachment)
+$pdf = new FPDF();
+$pdf->AddPage();
+$pdf->SetFont('Arial', 'B', 16);
+$pdf->Cell(0, 10, 'PedalWorks Dynamics - Transaction Receipt', 0, 1, 'C');
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(0, 5, 'Order #PW-ORD-' . $orderId . ' | Status: ' . $status, 0, 1, 'C');
+$pdf->Ln(5);
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(0, 6, 'Customer: ' . ($order['customerName'] ?? 'Valued Customer') . ' (' . ($order['customerEmail'] ?? 'N/A') . ')', 0, 1);
+$pdf->Cell(0, 6, 'Payment: ' . ($order['paymentMethod'] ?? 'N/A') . ' | Fulfillment: ' . ($order['pickupMethod'] ?? 'N/A'), 0, 1);
+$pdf->Ln(4);
+
+// Header Table
+$pdf->SetFillColor(230, 230, 230);
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(95, 8, 'Item Description', 1, 0, 'L', true);
+$pdf->Cell(25, 8, 'Qty', 1, 0, 'C', true);
+$pdf->Cell(35, 8, 'Unit Price', 1, 0, 'R', true);
+$pdf->Cell(35, 8, 'Subtotal', 1, 1, 'R', true);
+
+// Rows
+$pdf->SetFont('Arial', '', 10);
+foreach ($items as $it) {
+    $pdf->Cell(95, 7, ' ' . substr($it['productName'], 0, 45), 1, 0, 'L');
+    $pdf->Cell(25, 7, (string)$it['quantity'], 1, 0, 'C');
+    $pdf->Cell(35, 7, 'PHP ' . number_format($it['price'], 2), 1, 0, 'R');
+    $pdf->Cell(35, 7, 'PHP ' . number_format($it['subtotal'], 2), 1, 1, 'R');
+}
+foreach ($services as $srv) {
+    $pdf->Cell(95, 7, ' ' . substr($srv['serviceName'], 0, 45) . ' (Service)', 1, 0, 'L');
+    $pdf->Cell(25, 7, '1', 1, 0, 'C');
+    $pdf->Cell(35, 7, 'PHP ' . number_format($srv['price'], 2), 1, 0, 'R');
+    $pdf->Cell(35, 7, 'PHP ' . number_format($srv['price'], 2), 1, 1, 'R');
+}
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(155, 8, 'Grand Total: ', 1, 0, 'R');
+$pdf->Cell(35, 8, 'PHP ' . number_format($grandTotal, 2), 1, 1, 'R');
+
+$pdfContent = $pdf->Output('S');
+
+// 5. Send notification email via Mailtrap (Term Test Lab rubric: 5 pts send email, 5 pts line items list & totals, 5 pts PDF attachment)
+$mail = new PHPMailer();
+try {
+    // Server settings
+    $mail->isSMTP();
+    $mail->Host       = 'sandbox.smtp.mailtrap.io';
+    $mail->SMTPAuth   = true;
+    $mail->Port       = 2525;
+    $mail->Username   = '312649aee7d340';
+    $mail->Password   = '7bec3dc61ba28b';
+
+    // Recipients
+    $mail->setFrom('orders@pedalworks.com', 'PedalWorks Dynamics');
+    $customerEmail = !empty($order['customerEmail']) ? $order['customerEmail'] : 'customer@example.com';
+    $mail->addAddress($customerEmail, $order['customerName'] ?? 'Customer');
+
+    // Build line items list HTML
+    $itemsHtml = '';
+    foreach ($items as $it) {
+        $itemsHtml .= "<tr>
+            <td style='padding: 8px; border: 1px solid #ddd;'>{$it['productName']}</td>
+            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>{$it['quantity']}</td>
+            <td style='padding: 8px; border: 1px solid #ddd; text-align: right;'>PHP " . number_format($it['price'], 2) . "</td>
+            <td style='padding: 8px; border: 1px solid #ddd; text-align: right;'>PHP " . number_format($it['subtotal'], 2) . "</td>
+        </tr>";
+    }
+    foreach ($services as $srv) {
+        $itemsHtml .= "<tr>
+            <td style='padding: 8px; border: 1px solid #ddd;'>{$srv['serviceName']} (Workshop Service)</td>
+            <td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>1</td>
+            <td style='padding: 8px; border: 1px solid #ddd; text-align: right;'>PHP " . number_format($srv['price'], 2) . "</td>
+            <td style='padding: 8px; border: 1px solid #ddd; text-align: right;'>PHP " . number_format($srv['price'], 2) . "</td>
+        </tr>";
+    }
+
+    // Content
+    $mail->isHTML(true);
+    $mail->Subject = "Order #PW-ORD-{$orderId} Status Updated to {$status}";
+    $mail->Body    = "<h3>Hello " . htmlspecialchars($order['customerName'] ?? 'Customer') . ",</h3>
+        <p>Your order status has been updated to: <strong>{$status}</strong></p>
+        <h4>Transaction Details:</h4>
+        <table style='width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;'>
+            <thead>
+                <tr style='background: #f2f2f2;'>
+                    <th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Item Description</th>
+                    <th style='padding: 8px; border: 1px solid #ddd;'>Quantity</th>
+                    <th style='padding: 8px; border: 1px solid #ddd; text-align: right;'>Unit Price</th>
+                    <th style='padding: 8px; border: 1px solid #ddd; text-align: right;'>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {$itemsHtml}
+                <tr>
+                    <td colspan='3' style='padding: 8px; border: 1px solid #ddd; text-align: right; font-weight: bold;'>Grand Total:</td>
+                    <td style='padding: 8px; border: 1px solid #ddd; text-align: right; font-weight: bold;'>PHP " . number_format($grandTotal, 2) . "</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>Your official PDF receipt is attached to this email.</p>
+        <p>Thank you for choosing PedalWorks Dynamics!</p>";
+
+    $mail->AltBody = "Hello " . ($order['customerName'] ?? 'Customer') . ",\nYour order #PW-ORD-{$orderId} status has been updated to {$status}.\nGrand Total: PHP " . number_format($grandTotal, 2) . "\nReceipt PDF is attached.";
+
+    // Attach PDF receipt
+    $mail->addStringAttachment($pdfContent, "receipt_order_{$orderId}.pdf");
+
+    $mail->send();
+    $_SESSION['actionSuccess'] = "Order #PW-ORD-{$orderId} status updated to '{$status}' and email sent to {$customerEmail} via Mailtrap.";
+} catch (Exception $e) {
+    $_SESSION['actionError'] = "Status updated, but email could not be sent. Mailer Error: {$mail->ErrorInfo}";
 }
 
 header("Location: orderDetails.php?id={$orderId}");

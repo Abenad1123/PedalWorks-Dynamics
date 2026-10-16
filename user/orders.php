@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/../includes/config.php';
+include('../includes/config.php');
 
 // Auth Guard: Customer Login Required (FR9 Requirement)
 if (empty($_SESSION['customerAccountID'])) {
@@ -101,7 +101,7 @@ if (!empty($orders) && $conn) {
 $highlightOrderID = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
 $justPlaced = isset($_GET['placed']) && $_GET['placed'] === '1';
 
-include __DIR__ . '/../includes/header.php';
+include('../includes/header.php');
 ?>
 
 <div class="container py-5">
@@ -299,4 +299,4 @@ include __DIR__ . '/../includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php include('../includes/footer.php'); ?>

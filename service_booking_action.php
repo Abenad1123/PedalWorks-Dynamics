@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/includes/config.php';
+include('includes/config.php');
 
 // Auth Guard: Require logged-in customer (FR15 Requirement)
 if (empty($_SESSION['customerAccountID'])) {

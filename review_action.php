@@ -3,8 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/profanity_filter.php';
+include('includes/config.php');
+include('includes/profanity_filter.php');
 
 // Auth Guard: Only logged-in customers can submit or edit reviews
 if (empty($_SESSION['customerAccountID'])) {

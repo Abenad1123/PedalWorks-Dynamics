@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/includes/config.php';
+include('includes/config.php');
 
 $productID = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $sku       = isset($_GET['sku']) ? trim($_GET['sku']) : '';
@@ -123,11 +123,11 @@ if ($conn && $product) {
     }
 }
 
-include __DIR__ . '/includes/header.php';
+include('includes/header.php');
 ?>
 
 <div class="container py-5">
-    <?php include __DIR__ . '/includes/alert.php'; ?>
+    <?php include('includes/alert.php'); ?>
 
     <?php if (!$product): ?>
         <div class="pw-cart-card text-center py-5 px-4 my-4">
@@ -596,4 +596,4 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<?php include('includes/footer.php'); ?>

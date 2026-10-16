@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/includes/config.php';
+include('includes/config.php');
 
 // Auth check: require customer login
 if (empty($_SESSION['customerAccountID'])) {
@@ -47,7 +47,7 @@ $errorMsg   = $_SESSION['error'] ?? '';
 $warningMsg = $_SESSION['warning'] ?? '';
 unset($_SESSION['success'], $_SESSION['error'], $_SESSION['warning']);
 
-include __DIR__ . '/includes/header.php';
+include('includes/header.php');
 ?>
 
 <div class="container py-5">
@@ -263,4 +263,4 @@ include __DIR__ . '/includes/header.php';
 }
 </style>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<?php include('includes/footer.php'); ?>

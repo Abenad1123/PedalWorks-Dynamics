@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/includes/config.php';
+include('includes/config.php');
 
 // Auth Guard: Require logged-in customer (FR8 Requirement)
 if (empty($_SESSION['customerAccountID'])) {
@@ -236,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include __DIR__ . '/includes/header.php';
+include('includes/header.php');
 ?>
 
 <div class="container py-5">
@@ -538,4 +538,4 @@ function toggleFulfillment(method) {
 }
 </script>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<?php include('includes/footer.php'); ?>

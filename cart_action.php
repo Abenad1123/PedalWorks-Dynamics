@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/includes/config.php';
+include('includes/config.php');
 
 // Verify database connection
 if (!$conn) {
