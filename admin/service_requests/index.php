@@ -149,19 +149,19 @@ if ($conn) {
 function getAdminStatusBadge($status) {
     switch ($status) {
         case 'Pending':
-            return '<span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i>Pending</span>';
+            return '<span class="badge rounded-pill status-badge-pending"><i class="fa-solid fa-clock me-1"></i>Pending</span>';
         case 'Received':
-            return '<span class="badge bg-info text-dark"><i class="fa-solid fa-box-archive me-1"></i>Received</span>';
+            return '<span class="badge rounded-pill status-badge-received"><i class="fa-solid fa-box-archive me-1"></i>Received</span>';
         case 'In Progress':
-            return '<span class="badge bg-primary text-white"><i class="fa-solid fa-screwdriver-wrench me-1"></i>In Progress</span>';
+            return '<span class="badge rounded-pill status-badge-inprogress"><i class="fa-solid fa-screwdriver-wrench me-1"></i>In Progress</span>';
         case 'Ready for Pickup':
-            return '<span class="badge bg-success text-white"><i class="fa-solid fa-bicycle me-1"></i>Ready for Pickup</span>';
+            return '<span class="badge rounded-pill status-badge-readyforpickup"><i class="fa-solid fa-bicycle me-1"></i>Ready for Pickup</span>';
         case 'Completed':
-            return '<span class="badge bg-success text-white"><i class="fa-solid fa-circle-check me-1"></i>Completed</span>';
+            return '<span class="badge rounded-pill status-badge-completed"><i class="fa-solid fa-circle-check me-1"></i>Completed</span>';
         case 'Cancelled':
-            return '<span class="badge bg-danger text-white"><i class="fa-solid fa-ban me-1"></i>Cancelled</span>';
+            return '<span class="badge rounded-pill status-badge-cancelled"><i class="fa-solid fa-ban me-1"></i>Cancelled</span>';
         default:
-            return '<span class="badge bg-secondary">' . htmlspecialchars($status) . '</span>';
+            return '<span class="badge rounded-pill bg-secondary text-white">' . htmlspecialchars($status) . '</span>';
     }
 }
 ?>

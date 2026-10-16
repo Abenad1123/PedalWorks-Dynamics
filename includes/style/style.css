@@ -1984,6 +1984,12 @@ a:hover {
     box-shadow: 0 0 0 1px var(--pw-trail-earth);
 }
 
+.pw-segmented-option input[type="radio"]:disabled + .pw-segmented-box {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* Subtle Apple HIG Badges */
 .pw-badge-status-pending {
     background: rgba(245, 155, 88, 0.15);

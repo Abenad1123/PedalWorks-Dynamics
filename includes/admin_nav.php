@@ -364,7 +364,8 @@ body.bg-light {
 .status-badge-pending     { background: #fef3c7 !important; color: #92400e !important; border: 1px solid #fde68a !important; }
 .status-badge-received    { background: #e0f2fe !important; color: #075985 !important; border: 1px solid #bae6fd !important; }
 .status-badge-inprogress  { background: #f3e8ff !important; color: #6b21a8 !important; border: 1px solid #e9d5ff !important; }
-.status-badge-ready       { background: #ccfbf1 !important; color: #115e59 !important; border: 1px solid #99f6e4 !important; }
+.status-badge-ready,
+.status-badge-readyforpickup { background: #ccfbf1 !important; color: #115e59 !important; border: 1px solid #99f6e4 !important; }
 .status-badge-completed   { background: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
 .status-badge-cancelled   { background: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fecaca !important; }
 </style>

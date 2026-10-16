@@ -98,6 +98,16 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
     <!-- Bootstrap 5 CDN matching itim211 source example -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .pw-dash-card {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+            border-radius: 12px;
+        }
+        .pw-dash-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.08) !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -218,12 +228,18 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
         </div>
 
         <!-- Management Modules Grid -->
-        <h2 class="h5 mb-3 fw-bold text-secondary">Operation Modules</h2>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 class="h5 mb-0 fw-bold text-secondary d-flex align-items-center gap-2">
+                <i class="fa-solid fa-cubes text-primary"></i>
+                <span>Operation Modules</span>
+            </h2>
+            <span class="text-muted small">8 Management Modules</span>
+        </div>
         <div class="row g-4">
 
-            <!-- Customer Orders & Transactions -->
+            <!-- 1. Customer Orders & Transactions -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100 <?php echo !$canManageOrders ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageOrders ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
@@ -254,9 +270,9 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 2. Products Module (Inventory Manager & Super Admin) -->
+            <!-- 2. Products Module -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100 <?php echo !$canManageProducts ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageProducts ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
@@ -288,9 +304,9 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 2. Services Module (Service & Repair Manager & Super Admin) -->
+            <!-- 3. Services Module -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100 <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
@@ -322,9 +338,40 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 3. Customer Accounts Module (Super Admin Only) -->
+            <!-- 4. Service Tracking Module -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100 <?php echo !$canManageCustomers ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-primary fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Service Tracking</h5>
+                            </div>
+                            <?php if ($pendingServicesCount > 0): ?>
+                                <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i><?php echo $pendingServicesCount; ?> Pending</span>
+                            <?php endif; ?>
+                        </div>
+                        <p class="card-text text-muted small flex-grow-1">
+                            Monitor repair requests, assign workshop technicians, and update stages.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <?php if ($canManageServices): ?>
+                                <a href="service_requests/index.php" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-sliders me-1"></i>Track &amp; Update Requests
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Service Manager Only
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Customer Accounts Module -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageCustomers ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
@@ -356,9 +403,9 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 4. Admin Accounts Module (Super Admin Only) -->
+            <!-- 6. Admin Accounts Module -->
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card shadow-sm h-100 <?php echo !$canManageAdmins ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageAdmins ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
@@ -390,40 +437,9 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 5. Service Status Tracking Module -->
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card shadow-sm h-100 <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-clock-rotate-left text-primary fs-4"></i>
-                                <h5 class="card-title mb-0 fw-bold">Service Tracking</h5>
-                            </div>
-                            <?php if ($pendingServicesCount > 0): ?>
-                                <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i><?php echo $pendingServicesCount; ?> Pending</span>
-                            <?php endif; ?>
-                        </div>
-                        <p class="card-text text-muted small flex-grow-1">
-                            Monitor customer repair requests, assign workshop technicians, and update stages (Received, In Progress, Ready for Pickup).
-                        </p>
-                        <div class="d-grid gap-2">
-                            <?php if ($canManageServices): ?>
-                                <a href="service_requests/index.php" class="btn btn-outline-primary btn-sm">
-                                    <i class="fa-solid fa-sliders me-1"></i>Track &amp; Update Requests
-                                </a>
-                            <?php else: ?>
-                                <button class="btn btn-outline-secondary btn-sm" disabled>
-                                    <i class="fa-solid fa-ban me-1"></i>Service Manager Only
-                                </button>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. Expense Recording Module -->
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card shadow-sm h-100 <?php echo !$canManageExpenses ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+            <!-- 7. Overhead Expenses Module -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageExpenses ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
@@ -433,7 +449,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                             <span class="badge bg-light text-dark border small">&#8369;<?php echo number_format($thisMonthExpenses, 2); ?> this mo.</span>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
-                            Record and categorize shop overhead bills (Rent, Electricity, Water, Employee Salaries, and shop supplies).
+                            Record and categorize shop overhead bills (Rent, Utilities, Salaries, and supplies).
                         </p>
                         <div class="d-grid gap-2">
                             <?php if ($canManageExpenses): ?>
@@ -450,9 +466,9 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 7. Reports & Printable Statements -->
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card shadow-sm h-100 <?php echo !$canManageReports ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+            <!-- 8. Reports & Printable Statements -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageReports ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
@@ -462,7 +478,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                             <span class="badge bg-success bg-opacity-10 text-success small fw-bold">Analytics</span>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
-                            Track automated sales income, analyze net operating profit vs overhead expenses, and generate printable statements.
+                            Track sales income, analyze net operating profit vs overhead expenses, and print statements.
                         </p>
                         <div class="d-grid gap-2">
                             <?php if ($canManageReports): ?>
@@ -470,11 +486,11 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                                     <i class="fa-solid fa-chart-pie me-1"></i>Financial Report
                                 </a>
                                 <div class="d-flex gap-2">
-                                    <a href="reports/print_financial.php" target="_blank" class="btn btn-light btn-sm text-secondary flex-grow-1">
-                                        <i class="fa-solid fa-print me-1"></i>Print Statement
+                                    <a href="reports/print_financial.php" target="_blank" class="btn btn-light btn-sm text-secondary flex-grow-1 text-nowrap" style="font-size: 0.8rem;">
+                                        <i class="fa-solid fa-print me-1"></i>Statement
                                     </a>
-                                    <a href="reports/print_inventory.php" target="_blank" class="btn btn-light btn-sm text-secondary flex-grow-1">
-                                        <i class="fa-solid fa-boxes-stacked me-1"></i>Print Inventory
+                                    <a href="reports/print_inventory.php" target="_blank" class="btn btn-light btn-sm text-secondary flex-grow-1 text-nowrap" style="font-size: 0.8rem;">
+                                        <i class="fa-solid fa-boxes-stacked me-1"></i>Inventory
                                     </a>
                                 </div>
                             <?php else: ?>
