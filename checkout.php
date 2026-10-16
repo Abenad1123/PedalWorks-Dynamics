@@ -265,26 +265,6 @@ include('includes/header.php');
         <div class="row g-4">
             <!-- Left: Fulfillment & Payment Details -->
             <div class="col-lg-7">
-                <!-- Customer Details Summary -->
-                <div class="pw-checkout-card p-4 mb-4">
-                    <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-circle-user text-warning"></i>
-                        <span>Customer Account</span>
-                    </h5>
-                    <div class="row g-3">
-                        <div class="col-sm-6">
-                            <label class="form-label text-white-50 small mb-1">Customer Name</label>
-                            <input type="text" class="form-control pw-form-control" readonly 
-                                   value="<?php echo htmlspecialchars(trim(($customerData['firstName'] ?? '') . ' ' . ($customerData['lastName'] ?? ''))); ?>">
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="form-label text-white-50 small mb-1">Email Address</label>
-                            <input type="text" class="form-control pw-form-control" readonly 
-                                   value="<?php echo htmlspecialchars($customerData['email'] ?? ''); ?>">
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Fulfillment Method (Apple Segmented Picker) -->
                 <div class="pw-checkout-card p-4 mb-4">
                     <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
