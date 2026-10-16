@@ -4,16 +4,13 @@
 [![Database](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Frontend](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Environment](https://img.shields.io/badge/XAMPP-Apache%20%26%20MySQL-FB7A24?style=flat-square&logo=xampp&logoColor=white)](https://www.apachefriends.org/)
-[![Course](https://img.shields.io/badge/Course-BSIT--2B--T-0c1b14?style=flat-square)](https://www.tup.edu.ph/)
-[![Requirements](https://img.shields.io/badge/Requirements-FR1--FR20%20(100%25)-10b981?style=flat-square)](https://github.com/Abenad1123/PedalWorks-Dynamics)
 
-An enterprise-grade, integrated e-commerce, inventory, service booking, and business operations management platform engineered for modern bicycle retail and repair shops. Developed for the Information Management curriculum (**BSIT-2B-T**) at the **Technological University of the Philippines – Taguig**.
+An enterprise-grade, integrated e-commerce, inventory, service booking, and business operations management platform engineered for modern bicycle retail and repair shops.
 
 ---
 
 ## Table of Contents
 - [Project Overview](#project-overview)
-- [Requirements Compliance Matrix](#requirements-compliance-matrix)
 - [Key Features](#key-features)
   - [Customer Storefront & Self-Service](#customer-storefront--self-service)
   - [Administrative Management Console](#administrative-management-console)
@@ -28,8 +25,6 @@ An enterprise-grade, integrated e-commerce, inventory, service booking, and busi
 - [Installation & Setup](#installation--setup)
 - [Default Seed Accounts](#default-seed-accounts)
 - [Security & Design Considerations](#security--design-considerations)
-- [Technical Manual & Architecture PDF](#technical-manual--architecture-pdf)
-- [Academic Credits](#academic-credits)
 
 ---
 
@@ -43,35 +38,6 @@ Key architectural highlights:
 3. **ACID Transaction Integrity**: Concurrency-safe checkout with pessimistic row locks preventing overselling or negative inventory balances.
 4. **Historical Price Integrity**: Implementation of Slowly Changing Dimensions (SCD Type 2) guaranteeing that price changes never corrupt past invoices or ledger reports.
 5. **Automated Order Dispatch**: PHPMailer + Mailtrap SMTP integration automatically generating and emailing itemized PDF receipts upon order fulfillment.
-
----
-
-## Requirements Compliance Matrix
-
-The system satisfies 100% of the course functional requirements and grading rubrics:
-
-### 1. Proposal Functional Requirements (FR1 – FR20)
-| Module / Section | Requirements | Status | Primary Code Location |
-| :--- | :--- | :---: | :--- |
-| **I. User & Authentication** | **FR1** (Customer Registration/Login), **FR2** (Admin RBAC Gate) | `100% Completed` | `signup.php`, `login.php`, `includes/admin_auth.php` |
-| **II. Catalog & Services** | **FR3** (Categorized Browsing), **FR4** (Search/Filter), **FR5** (Service Listing) | `100% Completed` | `products.php`, `index.php`, `services.php` |
-| **III. Cart & Orders** | **FR6** (Add to Cart), **FR7** (Cart Editing), **FR8** (Checkout/COD/Pickup), **FR9** (Order History) | `100% Completed` | `cart.php`, `checkout.php`, `user/orders.php` |
-| **IV. Inventory Control** | **FR10** (Add Products), **FR11** (Edit/Pricing/Photos), **FR12** (Auto Stock Deduction), **FR13** (Low Stock Alert), **FR14** (Product Archiving) | `100% Completed` | `admin/product/`, `admin/dashboard.php`, `checkout.php` |
-| **V. Workshop Repairs** | **FR15** (Repair Scheduling & Order Attachment), **FR16** (Service Status Lifecycle) | `100% Completed` | `services.php`, `admin/service_requests/`, `user/services.php` |
-| **VI. Financial Auditing** | **FR17** (Expense Input), **FR18** (Derived Sales Income), **FR19** (Income vs. Expense P&L), **FR20** (Printable Reports) | `100% Completed` | `admin/expenses/`, `admin/reports/` |
-
-### 2. Machine Problems & Lab Exam (`ITIM211-Proj.txt`)
-| Grading Component | Points | Status | Features & Verification |
-| :--- | :---: | :---: | :--- |
-| **MP1: Product/Service CRUD** | **20 / 20** | `Completed` | Full CRUD, single photo upload, multiple gallery photos (`productImage`), primary photo selection. |
-| **MP2: User CRUD** | **20 / 20** | `Completed` | Registration photo upload, profile photo editing, user account deactivation (`Disabled`), admin role assignment. |
-| **MP3: Login & Access Control** | **20 / 20** | `Completed` | Email-based login, strict ordinary-user restriction from CRUD routes, flash message redirects, staff RBAC. |
-| **MP4: Review CRUD & Regex Filter** | **20 / 20** | `Completed` | Verified purchaser/client review validation, display on product details, update/delete review, regex profanity masking (`maskProfanity()`). |
-| **MP5: Server-Side Form Validation** | **20 / 20** | `Completed` | Pure PHP server-side validation on login and product CRUD with explicit `novalidate` forms (no HTML5 validation reliance). |
-| **Term Test Lab Exam** | **35 / 35** | `Completed` | Prepared statements, admin status updates, Mailtrap SMTP dispatch, itemized email breakdown, attached FPDF receipt. |
-| **Unit 1: Database Design** | **20 / 20** | `Completed` | 3NF relational normalization + SCD Type 2 temporal versioning; MySQL Views (`vw_order_summary`, `vw_order_transaction_details`). |
-| **Unit 2: Execution & UI** | **20 / 20** | `Completed` | Zero PHP runtime errors; Hallmark 8-State Interactive Discipline and Apple HIG squircle craft. |
-| **Quiz 3: Homepage Search** | **15 / 15** | `Completed` | Dedicated catalog search input integrated into the homepage hero section. |
 
 ---
 
@@ -304,7 +270,7 @@ erDiagram
 
 ## Default Seed Accounts
 
-*Note: For testing and academic demonstration only. Update passwords in production.*
+*Note: Default credentials for initial local setup. Update passwords in production.*
 
 | Module | Identifier / Username | Default Password | Assigned Role / Type | Primary Permissions |
 | :--- | :--- | :--- | :--- | :--- |
@@ -327,23 +293,5 @@ erDiagram
 
 ---
 
-## Technical Manual & Architecture PDF
-
-For an in-depth exploration of the schema design, Slowly Changing Dimensions (Type 2), ACID transactions, and comprehensive oral defense questions and answers, refer to the generated technical manual:
-- **PDF Document**: [PedalWorks_Dynamics_System_and_Database_Architecture.pdf](PedalWorks_Dynamics_System_and_Database_Architecture.pdf)
-- **Regenerate via CLI**:
-  ```bash
-  php generate_system_docs_pdf.php
-  ```
-
----
-
-## Academic Credits
-
-- **Course**: Information Management (ITIM211)
-- **Degree & Section**: Bachelor of Science in Information Technology (BSIT-2B-T)
-- **Institution**: Technological University of the Philippines – Taguig
-- **Academic Year**: 2026–2027
-
----
 Developed for **PedalWorks Dynamics** &bull; Engineering Adventure Bicycle Retail & Workshop Operations
+
