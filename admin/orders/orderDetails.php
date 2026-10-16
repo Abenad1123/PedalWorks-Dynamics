@@ -1,10 +1,6 @@
 <?php
 /**
  * Admin Order Details & Status Update Form
- * ITIM211 Term Test Lab Rubric:
- * - Admin can view all orders and update the status of the transaction (5 pts)
- * - Queries MySQL VIEW vw_order_transaction_details (Unit 1 rubric - 20 pts)
- * - Reference pattern: itim211-2b-shop/admin/orderDetails.php
  */
 session_start();
 include('../../includes/config.php');
@@ -89,7 +85,7 @@ if (!$order) {
     exit;
 }
 
-// 2. Fetch Line Items using Prepared Statement (Unit 1 & Term Test Lab rubric)
+// 2. Fetch Line Items using Prepared Statement
 $items = [];
 $stmtItems = mysqli_prepare($conn, "SELECT 
         orderLineProductID,
@@ -245,7 +241,7 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
                             <i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Order Line Items
                         </h5>
                         <span class="badge bg-light text-dark border">
-                            <?php echo count($items); ?> item(s) &bull; Queried via <code>vw_order_transaction_details</code>
+                            <?php echo count($items); ?> item(s)
                         </span>
                     </div>
 
@@ -355,7 +351,7 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
             <!-- Right Column: Status Update Form & Customer Details -->
             <div class="col-lg-4">
                 
-                <!-- Status Update Card (Term Test Lab Rubric: 5 pts update order status + Mailtrap integration) -->
+                <!-- Status Update Card -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3 border-bottom">
                         <h5 class="mb-0 fw-bold fs-6">
@@ -363,7 +359,7 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
                         </h5>
                     </div>
                     <div class="card-body p-4">
-                        <form action="updateOrder.php" method="POST">
+                        <form action="updateOrder.php" method="POST" onsubmit="var st = document.getElementById('statusSelect').value; if(st === 'Cancelled') { return confirm('Are you sure you want to mark this order as Cancelled?'); } return true;">
                             <input type="hidden" name="orderId" value="<?php echo $orderId; ?>">
 
                             <div class="mb-3">
@@ -379,14 +375,12 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
                                 </select>
                             </div>
 
-                            <!-- Mailtrap Trigger Notice -->
-                            <div class="alert alert-info py-2 px-3 small mb-3 border-0 bg-info-subtle text-info-emphasis">
-                                <i class="fa-solid fa-paper-plane me-1"></i>
-                                <strong>Automated Email Notification:</strong> Updating this status will trigger PHPMailer to send an email with the transaction breakdown and attached PDF receipt to the customer via <strong>Mailtrap</strong>.
+                            <div class="form-text small text-muted mb-3">
+                                <i class="fa-solid fa-envelope me-1 text-primary"></i>Customer will automatically receive an email notification with their updated transaction receipt.
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-                                <i class="fa-solid fa-floppy-disk me-1"></i> Update Status &amp; Send Email
+                                <i class="fa-solid fa-floppy-disk me-1"></i> Update Status
                             </button>
                         </form>
                     </div>

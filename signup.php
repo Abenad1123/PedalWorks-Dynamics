@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
     $password        = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirmPassword'] ?? '';
 
-    // Validation (MP5: PHP server-side validation)
+    // Validation (Server-side validation)
     if ($firstName === '') {
         $errors[] = 'First name is required.';
     }
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
         $errors[] = 'Database is offline. Please check that MySQL is running in XAMPP.';
     }
 
-    // Photo Upload Validation (MP2: User Registration upload a photo)
+    // Photo Upload Validation
     $uploadedPhotoFilename = null;
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
         $fileError = $_FILES['photo']['error'];
@@ -187,7 +187,7 @@ include('./includes/header.php');
                 </div>
             <?php endif; ?>
 
-            <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+            <!-- Customer Registration Form -->
             <form action="signup.php" method="POST" enctype="multipart/form-data" autocomplete="on" novalidate>
                 <!-- Personal Details Section -->
                 <div class="row g-3 mb-3">
@@ -228,7 +228,7 @@ include('./includes/header.php');
                     </div>
                 </div>
 
-                <!-- Photo Upload Section (MP2 Requirement) -->
+                <!-- Photo Upload Section -->
                 <div class="mb-3">
                     <label for="photo" class="form-label text-white-50 small fw-semibold">
                         Profile Photo <span class="text-white-50" style="font-size: 0.75rem;">(Optional - JPG, PNG, WEBP, max 5MB)</span>

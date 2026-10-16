@@ -1,9 +1,6 @@
 <?php
 /**
  * Admin Orders Management
- * ITIM211 Term Test Lab Rubric:
- * - Admin can view all orders and update the status of the transaction (5 pts)
- * - Uses MySQL VIEWS (vw_order_summary) (Unit 1 Rubric - 20 pts)
  */
 session_start();
 include('../../includes/config.php');
@@ -261,8 +258,8 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
         <!-- Orders Table Card -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold fs-6">Orders List (<?php echo count($orders); ?>)</h5>
-                <span class="badge bg-secondary-subtle text-secondary">Queried via <code>vw_order_summary</code></span>
+                <h5 class="mb-0 fw-bold fs-6">Orders Directory</h5>
+                <span class="badge bg-secondary-subtle text-secondary"><?php echo count($orders); ?> record(s)</span>
             </div>
 
             <div class="table-responsive">

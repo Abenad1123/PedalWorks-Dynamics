@@ -305,7 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         $currentStock = (int)$product['stock'];
 
         if ($isPriceChanged) {
-            // SCD Type 2: Close previous version with endDate = NOW(), insert new version with new price
+            // Price History Versioning: Close previous version with endDate = NOW(), insert new version with new price
             mysqli_begin_transaction($conn);
             try {
                 // 1. Close current active version
@@ -448,7 +448,7 @@ $activeModule = 'product';
                 <h1 class="h3 fw-bold mb-1">
                     <i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Product: <?php echo htmlspecialchars($product['name']); ?>
                 </h1>
-                <p class="text-muted small mb-0">Modify catalog specifications, pricing (SCD Type 2), or associated media assets.</p>
+                <p class="text-muted small mb-0">Update product specifications, active pricing, and media gallery.</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="stockUpdate.php?id=<?php echo (int)$product['productID']; ?>" class="btn btn-outline-warning text-dark btn-sm">
@@ -490,7 +490,7 @@ $activeModule = 'product';
                 </span>
             </div>
             <div class="card-body p-4">
-                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <!-- Edit Product Form -->
                 <form action="editProduct.php" method="post" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="productID" value="<?php echo (int)$product['productID']; ?>">
 
@@ -545,7 +545,7 @@ $activeModule = 'product';
                             <?php if (isset($fieldErrors['price'])): ?>
                                 <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['price']); ?></div>
                             <?php else: ?>
-                                <div class="form-text small text-info"><i class="fa-solid fa-clock-rotate-left me-1"></i>Modifying creates a new price version (SCD Type 2).</div>
+                                <div class="form-text small text-muted"><i class="fa-solid fa-clock-rotate-left me-1"></i>Price modifications update current catalog rate while preserving historical order records.</div>
                             <?php endif; ?>
                         </div>
                         <div class="col-md-4">
@@ -579,15 +579,15 @@ $activeModule = 'product';
                         <textarea id="description" name="description" class="form-control" rows="4"><?php echo htmlspecialchars($_POST['description'] ?? $product['description'] ?? ''); ?></textarea>
                     </div>
 
-                    <!-- Media Assets Box (MP1: Multiple Photos) -->
+                    <!-- Media Assets Box -->
                     <div class="card bg-light border mb-4">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="fw-semibold text-dark mb-0">
                                     <i class="fa-solid fa-images text-primary me-2"></i>Product Gallery Photos (<?php echo count($productImages); ?>)
                                 </h6>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
-                                    MP1 Multi-Photo Support
+                                <span class="badge bg-light text-secondary border">
+                                    Photo Showcase
                                 </span>
                             </div>
 

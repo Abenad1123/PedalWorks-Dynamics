@@ -40,7 +40,7 @@ if (!$conn) {
     exit;
 }
 
-// 1. Validation (Pure PHP validation - MP5 compliant)
+// 1. Validation (Server-side validation)
 $fieldErrors = [];
 if ($rating < 1 || $rating > 5) {
     $fieldErrors[] = 'Please provide a valid rating between 1 and 5 stars.';
@@ -59,7 +59,7 @@ if (!empty($fieldErrors)) {
     exit;
 }
 
-// 2. Verified Customer Check (MP4: "a product or service can be reviewed by a customer that availed the specified product or service")
+// 2. Verified Customer Check (Ensure customer has purchased or availed the item)
 $isVerified = false;
 
 if ($productID !== null && $productID > 0) {
@@ -101,7 +101,7 @@ if (!$isVerified) {
     exit;
 }
 
-// 3. Mask foul words via regex (MP4 Rubric)
+// 3. Mask inappropriate words via regex
 $cleanText = maskProfanity($reviewText);
 
 // 4. Handle Create or Update

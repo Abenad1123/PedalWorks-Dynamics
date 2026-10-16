@@ -36,7 +36,20 @@ if (!in_array($status, $validStatuses, true)) {
     exit;
 }
 
-// 1. Update status using Prepared Statements (Term Test Lab rubric)
+// Check previous status for inventory synchronization
+$prevStatus = '';
+$chkStmt = mysqli_prepare($conn, "SELECT status FROM productSale WHERE productSaleID = ? LIMIT 1");
+if ($chkStmt) {
+    mysqli_stmt_bind_param($chkStmt, 'i', $orderId);
+    mysqli_stmt_execute($chkStmt);
+    $chkRes = mysqli_stmt_get_result($chkStmt);
+    if ($chkRow = mysqli_fetch_assoc($chkRes)) {
+        $prevStatus = $chkRow['status'];
+    }
+    mysqli_stmt_close($chkStmt);
+}
+
+// 1. Update status using Prepared Statements
 $sql = "UPDATE productSale SET status = ? WHERE productSaleID = ?";
 $stmt = mysqli_prepare($conn, $sql);
 if (!$stmt) {
@@ -77,6 +90,7 @@ mysqli_stmt_close($stmt);
 // 3. Fetch line items using Prepared Statements
 $items = [];
 $stmt = mysqli_prepare($conn, "SELECT 
+        olp.productID,
         p.name AS productName,
         olp.quantity,
         p.price,
@@ -91,6 +105,31 @@ while ($row = mysqli_fetch_assoc($res)) {
     $items[] = $row;
 }
 mysqli_stmt_close($stmt);
+
+// 4. Inventory synchronization: restore stock if cancelled, deduct if uncancelled
+if ($prevStatus !== 'Cancelled' && $status === 'Cancelled') {
+    $stockStmt = mysqli_prepare($conn, "UPDATE product SET stock = stock + ? WHERE productID = ?");
+    if ($stockStmt) {
+        foreach ($items as $item) {
+            if (!empty($item['productID']) && !empty($item['quantity'])) {
+                mysqli_stmt_bind_param($stockStmt, 'ii', $item['quantity'], $item['productID']);
+                mysqli_stmt_execute($stockStmt);
+            }
+        }
+        mysqli_stmt_close($stockStmt);
+    }
+} elseif ($prevStatus === 'Cancelled' && $status !== 'Cancelled') {
+    $stockStmt = mysqli_prepare($conn, "UPDATE product SET stock = GREATEST(0, stock - ?) WHERE productID = ?");
+    if ($stockStmt) {
+        foreach ($items as $item) {
+            if (!empty($item['productID']) && !empty($item['quantity'])) {
+                mysqli_stmt_bind_param($stockStmt, 'ii', $item['quantity'], $item['productID']);
+                mysqli_stmt_execute($stockStmt);
+            }
+        }
+        mysqli_stmt_close($stockStmt);
+    }
+}
 
 // Fetch linked workshop services if any
 $services = [];
@@ -117,7 +156,7 @@ foreach ($services as $srv) {
     $grandTotal += (float)$srv['price'];
 }
 
-// 4. Generate PDF receipt using FPDF (5 pts attachment)
+// 4. Generate PDF receipt using FPDF
 $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
@@ -160,7 +199,7 @@ $pdf->Cell(35, 8, 'PHP ' . number_format($grandTotal, 2), 1, 1, 'R');
 
 $pdfContent = $pdf->Output('S');
 
-// 5. Send notification email via Mailtrap (Term Test Lab rubric: 5 pts send email, 5 pts line items list & totals, 5 pts PDF attachment)
+// 5. Send notification email with attached receipt via SMTP
 $mail = new PHPMailer();
 try {
     // Server settings
@@ -227,9 +266,9 @@ try {
     $mail->addStringAttachment($pdfContent, "receipt_order_{$orderId}.pdf");
 
     $mail->send();
-    $_SESSION['actionSuccess'] = "Order #PW-ORD-{$orderId} status updated to '{$status}' and email sent to {$customerEmail} via Mailtrap.";
+    $_SESSION['actionSuccess'] = "Order #PW-ORD-{$orderId} status has been updated to '{$status}'. Confirmation receipt emailed to {$customerEmail}.";
 } catch (Exception $e) {
-    $_SESSION['actionError'] = "Status updated, but email could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    $_SESSION['actionSuccess'] = "Order #PW-ORD-{$orderId} status has been updated to '{$status}'. (Notification email could not be delivered to {$customerEmail}).";
 }
 
 header("Location: orderDetails.php?id={$orderId}");

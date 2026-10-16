@@ -280,7 +280,7 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                     </a>
                 </li>
 
-                <!-- 2. Customer Orders (Term Test Lab) -->
+                <!-- 2. Customer Orders -->
                 <?php if ($canAccessOrders): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo ($activeModule === 'orders') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/orders/index.php">

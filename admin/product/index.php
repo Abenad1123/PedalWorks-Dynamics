@@ -140,7 +140,7 @@ $activeModule = 'product';
                 <h1 class="h3 fw-bold mb-1">
                     <i class="fa-solid fa-bicycle text-primary me-2"></i>Product Catalog &amp; Inventory
                 </h1>
-                <p class="text-muted small mb-0">Manage bikes, components, safety gear, stock counts, and SCD Type 2 pricing records.</p>
+                <p class="text-muted small mb-0">Manage bicycle inventory, parts, pricing, and warehouse stock levels.</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="stockUpdate.php" class="btn btn-outline-warning text-dark btn-sm d-flex align-items-center shadow-sm">
@@ -264,9 +264,6 @@ $activeModule = 'product';
                 <span class="fw-semibold text-dark">
                     <i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Product Directory
                     <span class="badge bg-secondary ms-2"><?php echo count($productList); ?> item(s)</span>
-                </span>
-                <span class="text-muted small">
-                    <i class="fa-solid fa-clock-rotate-left me-1"></i>SCD Type 2 Price Tracked
                 </span>
             </div>
             <div class="table-responsive">

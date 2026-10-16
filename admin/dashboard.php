@@ -66,7 +66,7 @@ if ($conn) {
         $thisMonthExpenses = (float)$r['amt'];
     }
 
-    // Customer Orders stats (Term Test Lab)
+    // Customer Orders stats
     $totalOrdersCount = 0;
     $pendingOrdersCount = 0;
     $ordRes = mysqli_query($conn, "SELECT 
@@ -221,7 +221,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
         <h2 class="h5 mb-3 fw-bold text-secondary">Operation Modules</h2>
         <div class="row g-4">
 
-            <!-- 1. Customer Orders & Transactions (Term Test Lab) -->
+            <!-- Customer Orders & Transactions -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 <?php echo !$canManageOrders ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -237,7 +237,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                             <?php endif; ?>
                         </div>
                         <p class="card-text text-muted small flex-grow-1">
-                            Review customer orders, update transaction status, and issue automated status emails with PDF receipts.
+                            Review sales orders, manage fulfillment stages, and issue customer receipts.
                         </p>
                         <div class="d-grid gap-2">
                             <?php if ($canManageOrders): ?>

@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $validCategories = ['Water', 'Electricity', 'Employee Salary', 'Rent', 'Other'];
 
-        // Pure PHP Validation (MP5 Compliance)
+        // Server-side validation
         if (!in_array($category, $validCategories, true)) {
             $formErrors['category'] = 'Please select a valid expense category.';
         }

@@ -232,9 +232,6 @@ $activeModule = 'service';
                     <i class="fa-solid fa-screwdriver-wrench text-primary me-2"></i>Service Packages Directory
                     <span class="badge bg-secondary ms-2"><?php echo count($serviceList); ?> item(s)</span>
                 </span>
-                <span class="text-muted small">
-                    <i class="fa-solid fa-clock-rotate-left me-1"></i>SCD Type 2 Rate History
-                </span>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover table-striped align-middle mb-0">

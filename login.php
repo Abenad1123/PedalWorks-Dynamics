@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $identifier = trim($_POST['identifier'] ?? $_POST['username'] ?? '');
     $password   = trim($_POST['password'] ?? '');
 
-    // MP5: Rigorous server-side PHP validation without HTML5 validation
+    // Server-side validation
     if ($identifier === '') {
         $fieldErrors['identifier'] = 'Email address or username is required.';
         $errors[] = 'Email address or username is required.';
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            // 2. Query Customer account by Email OR Username (MP3 Requirement: use email for user login)
+            // 2. Query Customer account by Email OR Username
             $custSql = "SELECT ca.customerAccountID, ca.customerID, ca.username, ca.password, ca.status, 
                                c.firstName, c.lastName, c.email, c.photo 
                         FROM customerAccount ca 
@@ -128,7 +128,7 @@ include('./includes/header.php');
                 </div>
             <?php endif; ?>
 
-            <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+            <!-- Login Form -->
             <form action="login.php" method="POST" autocomplete="on" novalidate>
                 <div class="mb-3">
                     <label for="identifier" class="form-label text-white-50 small fw-semibold">

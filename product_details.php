@@ -36,7 +36,7 @@ if ($conn && ($productID > 0 || $sku !== '')) {
     }
 }
 
-// Check if user is logged in and if they have purchased this product (MP4 Verified Customer Check)
+// Check if user is logged in and if they have purchased this product
 $hasPurchased = false;
 $customerAccountID = (int)($_SESSION['customerAccountID'] ?? 0);
 $userReview = null;
@@ -102,7 +102,7 @@ if ($conn && $product) {
         }
     }
 
-    // 3. Fetch all photos for multiple photo viewing (MP1)
+    // 3. Fetch all photos for photo showcase
     $productImages = [];
     $imgStmt = mysqli_prepare($conn, "SELECT productImageID, imagePath, isPrimary FROM productImage WHERE productID = ? ORDER BY isPrimary DESC, productImageID ASC");
     if ($imgStmt) {
@@ -161,7 +161,7 @@ include('includes/header.php');
 
         <!-- Product Primary Showcase -->
         <div class="row g-4 mb-5">
-            <!-- Left: Product Image Stage & Multi-Photo Showcase (MP1) -->
+            <!-- Left: Product Image Stage & Photo Showcase -->
             <div class="col-lg-6">
                 <div class="pw-cart-card p-4 p-md-5 d-flex align-items-center justify-content-center position-relative" 
                      style="min-height: 440px; background: #ffffff; border-radius: 20px;">
@@ -207,7 +207,7 @@ include('includes/header.php');
                     <?php endif; ?>
                 </div>
 
-                <!-- Multiple Photo Thumbnails Strip (MP1: View Multiple Photos) -->
+                <!-- Photo Thumbnails Strip -->
                 <?php if (count($productImages) > 1): ?>
                     <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
                         <?php foreach ($productImages as $tIdx => $tImg): ?>
@@ -395,7 +395,7 @@ include('includes/header.php');
             </div>
         </div>
 
-        <!-- Section: Customer Reviews & Ratings (MP4 Review CRUD) -->
+        <!-- Section: Customer Reviews & Ratings -->
         <div class="pw-cart-card p-4 p-md-5" id="reviews">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-white border-opacity-10 gap-3">
                 <div>
@@ -451,7 +451,7 @@ include('includes/header.php');
                                 Tell other mountain and trail riders how this gear performed in real conditions. Inappropriate language will be automatically masked.
                             </p>
 
-                            <!-- Pure PHP Review Form (MP5 novalidate) -->
+                            <!-- Review Form -->
                             <form action="review_action.php" method="POST" novalidate>
                                 <input type="hidden" name="action" value="<?php echo $userReview ? 'update' : 'create'; ?>">
                                 <input type="hidden" name="productID" value="<?php echo (int)$product['productID']; ?>">

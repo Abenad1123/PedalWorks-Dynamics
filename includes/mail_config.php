@@ -1,7 +1,6 @@
 <?php
 /**
- * Mailtrap SMTP Configuration
- * ITIM211 Term Test Lab
+ * SMTP Configuration
  */
 return [
     'host'       => 'sandbox.smtp.mailtrap.io',

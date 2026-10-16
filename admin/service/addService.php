@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
                 }
             }
 
-            // Handle multiple gallery photos upload (MP1)
+            // Handle additional gallery photos upload
             if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
                 $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
                 if (!is_dir($uploadTargetDir)) {
@@ -262,7 +262,7 @@ $activeModule = 'service';
                 </span>
             </div>
             <div class="card-body p-4">
-                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <!-- Service Form -->
                 <form action="addService.php" method="post" enctype="multipart/form-data" novalidate>
                     
                     <div class="row g-3 mb-3">
@@ -357,15 +357,15 @@ $activeModule = 'service';
 
                             <hr class="my-3 text-secondary opacity-25">
 
-                            <!-- Multiple Gallery Photos Upload (MP1) -->
+                            <!-- Gallery Photos Upload -->
                             <div>
                                 <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
                                     <i class="fa-solid fa-images text-info"></i>
-                                    <span>Additional Service Gallery Photos (Upload Multiple)</span>
+                                    <span>Additional Service Gallery Photos</span>
                                 </label>
                                 <input type="file" id="gallery_images" name="gallery_images[]" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp" multiple>
                                 <div class="form-text small">
-                                    Select multiple photos at once (workshop tools, bench setup, before/after). Allowed: JPG, PNG, WEBP (Max 5MB each).
+                                    Select photos to add to the service gallery showcase. Allowed: JPG, PNG, WEBP (Max 5MB each).
                                 </div>
                             </div>
                         </div>

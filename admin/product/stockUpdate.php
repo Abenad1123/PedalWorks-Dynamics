@@ -193,7 +193,7 @@ $activeModule = 'product';
                         </span>
                     </div>
                     <div class="card-body p-4">
-                        <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                        <!-- Inventory Adjustment Form -->
                         <form method="post" action="stockUpdate.php" novalidate>
                             
                             <div class="mb-3">

@@ -100,7 +100,7 @@ $laborScheduledRaw   = isset($_POST['laborScheduledDate']) ? trim($_POST['laborS
 $laborNotes          = isset($_POST['laborNotes']) ? trim($_POST['laborNotes']) : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Pure PHP Form Validation without HTML5 (MP5 Compliance)
+    // Server-side validation
     if (!in_array($pickupMethod, ['Delivery', 'In-Store Pickup'], true)) {
         $errors['pickupMethod'] = 'Please select a valid fulfillment method.';
     }

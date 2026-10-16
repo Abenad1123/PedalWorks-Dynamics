@@ -1,9 +1,7 @@
 <?php
 /**
  * PedalWorks Dynamics - Review Profanity Filter Utility
- * MP4 Rubric: "apply regex to filter or mask bad/foul words on the review"
- *
- * Replaces matching foul words with asterisks preserving word boundaries.
+ * Filters and masks inappropriate words in reviews using regular expressions.
  */
 
 if (!function_exists('maskProfanity')) {

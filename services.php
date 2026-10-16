@@ -63,7 +63,7 @@ if ($conn) {
     }
 }
 
-// Reviews and verified availed service lookups (MP4)
+// Reviews and verified availed service lookups
 $serviceReviews = [];
 $serviceRatingStats = [];
 $customerAccountID = (int)($_SESSION['customerAccountID'] ?? 0);
@@ -109,7 +109,7 @@ if ($conn) {
         }
     }
 
-    // Fetch all service gallery photos (MP1)
+    // Fetch all service gallery photos
     $serviceAllImages = [];
     $siQuery = @mysqli_query($conn, "SELECT serviceImageID, serviceID, imagePath, isPrimary FROM serviceImage ORDER BY isPrimary DESC, serviceImageID ASC");
     if ($siQuery) {
@@ -470,7 +470,7 @@ function getServiceIcon($categoryName) {
                                     </div>
                                 </div>
 
-                                <!-- Service Reviews Section (MP4) -->
+                                <!-- Service Reviews Section -->
                                 <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
                                 <div class="mt-3">
                                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">

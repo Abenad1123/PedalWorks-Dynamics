@@ -61,14 +61,14 @@ if ($action === 'permanent') {
         mysqli_stmt_close($delStmt);
     }
 } else {
-    // Default action: Deactivate / Archive (SCD Type 2)
+    // Default action: Deactivate / Archive
     if ($product['endDate'] !== null) {
         $_SESSION['error'] = 'Product "' . htmlspecialchars($product['name']) . '" is already archived.';
     } else {
         $arcStmt = mysqli_prepare($conn, "UPDATE product SET endDate = NOW() WHERE productID = ? AND endDate IS NULL");
         mysqli_stmt_bind_param($arcStmt, 'i', $deleteID);
         if (mysqli_stmt_execute($arcStmt)) {
-            $_SESSION['success'] = 'Product "' . htmlspecialchars($product['name']) . '" has been deactivated and archived (sales history preserved).';
+            $_SESSION['success'] = 'Product "' . htmlspecialchars($product['name']) . '" has been deactivated and archived.';
         } else {
             $_SESSION['error'] = 'Failed to deactivate product: ' . mysqli_error($conn);
         }

@@ -58,7 +58,7 @@ if ($action === 'permanent') {
         mysqli_stmt_close($delStmt);
     }
 } else {
-    // Default: Deactivate / Archive (SCD Type 2)
+    // Default: Deactivate / Archive
     if ($service['endDate'] !== null) {
         $_SESSION['error'] = 'Service "' . htmlspecialchars($service['name']) . '" is already archived.';
     } else {

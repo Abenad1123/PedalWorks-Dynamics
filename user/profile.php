@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $password        = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirmPassword'] ?? '';
 
-    // Validation (MP5: PHP server-side validation)
+    // Server-side validation
     if ($firstName === '') {
         $errors[] = 'First name is required.';
     }
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $errors[] = 'Database is offline. Please check your MySQL connection.';
     }
 
-    // Photo Upload Validation (MP2: User can update profile with upload photo)
+    // Photo Upload Validation
     $uploadedPhotoFilename = null;
     $shouldUpdatePhoto = false;
 
@@ -325,7 +325,7 @@ include('../includes/header.php');
                     Personal Information
                 </h5>
 
-                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <!-- Personal Details Form -->
                 <form action="profile.php" method="POST" enctype="multipart/form-data" autocomplete="on" novalidate>
                     <!-- Names -->
                     <div class="row g-3 mb-3">
@@ -363,7 +363,7 @@ include('../includes/header.php');
                         </div>
                     </div>
 
-                    <!-- Photo Upload (MP2 Requirement) -->
+                    <!-- Photo Upload -->
                     <div class="mb-3">
                         <label for="photo" class="form-label text-secondary small fw-medium mb-1">
                             Update Profile Photo <span class="text-white-50" style="font-size: 0.75rem;">(Optional - JPG, PNG, WEBP, max 5MB)</span>

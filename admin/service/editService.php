@@ -288,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
         $sku = $service['sku'];
 
         if ($isPriceChanged) {
-            // SCD Type 2: Close previous version, insert new version with new price
+            // Price History Versioning: Close previous version, insert new version with new price
             mysqli_begin_transaction($conn);
             try {
                 // 1. Close current active version
@@ -431,7 +431,7 @@ $activeModule = 'service';
                 <h1 class="h3 fw-bold mb-1">
                     <i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Service: <?php echo htmlspecialchars($service['name']); ?>
                 </h1>
-                <p class="text-muted small mb-0">Modify service scope, categorization, pricing (SCD Type 2), or media banner.</p>
+                <p class="text-muted small mb-0">Update service scope, labor fees, and workshop gallery.</p>
             </div>
             <a href="index.php" class="btn btn-outline-secondary btn-sm">
                 <i class="fa-solid fa-arrow-left me-1"></i>Back to Services
@@ -468,7 +468,7 @@ $activeModule = 'service';
                 </span>
             </div>
             <div class="card-body p-4">
-                <!-- MP5: Form with novalidate to disable browser HTML5 popups and enforce pure PHP server validation -->
+                <!-- Edit Service Form -->
                 <form action="editService.php" method="post" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="serviceID" value="<?php echo (int)$service['serviceID']; ?>">
 
@@ -523,7 +523,7 @@ $activeModule = 'service';
                             <?php if (isset($fieldErrors['price'])): ?>
                                 <div class="text-danger small mt-1 ps-1 fw-medium"><?php echo htmlspecialchars($fieldErrors['price']); ?></div>
                             <?php else: ?>
-                                <div class="form-text small text-info"><i class="fa-solid fa-clock-rotate-left me-1"></i>Modifying creates a new SCD Type 2 price record.</div>
+                                <div class="form-text small text-muted"><i class="fa-solid fa-clock-rotate-left me-1"></i>Rate changes apply to new bookings while preserving historical records.</div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -533,15 +533,15 @@ $activeModule = 'service';
                         <textarea id="description" name="description" class="form-control" rows="4"><?php echo htmlspecialchars($_POST['description'] ?? $service['description'] ?? ''); ?></textarea>
                     </div>
 
-                    <!-- Media Assets Box (MP1: Multiple Service Photos) -->
+                    <!-- Media Assets Box -->
                     <div class="card bg-light border mb-4">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="fw-semibold text-dark mb-0">
                                     <i class="fa-solid fa-images text-primary me-2"></i>Service Gallery Photos (<?php echo count($serviceImages); ?>)
                                 </h6>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
-                                    MP1 Multi-Photo Support
+                                <span class="badge bg-light text-secondary border">
+                                    Photo Showcase
                                 </span>
                             </div>
 
