@@ -12,7 +12,9 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 $activeModule = $activeModule ?? '';
 
 if (!$activeModule) {
-    if (strpos($currentUri, '/admin/service_requests/') !== false) {
+    if (strpos($currentUri, '/admin/orders/') !== false || strpos($currentUri, 'orders.php') !== false) {
+        $activeModule = 'orders';
+    } elseif (strpos($currentUri, '/admin/service_requests/') !== false) {
         $activeModule = 'service_requests';
     } elseif (strpos($currentUri, '/admin/expenses/') !== false) {
         $activeModule = 'expenses';
@@ -32,6 +34,7 @@ if (!$activeModule) {
 }
 
 // Role checks for each navigation tab & menu item
+$canAccessOrders    = hasAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 $canAccessProducts  = hasAdminRole(['Inventory Manager']);
 $canAccessServices  = hasAdminRole(['Service & Repair Manager']);
 $canAccessExpenses  = hasAdminRole(['Accounting Administrator']);
@@ -277,7 +280,17 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
                     </a>
                 </li>
 
-                <!-- 2. Catalog Dropdown (Products, Services) -->
+                <!-- 2. Customer Orders (Term Test Lab) -->
+                <?php if ($canAccessOrders): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo ($activeModule === 'orders') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/orders/index.php">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <!-- 3. Catalog Dropdown (Products, Services) -->
                 <?php if ($hasCatalogGroup): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?php echo $isCatalogActive ? 'active' : ''; ?>" href="#" id="catalogDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

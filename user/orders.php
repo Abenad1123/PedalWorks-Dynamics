@@ -216,11 +216,14 @@ include __DIR__ . '/../includes/header.php';
                                 </span>
                             </div>
 
-                            <div class="text-sm-end">
+                            <div class="text-sm-end d-flex flex-column align-items-sm-end gap-1">
                                 <span class="text-white-50 small d-block">Grand Total</span>
                                 <span class="h4 fw-bold text-white mb-0" style="color: var(--pw-trail-amber) !important;">
                                     &#8369;<?php echo number_format($order['grandTotal'], 2); ?>
                                 </span>
+                                <a href="../admin/orders/receipt.php?id=<?php echo $saleId; ?>" target="_blank" class="btn btn-outline-light btn-sm mt-1 px-2 py-1" style="font-size: 0.75rem; border-color: rgba(255,255,255,0.25);">
+                                    <i class="fa-regular fa-file-pdf me-1 text-danger"></i> PDF Receipt
+                                </a>
                             </div>
                         </div>
                     </div>

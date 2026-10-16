@@ -65,9 +65,22 @@ if ($conn) {
     if ($expRes && ($r = mysqli_fetch_assoc($expRes))) {
         $thisMonthExpenses = (float)$r['amt'];
     }
+
+    // Customer Orders stats (Term Test Lab)
+    $totalOrdersCount = 0;
+    $pendingOrdersCount = 0;
+    $ordRes = mysqli_query($conn, "SELECT 
+        COUNT(*) as totalOrders,
+        SUM(CASE WHEN orderStatus IN ('Pending', 'Received') THEN 1 ELSE 0 END) as pendingOrders
+    FROM vw_order_summary");
+    if ($ordRes && ($r = mysqli_fetch_assoc($ordRes))) {
+        $totalOrdersCount = (int)$r['totalOrders'];
+        $pendingOrdersCount = (int)$r['pendingOrders'];
+    }
 }
 
 // Module access checks
+$canManageOrders    = hasAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 $canManageProducts  = hasAdminRole(['Inventory Manager']);
 $canManageServices  = hasAdminRole(['Service & Repair Manager']);
 $canManageExpenses  = hasAdminRole(['Accounting Administrator']);
@@ -208,7 +221,40 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
         <h2 class="h5 mb-3 fw-bold text-secondary">Operation Modules</h2>
         <div class="row g-4">
 
-            <!-- 1. Products Module (Inventory Manager & Super Admin) -->
+            <!-- 1. Customer Orders & Transactions (Term Test Lab) -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="card shadow-sm h-100 <?php echo !$canManageOrders ? 'opacity-75 border-secondary-subtle' : ''; ?>">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-bag-shopping text-primary fs-4"></i>
+                                <h5 class="card-title mb-0 fw-bold">Orders</h5>
+                            </div>
+                            <?php if ($pendingOrdersCount > 0): ?>
+                                <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i><?php echo $pendingOrdersCount; ?> Pending</span>
+                            <?php else: ?>
+                                <span class="badge bg-light text-dark border small"><?php echo $totalOrdersCount; ?> total</span>
+                            <?php endif; ?>
+                        </div>
+                        <p class="card-text text-muted small flex-grow-1">
+                            Review customer orders, update transaction status, and issue automated status emails with PDF receipts.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <?php if ($canManageOrders): ?>
+                                <a href="orders/index.php" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-list-check me-1"></i>Manage Orders
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="fa-solid fa-ban me-1"></i>Staff Only
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Products Module (Inventory Manager & Super Admin) -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 <?php echo !$canManageProducts ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
