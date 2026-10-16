@@ -93,27 +93,7 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
     <title>Customer Orders &amp; Transactions - PedalWorks Dynamics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/style.css">
-    <style>
-        .pw-stat-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 1.25rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .pw-stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-        }
-        .status-badge-pending     { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        .status-badge-received    { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
-        .status-badge-inprogress  { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
-        .status-badge-ready       { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
-        .status-badge-completed   { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .status-badge-cancelled   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    </style>
+    <link rel="stylesheet" href="../../includes/style/style.css">
 </head>
 <body class="bg-light">
 

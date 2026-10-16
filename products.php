@@ -89,7 +89,7 @@ if ($conn) {
     <div class="pw-filter-card">
         <form method="GET" action="products.php" class="row g-3 align-items-center">
             <div class="col-lg-6 col-md-6">
-                <label for="search" class="form-label text-secondary small mb-1 fw-semibold">
+                <label for="search" class="pw-form-label">
                     Search Catalog
                 </label>
                 <input type="text" class="form-control pw-form-control" id="search" name="search" 
@@ -98,7 +98,7 @@ if ($conn) {
             </div>
 
             <div class="col-lg-3 col-md-3">
-                <label for="category" class="form-label text-secondary small mb-1 fw-semibold">
+                <label for="category" class="pw-form-label">
                     Category
                 </label>
                 <select class="form-select pw-form-select" id="category" name="category">

@@ -28,34 +28,40 @@
     --pw-trail-amber:       #f59b58;
     --pw-trail-glow:        rgba(209, 102, 41, 0.28);
 
-    /* Text & Neutral Hierarchy */
+    /* Text & Neutral Hierarchy (Hallmark Contrast Compliance) */
     --pw-text-bright:       #ffffff;
-    --pw-text-primary:      #e2e8f0;
-    --pw-text-muted:        #94a3b8;
-    --pw-text-faint:        #64748b;
+    --pw-text-primary:      #f8fafc;
+    --pw-text-muted:        #cbd5e1;
+    --pw-text-faint:        #94a3b8;
+    --pw-text-subtle:       #64748b;
+
+    /* Focus & Accessibility Tokens (Apple HIG Discipline) */
+    --pw-focus-ring:        0 0 0 3px rgba(229, 121, 58, 0.35);
+    --pw-focus-ring-alt:    0 0 0 3px rgba(255, 255, 255, 0.35);
+    --pw-focus-ring-danger: 0 0 0 3px rgba(239, 68, 68, 0.35);
 
     /* Glassmorphism Surface Tokens (Sleek Obsidian Glass) */
-    --pw-glass-bg-nav:      rgba(11, 16, 22, 0.88);
-    --pw-glass-bg-card:     rgba(16, 22, 30, 0.72);
-    --pw-glass-bg-card-hover: rgba(22, 30, 40, 0.84);
-    --pw-glass-bg-elevated: rgba(25, 34, 46, 0.78);
+    --pw-glass-bg-nav:      rgba(11, 16, 22, 0.90);
+    --pw-glass-bg-card:     rgba(16, 22, 30, 0.78);
+    --pw-glass-bg-card-hover: rgba(22, 30, 40, 0.88);
+    --pw-glass-bg-elevated: rgba(25, 34, 46, 0.82);
     --pw-glass-bg-subtle:   rgba(255, 255, 255, 0.04);
     
     /* Glass Borders & Specular Accents */
-    --pw-glass-border:      rgba(255, 255, 255, 0.08);
+    --pw-glass-border:      rgba(255, 255, 255, 0.09);
     --pw-glass-border-light: rgba(255, 255, 255, 0.16);
-    --pw-glass-border-moss: rgba(255, 255, 255, 0.12);
-    --pw-glass-specular:    rgba(255, 255, 255, 0.25);
+    --pw-glass-border-moss: rgba(255, 255, 255, 0.14);
+    --pw-glass-specular:    rgba(255, 255, 255, 0.28);
 
     /* Depth Shadows */
     --pw-glass-shadow-sm:   0 4px 16px rgba(0, 0, 0, 0.35);
     --pw-glass-shadow-md:   0 12px 32px rgba(0, 0, 0, 0.48);
     --pw-glass-shadow-lg:   0 20px 48px rgba(0, 0, 0, 0.60);
-    --pw-glow-accent:       0 0 24px rgba(209, 102, 41, 0.20);
+    --pw-glow-accent:       0 0 24px rgba(209, 102, 41, 0.22);
 
-    /* Typography (Apple SF Pro & Native System Priority) */
-    --pw-font-display:      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-    --pw-font-body:         -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    /* Typography (Apple SF Pro & Native Modern Stacks) */
+    --pw-font-display:      -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Outfit", -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --pw-font-body:         -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans", "Outfit", -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 
     /* Spacing & Radii (Apple Continuous Squircle Feel) */
     --pw-radius-sm:         8px;
@@ -94,19 +100,53 @@ body.pw-nature-body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Typography styles */
+/* Accessibility & Universal Focus Discipline (Apple HIG + Hallmark) */
+:focus-visible {
+    outline: 2px solid var(--pw-trail-bright) !important;
+    outline-offset: 2px !important;
+}
+
+:focus:not(:focus-visible) {
+    outline: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Typography styles — Hallmark Strict Purity: No italic headings, balanced weights */
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--pw-font-display);
     color: var(--pw-text-bright);
     font-weight: 700;
     line-height: 1.25;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
+    font-style: normal !important;
+}
+
+p, span, li, label, td, th {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Hallmark WCAG High-Contrast Overrides on Dark Backdrop */
+body.pw-nature-body .text-muted,
+body.pw-nature-body .text-secondary {
+    color: var(--pw-text-muted) !important;
+}
+
+body.pw-nature-body .text-white-50 {
+    color: var(--pw-text-muted) !important;
 }
 
 a {
     color: var(--pw-sage-light);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 a:hover {
@@ -210,17 +250,19 @@ a:hover {
 }
 
 /* --------------------------------------------------------------------------
-   4. Glass Buttons & Interactive Elements (Apple Pill Styling)
+   4. Glass Buttons & Interactive Elements (Apple HIG & Hallmark 8-State Discipline)
    -------------------------------------------------------------------------- */
 .pw-btn-trail {
+    /* State 1: Default */
     background: #e5793a;
     color: #ffffff;
     font-family: var(--pw-font-display);
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.95rem;
     padding: 0.65rem 1.6rem;
+    min-height: 44px;
     border-radius: var(--pw-radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -229,27 +271,86 @@ a:hover {
     cursor: pointer;
     text-decoration: none;
     letter-spacing: -0.01em;
+    position: relative;
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-.pw-btn-trail:hover {
+/* State 2: Hover */
+.pw-btn-trail:hover:not(:disabled):not(.disabled):not(.is-loading) {
     background: #f08546;
     color: #ffffff;
-    transform: scale(1.02);
-    box-shadow: 0 4px 16px rgba(229, 121, 58, 0.35);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(229, 121, 58, 0.38), 0 0 12px rgba(229, 121, 58, 0.25);
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
-.pw-btn-trail:active {
-    transform: scale(0.98);
+/* State 3: Focus-Visible */
+.pw-btn-trail:focus-visible {
+    outline: 2px solid #ffffff !important;
+    outline-offset: 2px !important;
+    box-shadow: var(--pw-focus-ring) !important;
 }
 
+/* State 4: Active */
+.pw-btn-trail:active:not(:disabled):not(.disabled) {
+    transform: scale(0.97) translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* State 5: Disabled */
+.pw-btn-trail:disabled,
+.pw-btn-trail.disabled,
+.pw-btn-trail[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* State 6: Loading */
+.pw-btn-trail.is-loading,
+.pw-btn-trail[aria-busy="true"] {
+    color: transparent !important;
+    pointer-events: none;
+}
+.pw-btn-trail.is-loading::after,
+.pw-btn-trail[aria-busy="true"]::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: pwBtnSpin 0.7s linear infinite;
+}
+
+/* State 7: Error */
+.pw-btn-trail.is-error {
+    background: #dc2626 !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: var(--pw-focus-ring-danger) !important;
+}
+
+/* State 8: Success */
+.pw-btn-trail.is-success {
+    background: #059669 !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Compact Trail Button */
 .pw-btn-trail-sm {
     background: #e5793a;
     color: #ffffff;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.85rem;
-    padding: 0.4rem 1.15rem;
+    padding: 0.45rem 1.15rem;
+    min-height: 36px;
     border-radius: var(--pw-radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     text-decoration: none;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     letter-spacing: -0.01em;
@@ -257,20 +358,36 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
+    user-select: none;
 }
 
-.pw-btn-trail-sm:hover {
+.pw-btn-trail-sm:hover:not(:disabled):not(.disabled) {
     background: #f08546;
     color: #ffffff;
-    transform: scale(1.02);
-    box-shadow: 0 4px 14px rgba(229, 121, 58, 0.3);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 14px rgba(229, 121, 58, 0.35);
 }
 
-.pw-btn-trail-sm:active {
-    transform: scale(0.98);
+.pw-btn-trail-sm:focus-visible {
+    outline: 2px solid #ffffff !important;
+    outline-offset: 2px !important;
+    box-shadow: var(--pw-focus-ring) !important;
 }
 
+.pw-btn-trail-sm:active:not(:disabled):not(.disabled) {
+    transform: scale(0.97);
+}
+
+.pw-btn-trail-sm:disabled,
+.pw-btn-trail-sm.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Apple Liquid Glass Secondary Button */
 .pw-btn-glass {
+    /* State 1: Default */
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -279,8 +396,9 @@ a:hover {
     font-weight: 500;
     font-size: 0.95rem;
     padding: 0.65rem 1.6rem;
+    min-height: 44px;
     border-radius: var(--pw-radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     display: inline-flex;
     align-items: center;
@@ -289,26 +407,82 @@ a:hover {
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     text-decoration: none;
     letter-spacing: -0.01em;
+    position: relative;
+    user-select: none;
 }
 
-.pw-btn-glass:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.25);
+/* State 2: Hover */
+.pw-btn-glass:hover:not(:disabled):not(.disabled):not(.is-loading) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.28);
     color: #ffffff;
-    transform: scale(1.02);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
-.pw-btn-glass:active {
-    transform: scale(0.98);
+/* State 3: Focus-Visible */
+.pw-btn-glass:focus-visible {
+    outline: 2px solid var(--pw-trail-bright) !important;
+    outline-offset: 2px !important;
+    box-shadow: var(--pw-focus-ring) !important;
 }
 
+/* State 4: Active */
+.pw-btn-glass:active:not(:disabled):not(.disabled) {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.20);
+}
+
+/* State 5: Disabled */
+.pw-btn-glass:disabled,
+.pw-btn-glass.disabled,
+.pw-btn-glass[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none;
+}
+
+/* State 6: Loading */
+.pw-btn-glass.is-loading,
+.pw-btn-glass[aria-busy="true"] {
+    color: transparent !important;
+    pointer-events: none;
+}
+.pw-btn-glass.is-loading::after,
+.pw-btn-glass[aria-busy="true"]::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: pwBtnSpin 0.7s linear infinite;
+}
+
+/* State 7: Error */
+.pw-btn-glass.is-error {
+    border-color: #ef4444 !important;
+    color: #fca5a5 !important;
+    box-shadow: var(--pw-focus-ring-danger) !important;
+}
+
+/* State 8: Success */
+.pw-btn-glass.is-success {
+    border-color: #10b981 !important;
+    color: #6ee7b7 !important;
+}
+
+/* Compact Glass Button */
 .pw-btn-glass-sm {
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     color: #f1f5f9;
     font-size: 0.85rem;
     font-weight: 500;
-    padding: 0.4rem 1.15rem;
+    padding: 0.45rem 1.15rem;
+    min-height: 36px;
     border-radius: var(--pw-radius-pill);
     text-decoration: none;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -317,22 +491,36 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
+    user-select: none;
 }
 
-.pw-btn-glass-sm:hover {
-    background: rgba(255, 255, 255, 0.14);
+.pw-btn-glass-sm:hover:not(:disabled):not(.disabled) {
+    background: rgba(255, 255, 255, 0.15);
     color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: scale(1.02);
+    border-color: rgba(255, 255, 255, 0.28);
+    transform: translateY(-1px) scale(1.02);
 }
 
-.pw-btn-glass-sm:active {
-    transform: scale(0.98);
+.pw-btn-glass-sm:focus-visible {
+    outline: 2px solid var(--pw-trail-bright) !important;
+    outline-offset: 2px !important;
 }
 
+.pw-btn-glass-sm:active:not(:disabled):not(.disabled) {
+    transform: scale(0.97);
+}
+
+.pw-btn-glass-sm:disabled,
+.pw-btn-glass-sm.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Circular Icon Button — Apple HIG 44px Target */
 .pw-btn-glass-icon {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     border-radius: var(--pw-radius-full);
     background: var(--pw-glass-bg-subtle);
     border: 1px solid var(--pw-glass-border);
@@ -340,13 +528,28 @@ a:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
 }
 
 .pw-btn-glass-icon:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.14);
     color: var(--pw-trail-bright);
     border-color: var(--pw-glass-border-light);
+    transform: scale(1.05);
+}
+
+.pw-btn-glass-icon:focus-visible {
+    outline: 2px solid var(--pw-trail-bright) !important;
+    outline-offset: 2px !important;
+}
+
+.pw-btn-glass-icon:active {
+    transform: scale(0.94);
+}
+
+@keyframes pwBtnSpin {
+    to { transform: rotate(360deg); }
 }
 
 .pw-badge-cart {
@@ -801,10 +1004,10 @@ a:hover {
 }
 
 .pw-price-label {
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #64748b;
+    color: var(--pw-text-faint);
     font-weight: 600;
 }
 
@@ -814,39 +1017,98 @@ a:hover {
     font-weight: 800;
     color: #ffffff;
     line-height: 1.1;
+    font-variant-numeric: tabular-nums;
 }
 
 .pw-btn-product-add,
 .pw-btn-product-action {
+    /* State 1: Default */
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     color: #f8fafc;
     padding: 0.45rem 1.15rem;
+    min-height: 38px;
     border-radius: var(--pw-radius-pill);
     font-family: var(--pw-font-display);
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: center;
+    gap: 0.45rem;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
     text-decoration: none;
     letter-spacing: -0.01em;
+    position: relative;
+    user-select: none;
 }
 
-.pw-btn-product-add:hover,
-.pw-btn-product-action:hover {
+/* State 2: Hover */
+.pw-btn-product-add:hover:not(:disabled):not(.disabled),
+.pw-btn-product-action:hover:not(:disabled):not(.disabled) {
     background: #e5793a;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(229, 121, 58, 0.3);
-    transform: scale(1.02);
+    box-shadow: 0 4px 14px rgba(229, 121, 58, 0.35);
+    transform: translateY(-1px) scale(1.02);
 }
 
-.pw-btn-product-add:active,
-.pw-btn-product-action:active {
-    transform: scale(0.98);
+/* State 3: Focus-Visible */
+.pw-btn-product-add:focus-visible,
+.pw-btn-product-action:focus-visible {
+    outline: 2px solid #ffffff !important;
+    outline-offset: 2px !important;
+    box-shadow: var(--pw-focus-ring) !important;
+}
+
+/* State 4: Active */
+.pw-btn-product-add:active:not(:disabled):not(.disabled),
+.pw-btn-product-action:active:not(:disabled):not(.disabled) {
+    transform: scale(0.96);
+}
+
+/* State 5: Disabled */
+.pw-btn-product-add:disabled,
+.pw-btn-product-add.disabled,
+.pw-btn-product-action:disabled,
+.pw-btn-product-action.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none;
+}
+
+/* State 6: Loading */
+.pw-btn-product-add.is-loading,
+.pw-btn-product-action.is-loading {
+    color: transparent !important;
+    pointer-events: none;
+}
+.pw-btn-product-add.is-loading::after,
+.pw-btn-product-action.is-loading::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: pwBtnSpin 0.7s linear infinite;
+}
+
+/* State 7: Error */
+.pw-btn-product-add.is-error,
+.pw-btn-product-action.is-error {
+    background: #dc2626 !important;
+    border-color: #ef4444 !important;
+}
+
+/* State 8: Success */
+.pw-btn-product-add.is-success,
+.pw-btn-product-action.is-success {
+    background: #059669 !important;
+    border-color: #10b981 !important;
 }
 
 .pw-btn-product-add i,
@@ -1293,51 +1555,121 @@ a:hover {
 /* --------------------------------------------------------------------------
    13. Form Controls & Catalog Search Filters
    -------------------------------------------------------------------------- */
-.pw-form-control,
-.pw-form-select {
-    background: #0d1219;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #f1f5f9;
-    border-radius: 8px;
-    padding: 0.65rem 0.95rem;
-    font-size: 0.925rem;
-    font-family: var(--pw-font-body);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+.pw-form-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pw-text-muted);
+    margin-bottom: 0.45rem;
+    display: inline-block;
 }
 
+.pw-form-control,
+.pw-form-select {
+    /* State 1: Default */
+    background: #0d1219;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+    border-radius: var(--pw-radius-sm);
+    padding: 0.65rem 0.95rem;
+    min-height: 44px;
+    font-size: 0.925rem;
+    font-family: var(--pw-font-body);
+    transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease;
+}
+
+/* State 2: Hover */
+.pw-form-control:hover:not(:disabled):not([readonly]),
+.pw-form-select:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: #0f1620;
+}
+
+/* State 3: Focus & Focus-Visible (Brand Terracotta Precision Ring) */
 .pw-form-control:focus,
-.pw-form-select:focus {
-    background: #0f151e;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+.pw-form-control:focus-visible,
+.pw-form-select:focus,
+.pw-form-select:focus-visible {
+    background: #111823;
+    border-color: var(--pw-trail-bright) !important;
+    box-shadow: var(--pw-focus-ring) !important;
     color: #ffffff;
-    outline: none;
+    outline: none !important;
+}
+
+/* State 4: Active */
+.pw-form-control:active:not(:disabled),
+.pw-form-select:active:not(:disabled) {
+    border-color: var(--pw-trail-bright);
+}
+
+/* State 5: Disabled / Readonly */
+.pw-form-control:disabled,
+.pw-form-control[disabled],
+.pw-form-select:disabled,
+.pw-form-select[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    color: var(--pw-text-faint) !important;
+}
+
+/* State 6: Loading */
+.pw-form-control.is-loading {
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 75%);
+    background-size: 200% 100%;
+    animation: pwSkeletonShimmer 1.5s infinite;
+}
+
+/* State 7: Error / Invalid */
+.pw-form-control.is-invalid,
+.pw-form-select.is-invalid {
+    border-color: #ef4444 !important;
+    box-shadow: var(--pw-focus-ring-danger) !important;
+}
+
+/* State 8: Success / Valid */
+.pw-form-control.is-valid,
+.pw-form-select.is-valid {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
 }
 
 .pw-form-control::placeholder {
-    color: #94a3b8;
+    color: var(--pw-text-faint);
     font-size: 0.875rem;
 }
 
 .pw-form-select option {
     background: #0f151e;
     color: #f1f5f9;
+    padding: 0.5rem;
 }
 
 .pw-input-group-text {
     background: #0a0e14;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-right: none;
-    color: #94a3b8;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    color: var(--pw-text-muted);
+    border-top-left-radius: var(--pw-radius-sm);
+    border-bottom-left-radius: var(--pw-radius-sm);
     padding: 0.65rem 0.95rem;
+    min-height: 44px;
     font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
 }
 
 .pw-input-group .pw-form-control {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
+}
+
+@keyframes pwSkeletonShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 /* Catalog Filter Card (Apple Clean Surface) */
@@ -1694,6 +2026,175 @@ a:hover {
     background: rgba(248, 113, 113, 0.15);
     border: 1px solid rgba(248, 113, 113, 0.35);
     color: #f87171;
+}
+
+/* --------------------------------------------------------------------------
+   15. Hallmark & Apple Table Craft (.pw-table)
+   -------------------------------------------------------------------------- */
+.pw-table-responsive {
+    border-radius: var(--pw-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    overflow: hidden;
+    background: rgba(13, 18, 25, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.pw-table {
+    width: 100%;
+    margin-bottom: 0;
+    color: var(--pw-text-primary);
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.9rem;
+}
+
+.pw-table thead th {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: var(--pw-text-faint) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    padding: 0.85rem 1rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: none !important;
+    white-space: nowrap;
+}
+
+.pw-table tbody td {
+    padding: 0.95rem 1rem !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: var(--pw-text-primary) !important;
+    background: transparent !important;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s ease;
+}
+
+.pw-table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+.pw-table tbody tr:hover td {
+    background-color: rgba(255, 255, 255, 0.035) !important;
+}
+
+.pw-table-num {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   16. Apple HIG Universal Pill Badges
+   -------------------------------------------------------------------------- */
+.pw-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.8rem;
+    border-radius: var(--pw-radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.pw-badge-pill .pw-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.pw-badge-pill-success {
+    background: rgba(16, 185, 129, 0.14);
+    border: 1px solid rgba(16, 185, 129, 0.32);
+    color: #34d399;
+}
+.pw-badge-pill-success .pw-dot {
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.pw-badge-pill-warning {
+    background: rgba(245, 155, 88, 0.15);
+    border: 1px solid rgba(245, 155, 88, 0.35);
+    color: #f59b58;
+}
+.pw-badge-pill-warning .pw-dot {
+    background: #f59b58;
+    box-shadow: 0 0 6px rgba(245, 155, 88, 0.6);
+}
+
+.pw-badge-pill-info {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+}
+.pw-badge-pill-info .pw-dot {
+    background: #38bdf8;
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+}
+
+.pw-badge-pill-danger {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #f87171;
+}
+.pw-badge-pill-danger .pw-dot {
+    background: #ef4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+.pw-badge-pill-neutral {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--pw-text-muted);
+}
+.pw-badge-pill-neutral .pw-dot {
+    background: var(--pw-text-faint);
+}
+
+/* --------------------------------------------------------------------------
+   17. Touch Targets & Mobile Adaptability (Apple HIG Minimum 44px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .pw-btn-trail,
+    .pw-btn-glass,
+    .pw-form-control,
+    .pw-form-select,
+    .pw-filter-pill,
+    .pw-stepper-btn {
+        min-height: 44px;
+    }
+    
+    .pw-stepper-group {
+        padding: 3px;
+    }
+    
+    .pw-stepper-btn {
+        width: 38px;
+        height: 38px;
+    }
+    
+    .pw-cart-item-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .pw-cart-item-actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
 
 

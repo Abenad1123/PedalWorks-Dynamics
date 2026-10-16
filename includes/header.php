@@ -38,18 +38,21 @@ if (session_status() === PHP_SESSION_NONE) {
         </button>
 
         <div class="collapse navbar-collapse" id="mainNav">
+            <?php 
+            $currPage = basename($_SERVER['SCRIPT_NAME'] ?? ''); 
+            ?>
             <ul class="navbar-nav mx-auto align-items-lg-center pw-nav-list my-2 my-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php">Home</a>
+                    <a class="nav-link pw-nav-link <?php echo ($currPage === 'index.php') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/index.php">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/index.php#about">About</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/products.php">Products</a>
+                    <a class="nav-link pw-nav-link <?php echo in_array($currPage, ['products.php', 'product_details.php'], true) ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/products.php">Products</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" href="/project/PedalWorks-Dynamics/services.php">Services</a>
+                    <a class="nav-link pw-nav-link <?php echo ($currPage === 'services.php') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/services.php">Services</a>
                 </li>
             </ul>
 

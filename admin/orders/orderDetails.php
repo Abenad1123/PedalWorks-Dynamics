@@ -160,15 +160,7 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
     <title>Order <?php echo htmlspecialchars($orderRef); ?> - PedalWorks Dynamics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/style.css">
-    <style>
-        .status-badge-pending     { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        .status-badge-received    { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
-        .status-badge-inprogress  { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
-        .status-badge-ready       { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
-        .status-badge-completed   { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .status-badge-cancelled   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    </style>
+    <link rel="stylesheet" href="../../includes/style/style.css">
 </head>
 <body class="bg-light">
 

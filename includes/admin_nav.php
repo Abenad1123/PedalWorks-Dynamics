@@ -253,6 +253,120 @@ $initial       = strtoupper(substr($adminUsername, 0, 1));
     color: #ffffff;
     border-color: rgba(255, 255, 255, 0.3);
 }
+
+/* ==========================================================================
+   Hallmark & Apple HIG Design System for Admin Pages
+   ========================================================================== */
+body.bg-light {
+    background-color: #f8fafc !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Accessible Universal Focus */
+:focus-visible {
+    outline: 2px solid #0284c7 !important;
+    outline-offset: 2px !important;
+}
+
+/* Apple HIG Squircle Cards */
+.card, .pw-stat-card {
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px rgba(0, 0, 0, 0.02) !important;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    overflow: hidden;
+}
+
+.card:hover, .pw-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 28px rgba(0, 0, 0, 0.04) !important;
+}
+
+.card-header {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #edf2f7 !important;
+    padding: 1rem 1.25rem !important;
+    font-weight: 600;
+}
+
+/* Hallmark Table Craft */
+.table {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    color: #1e293b;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    background-color: #f8fafc !important;
+    color: #64748b !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    padding: 0.85rem 1rem !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-top: none !important;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 0.9rem 1rem !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover td {
+    background-color: #f8fafc !important;
+}
+
+.table-responsive {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+/* Metric / Stat Figures */
+.pw-stat-num {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+/* Form Controls in Admin */
+.form-control, .form-select {
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.9rem !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18) !important;
+}
+
+/* Admin Status Badges */
+.badge {
+    padding: 0.35rem 0.75rem !important;
+    border-radius: 980px !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.02em !important;
+}
+
+.status-badge-pending     { background: #fef3c7 !important; color: #92400e !important; border: 1px solid #fde68a !important; }
+.status-badge-received    { background: #e0f2fe !important; color: #075985 !important; border: 1px solid #bae6fd !important; }
+.status-badge-inprogress  { background: #f3e8ff !important; color: #6b21a8 !important; border: 1px solid #e9d5ff !important; }
+.status-badge-ready       { background: #ccfbf1 !important; color: #115e59 !important; border: 1px solid #99f6e4 !important; }
+.status-badge-completed   { background: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; }
+.status-badge-cancelled   { background: #fee2e2 !important; color: #991b1b !important; border: 1px solid #fecaca !important; }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-dark pw-admin-navbar sticky-top shadow-sm">

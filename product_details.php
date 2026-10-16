@@ -345,30 +345,36 @@ include('includes/header.php');
                         <i class="fa-solid fa-list-check text-warning"></i>
                         <span>Technical Specifications</span>
                     </h4>
-                    <div class="table-responsive">
-                        <table class="table table-dark table-borderless align-middle mb-0" style="background: transparent;">
+                    <div class="pw-table-responsive">
+                        <table class="pw-table">
                             <tbody>
-                                <tr class="border-bottom border-white border-opacity-10">
-                                    <th class="text-white-50 py-3" style="width: 30%;">Product SKU</th>
-                                    <td class="text-white fw-semibold py-3 font-monospace"><?php echo htmlspecialchars($product['sku']); ?></td>
+                                <tr>
+                                    <th style="width: 32%;">Product SKU</th>
+                                    <td class="pw-table-num text-warning"><?php echo htmlspecialchars($product['sku']); ?></td>
                                 </tr>
-                                <tr class="border-bottom border-white border-opacity-10">
-                                    <th class="text-white-50 py-3">Category</th>
-                                    <td class="text-white py-3"><?php echo htmlspecialchars($catName); ?></td>
+                                <tr>
+                                    <th>Category</th>
+                                    <td><?php echo htmlspecialchars($catName); ?></td>
                                 </tr>
-                                <tr class="border-bottom border-white border-opacity-10">
-                                    <th class="text-white-50 py-3">Current Unit Price</th>
-                                    <td class="text-white fw-bold py-3">&#8369;<?php echo number_format($product['price'], 2); ?></td>
+                                <tr>
+                                    <th>Current Unit Price</th>
+                                    <td class="fw-bold text-white">&#8369;<?php echo number_format($product['price'], 2); ?></td>
                                 </tr>
-                                <tr class="border-bottom border-white border-opacity-10">
-                                    <th class="text-white-50 py-3">Availability</th>
-                                    <td class="text-white py-3">
-                                        <?php echo $isOutOfStock ? '<span class="text-danger">Out of Stock</span>' : '<span class="text-success">' . $stock . ' Units Ready for Dispatch</span>'; ?>
+                                <tr>
+                                    <th>Availability</th>
+                                    <td>
+                                        <?php if ($isOutOfStock): ?>
+                                            <span class="pw-badge-pill pw-badge-pill-danger"><span class="pw-dot"></span>Out of Stock</span>
+                                        <?php elseif ($isLowStock): ?>
+                                            <span class="pw-badge-pill pw-badge-pill-warning"><span class="pw-dot"></span>Low Stock (<?php echo $stock; ?> units)</span>
+                                        <?php else: ?>
+                                            <span class="pw-badge-pill pw-badge-pill-success"><span class="pw-dot"></span>In Stock (<?php echo $stock; ?> units ready)</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th class="text-white-50 py-3">Warranty &amp; Service</th>
-                                    <td class="text-white py-3">Covered by PedalWorks Standard 30-Day Workshop Support &amp; Component Verification.</td>
+                                    <th>Warranty &amp; Service</th>
+                                    <td class="text-white-50">Covered by PedalWorks Standard 30-Day Workshop Support &amp; Component Verification.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -461,8 +467,8 @@ include('includes/header.php');
 
                                 <div class="row g-3">
                                     <div class="col-sm-5 col-md-4">
-                                        <label class="form-label text-white-50 small text-uppercase fw-bold">Star Rating</label>
-                                        <select name="rating" class="form-select bg-dark text-white border-secondary">
+                                        <label class="pw-form-label">Star Rating</label>
+                                        <select name="rating" class="pw-form-select w-100">
                                             <option value="5" <?php echo (($userReview['rating'] ?? 5) == 5) ? 'selected' : ''; ?>>★★★★★ (5 - Excellent)</option>
                                             <option value="4" <?php echo (($userReview['rating'] ?? 5) == 4) ? 'selected' : ''; ?>>★★★★☆ (4 - Good)</option>
                                             <option value="3" <?php echo (($userReview['rating'] ?? 5) == 3) ? 'selected' : ''; ?>>★★★☆☆ (3 - Average)</option>
@@ -472,8 +478,8 @@ include('includes/header.php');
                                     </div>
 
                                     <div class="col-12">
-                                        <label class="form-label text-white-50 small text-uppercase fw-bold">Your Review</label>
-                                        <textarea name="reviewText" rows="3" class="form-control bg-dark text-white border-secondary" placeholder="Write your thoughts about durability, trail performance, fit, and build quality..."><?php echo htmlspecialchars($userReview['reviewText'] ?? ''); ?></textarea>
+                                        <label class="pw-form-label">Your Review</label>
+                                        <textarea name="reviewText" rows="3" class="pw-form-control w-100" placeholder="Write your thoughts about durability, trail performance, fit, and build quality..."><?php echo htmlspecialchars($userReview['reviewText'] ?? ''); ?></textarea>
                                     </div>
 
                                     <div class="col-12 d-flex flex-wrap gap-2">

@@ -378,7 +378,7 @@ include('includes/header.php');
                     <div id="laborDetailsGroup" class="p-3 rounded mt-2" style="background: rgba(255,255,255,0.03); border: 1px solid var(--pw-glass-border); <?php echo $attachLabor ? '' : 'display: none;'; ?>">
                         <div class="mb-3">
                             <label class="form-label text-white small fw-bold">Select Workshop Service</label>
-                            <select name="laborServiceID" class="form-select pw-form-control <?php echo isset($errors['laborServiceID']) ? 'is-invalid' : ''; ?>">
+                            <select name="laborServiceID" class="form-select pw-form-select <?php echo isset($errors['laborServiceID']) ? 'is-invalid' : ''; ?>">
                                 <option value="">-- Choose Workshop Service --</option>
                                 <?php foreach ($availableServices as $svc): ?>
                                     <option value="<?php echo (int)$svc['serviceID']; ?>" <?php echo ($laborServiceID === (int)$svc['serviceID']) ? 'selected' : ''; ?>>
