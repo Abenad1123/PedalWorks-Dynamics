@@ -96,20 +96,14 @@ include('./includes/header.php');
 
                 <div class="col-lg-6">
                     <div class="pw-hero-visual-card pw-tilt-card">
-                        <div class="pw-hero-placeholder-inner">
-                            <svg class="pw-topographic-overlay" viewBox="0 0 500 350" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M-50,80 Q100,20 250,90 T550,60" stroke="#72a88d" stroke-width="1.5" />
-                                <path d="M-50,140 Q120,70 280,160 T550,120" stroke="#72a88d" stroke-width="1.5" />
-                                <path d="M-50,200 Q150,130 300,230 T550,180" stroke="#72a88d" stroke-width="1.5" />
-                                <path d="M-50,260 Q180,190 320,290 T550,240" stroke="#72a88d" stroke-width="1.5" />
-                                <circle cx="380" cy="100" r="45" stroke="#d16629" stroke-width="1" stroke-dasharray="4 4" />
-                            </svg>
-
-                            <h4 class="pw-hero-placeholder-label">Hero Banner Placeholder</h4>
-                            <p class="pw-hero-placeholder-meta">
-                                <i class="fa-solid fa-image me-1"></i> 1200 &times; 800 &bull; Adventure Trail Rig
-                            </p>
-                            <span class="text-white-50 small mt-2">Replaceable via Admin Media Upload</span>
+                        <div class="pw-hero-image-wrapper">
+                            <img src="assets/images/hero_banner.jpg" 
+                                 alt="PedalWorks Dynamics Expedition Trail Rig" 
+                                 class="pw-hero-image img-fluid"
+                                 width="1200" 
+                                 height="675"
+                                 loading="eager">
+                            <div class="pw-hero-image-overlay"></div>
 
                             <div class="pw-hero-badge-float">
                                 <div class="pw-badge-float-icon">

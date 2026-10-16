@@ -413,7 +413,7 @@ function getServiceIcon($categoryName) {
                                                 </div>
                                             <?php endif; ?>
                                         <?php else: ?>
-                                            <div class="pw-hero-placeholder-inner" style="min-height: 240px;">
+                                            <div class="p-4 rounded-3 text-center d-flex flex-column align-items-center justify-content-center" style="min-height: 240px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
                                                 <i class="fa-solid <?php echo $iconClass; ?> fa-3x text-warning mb-2"></i>
                                                 <h6 class="text-white"><?php echo htmlspecialchars($catName); ?></h6>
                                                 <span class="pw-sku-badge"><?php echo htmlspecialchars($s['sku']); ?></span>
