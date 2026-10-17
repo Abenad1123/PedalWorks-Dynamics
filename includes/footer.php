@@ -80,7 +80,90 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             nav?.classList.remove('scrolled');
         }
-    });
+    }, { passive: true });
+
+    // Navbar active state synchronization for Home & About anchors
+    const homeLink = document.getElementById('navLinkHome');
+    const aboutLink = document.getElementById('navLinkAbout');
+    const aboutSection = document.getElementById('about');
+
+    if (homeLink && aboutLink && aboutSection) {
+        function updateNavState(target) {
+            if (target === 'about') {
+                aboutLink.classList.add('active');
+                homeLink.classList.remove('active');
+            } else if (target === 'home') {
+                homeLink.classList.add('active');
+                aboutLink.classList.remove('active');
+            } else {
+                homeLink.classList.remove('active');
+                aboutLink.classList.remove('active');
+            }
+        }
+
+        function checkHash() {
+            if (window.location.hash === '#about') {
+                updateNavState('about');
+            } else if (window.location.hash === '' || window.location.hash === '#hero') {
+                if (window.scrollY < 300) {
+                    updateNavState('home');
+                }
+            }
+        }
+
+        checkHash();
+        window.addEventListener('hashchange', checkHash);
+
+        aboutLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            const navHeight = nav ? nav.offsetHeight : 70;
+            const targetPos = aboutSection.getBoundingClientRect().top + window.scrollY - navHeight;
+            updateNavState('about');
+            if (history.pushState) {
+                history.pushState(null, '', '#about');
+            } else {
+                window.location.hash = '#about';
+            }
+            window.scrollTo({
+                top: targetPos,
+                behavior: 'smooth'
+            });
+        });
+
+        homeLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            updateNavState('home');
+            if (history.pushState) {
+                history.pushState(null, '', window.location.pathname);
+            }
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        let scrollTicking = false;
+        window.addEventListener('scroll', function () {
+            if (!scrollTicking) {
+                window.requestAnimationFrame(function () {
+                    const navHeight = nav ? nav.offsetHeight : 70;
+                    const scrollY = window.scrollY;
+                    const aboutTop = aboutSection.offsetTop - navHeight - 60;
+                    const aboutBottom = aboutSection.offsetTop + aboutSection.offsetHeight - navHeight;
+
+                    if (scrollY < 200) {
+                        updateNavState('home');
+                    } else if (scrollY >= aboutTop && scrollY < aboutBottom + 80) {
+                        updateNavState('about');
+                    } else if (scrollY >= aboutBottom + 80) {
+                        updateNavState('none');
+                    }
+                    scrollTicking = false;
+                });
+                scrollTicking = true;
+            }
+        }, { passive: true });
+    }
 });
 </script>
 </body>
