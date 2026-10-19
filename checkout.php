@@ -229,6 +229,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Commit Transaction
             mysqli_commit($conn);
 
+            // Automated Order Confirmation Email (PHPMailer / itim211-2b-shop alignment)
+            try {
+                if (file_exists('PHPMailer/src/PHPMailer.php')) {
+                    if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+                        require 'PHPMailer/src/Exception.php';
+                        require 'PHPMailer/src/PHPMailer.php';
+                        require 'PHPMailer/src/SMTP.php';
+                    }
+
+                    $mail = new PHPMailer\PHPMailer\PHPMailer(false);
+                    $mail->isSMTP();
+                    $mail->Host       = 'sandbox.smtp.mailtrap.io';
+                    $mail->SMTPAuth   = true;
+                    $mail->Port       = 2525;
+                    $mail->Username   = '312649aee7d340';
+                    $mail->Password   = '7bec3dc61ba28b';
+                    $mail->setFrom('orders@pedalworks.com', 'PedalWorks Dynamics');
+                    
+                    $cEmail = !empty($customerData['email']) ? $customerData['email'] : 'customer@example.com';
+                    $cName = trim(($customerData['firstName'] ?? '') . ' ' . ($customerData['lastName'] ?? ''));
+                    if ($cName === '') $cName = 'Valued Rider';
+                    $mail->addAddress($cEmail, $cName);
+
+                    $mail->isHTML(true);
+                    $mail->Subject = "Order Confirmation #PW-ORD-{$productSaleID} - PedalWorks Dynamics";
+
+                    $itemsHtml = '';
+                    foreach ($lockedItems as $li) {
+                        $liPrice = number_format((float)$li['price'], 2);
+                        $lineTotal = (float)$li['price'] * (int)$li['quantity'];
+                        $liSub = number_format($lineTotal, 2);
+                        $itemsHtml .= "<tr>
+                            <td style='padding:8px; border:1px solid #ddd;'>{$li['name']}</td>
+                            <td style='padding:8px; border:1px solid #ddd; text-align:center;'>{$li['quantity']}</td>
+                            <td style='padding:8px; border:1px solid #ddd; text-align:right;'>PHP {$liPrice}</td>
+                            <td style='padding:8px; border:1px solid #ddd; text-align:right;'>PHP {$liSub}</td>
+                        </tr>";
+                    }
+                    $subtotalFmt = number_format($subtotal, 2);
+
+                    $mail->Body = "<h2>Order Confirmation - PedalWorks Dynamics</h2>
+                        <p>Hello <strong>{$cName}</strong>,</p>
+                        <p>Thank you for ordering with PedalWorks Dynamics. Your order <strong>#PW-ORD-{$productSaleID}</strong> has been successfully placed and is now queued for preparation.</p>
+                        <table style='width:100%; border-collapse:collapse; margin-bottom:15px; font-family:sans-serif;'>
+                            <tr><td style='padding:4px 0;'><strong>Fulfillment Method:</strong></td><td>{$pickupMethod}</td></tr>
+                            <tr><td style='padding:4px 0;'><strong>Payment Method:</strong></td><td>{$paymentMethod}</td></tr>
+                            <tr><td style='padding:4px 0;'><strong>Delivery / Pickup Address:</strong></td><td>" . htmlspecialchars($deliveryAddress) . "</td></tr>
+                        </table>
+                        <h3>Order Summary</h3>
+                        <table style='width:100%; border-collapse:collapse; font-family:sans-serif;'>
+                            <thead>
+                                <tr style='background:#f2f2f2;'>
+                                    <th style='padding:8px; border:1px solid #ddd; text-align:left;'>Item Description</th>
+                                    <th style='padding:8px; border:1px solid #ddd;'>Qty</th>
+                                    <th style='padding:8px; border:1px solid #ddd; text-align:right;'>Price</th>
+                                    <th style='padding:8px; border:1px solid #ddd; text-align:right;'>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {$itemsHtml}
+                                <tr>
+                                    <td colspan='3' style='padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold;'>Total Payable:</td>
+                                    <td style='padding:8px; border:1px solid #ddd; text-align:right; font-weight:bold;'>PHP {$subtotalFmt}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p style='margin-top:20px; color:#666;'>You can track your order status and view your printable invoice anytime under your customer portal.</p>";
+
+                    $mail->send();
+                }
+            } catch (\Throwable $mailEx) {
+                // Graceful fallback: SMTP connection issues never block order placement
+            }
+
             $successMsg = 'Your order #PW-ORD-' . $productSaleID . ' has been placed successfully!';
             if ($attachLabor) {
                 $successMsg .= ' An attached workshop service request was also scheduled with our mechanics.';
@@ -257,7 +331,25 @@ include('includes/header.php');
                 <li class="breadcrumb-item active text-white" aria-current="page">Checkout</li>
             </ol>
         </nav>
-        <h1 class="h2 fw-bold text-white mb-0">Checkout &amp; Finalize Order</h1>
+        <h1 class="h2 fw-bold text-white mb-3">Checkout &amp; Finalize Order</h1>
+
+        <!-- 3-Step Checkout Progress Stepper (Canyon & Trek Inspired) -->
+        <div class="pw-checkout-stepper mb-4">
+            <a href="cart.php" class="pw-step-item completed text-decoration-none">
+                <span class="pw-step-num"><i class="fa-solid fa-check"></i></span>
+                <span>1. Review Cart</span>
+            </a>
+            <div class="pw-step-divider active"></div>
+            <div class="pw-step-item active">
+                <span class="pw-step-num">2</span>
+                <span>2. Fulfillment &amp; Payment</span>
+            </div>
+            <div class="pw-step-divider"></div>
+            <div class="pw-step-item">
+                <span class="pw-step-num">3</span>
+                <span>3. Confirmation</span>
+            </div>
+        </div>
     </div>
 
     <!-- General Error Alert -->
@@ -331,13 +423,23 @@ include('includes/header.php');
                     </div>
 
                     <!-- Basecamp Pickup Info Box -->
-                    <div id="pickupInfoGroup" class="p-3 rounded" style="background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.15); <?php echo ($pickupMethod !== 'In-Store Pickup') ? 'display: none;' : ''; ?>">
-                        <div class="d-flex align-items-start gap-2">
-                            <i class="fa-solid fa-location-dot text-success mt-1"></i>
-                            <div>
-                                <strong class="text-white d-block">PedalWorks Taguig Basecamp</strong>
-                                <span class="text-white-50 small">Km. 14 East Service Road, Western Bicutan, Taguig City 1630</span>
-                                <div class="text-warning small mt-1"><i class="fa-solid fa-clock me-1"></i> Ready for pickup within 24 hours of order receipt.</div>
+                    <div id="pickupInfoGroup" class="p-3 rounded" style="background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.18); <?php echo ($pickupMethod !== 'In-Store Pickup') ? 'display: none;' : ''; ?>">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="pw-workshop-spec-icon text-success" style="font-size: 1.4rem;">
+                                <i class="fa-solid fa-store"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <strong class="text-white d-block">PedalWorks Taguig Central Basecamp</strong>
+                                    <span class="badge rounded-pill bg-success bg-opacity-25 text-success border border-success border-opacity-25 small">Free Pickup</span>
+                                </div>
+                                <span class="text-white-50 small d-block mb-2">Km. 14 East Service Road, Western Bicutan, Taguig City 1630</span>
+                                <div class="small text-white-50 mb-1">
+                                    <i class="fa-solid fa-clock text-info me-1"></i> Operating Hours: Mon – Sat: 8:00 AM – 6:30 PM | Sun: 9:00 AM – 3:00 PM
+                                </div>
+                                <div class="small text-warning">
+                                    <i class="fa-solid fa-id-card me-1"></i> Pickup Protocol: Present your Order ID at the main counter upon arrival.
+                                </div>
                             </div>
                         </div>
                     </div>
