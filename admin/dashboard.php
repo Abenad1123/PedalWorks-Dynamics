@@ -9,17 +9,6 @@ $totalCustomers = 0;
 $totalAdmins = 0;
 $lowStockCount = 0;
 
-$successMessage = '';
-$errorMessage = '';
-if (isset($_SESSION['success'])) {
-    $successMessage = $_SESSION['success'];
-    unset($_SESSION['success']);
-}
-if (isset($_SESSION['error'])) {
-    $errorMessage = $_SESSION['error'];
-    unset($_SESSION['error']);
-}
-
 if ($conn) {
     // Current products
     $pRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM product WHERE endDate IS NULL");
@@ -136,19 +125,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
         </div>
 
         <!-- Success & Error System Alerts -->
-        <?php if ($successMessage !== ''): ?>
-            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-                <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($successMessage); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($errorMessage !== ''): ?>
-            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-                <i class="fa-solid fa-triangle-exclamation me-2"></i><?php echo htmlspecialchars($errorMessage); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
+        <?php include('../includes/alert.php'); ?>
 
         <?php if ($lowStockCount > 0 && $canManageProducts): ?>
             <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 shadow-sm" role="alert">
