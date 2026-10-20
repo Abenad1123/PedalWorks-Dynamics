@@ -171,6 +171,86 @@ if ($conn) {
 // Net Operating Income / Profit
 $netIncome = $incomeMetrics['gross_income'] - $expenseMetrics['total_expense'];
 $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetrics['gross_income']) * 100 : 0.0;
+
+// Monthly Breakdown for Financial Trend Chart
+$monthlyTrend = [];
+if ($conn) {
+    // Generate months between startDate and endDate (up to 12 months for chart readability)
+    $cursor = new DateTime($startDate);
+    $endCursor = new DateTime($endDate);
+    $endCursor->modify('last day of this month');
+    
+    // Safety cap: max 12 data points
+    $iter = 0;
+    while ($cursor <= $endCursor && $iter < 12) {
+        $mKey = $cursor->format('Y-m');
+        $mLabel = $cursor->format('M Y');
+        $monthlyTrend[$mKey] = [
+            'label'    => $mLabel,
+            'income'   => 0.0,
+            'expenses' => 0.0
+        ];
+        $cursor->modify('+1 month');
+        $iter++;
+    }
+
+    // Populate Product Sales per month
+    $mProdSql = "SELECT DATE_FORMAT(ps.orderDate, '%Y-%m') as mKey, COALESCE(SUM(olp.quantity * p.price), 0.0) as rev
+                 FROM productSale ps
+                 JOIN orderLineProduct olp ON ps.productSaleID = olp.productSaleID
+                 JOIN product p ON olp.productID = p.productID
+                 WHERE ps.status = 'Completed' AND ps.orderDate BETWEEN ? AND ?
+                 GROUP BY mKey";
+    $mStmt = mysqli_prepare($conn, $mProdSql);
+    if ($mStmt) {
+        mysqli_stmt_bind_param($mStmt, 'ss', $startDate, $endDate);
+        mysqli_stmt_execute($mStmt);
+        $mRes = mysqli_stmt_get_result($mStmt);
+        while ($mr = mysqli_fetch_assoc($mRes)) {
+            if (isset($monthlyTrend[$mr['mKey']])) {
+                $monthlyTrend[$mr['mKey']]['income'] += (float)$mr['rev'];
+            }
+        }
+        mysqli_stmt_close($mStmt);
+    }
+
+    // Populate Workshop Labor per month
+    $mServSql = "SELECT DATE_FORMAT(COALESCE(cs.scheduledDate, cs.requestDate), '%Y-%m') as mKey, COALESCE(SUM(s.price), 0.0) as rev
+                 FROM customerService cs
+                 JOIN service s ON cs.serviceID = s.serviceID
+                 WHERE cs.status = 'Completed' AND COALESCE(cs.scheduledDate, cs.requestDate) BETWEEN ? AND ?
+                 GROUP BY mKey";
+    $mSStmt = mysqli_prepare($conn, $mServSql);
+    if ($mSStmt) {
+        mysqli_stmt_bind_param($mSStmt, 'ss', $startDate, $endDate);
+        mysqli_stmt_execute($mSStmt);
+        $mSRes = mysqli_stmt_get_result($mSStmt);
+        while ($msr = mysqli_fetch_assoc($mSRes)) {
+            if (isset($monthlyTrend[$msr['mKey']])) {
+                $monthlyTrend[$msr['mKey']]['income'] += (float)$msr['rev'];
+            }
+        }
+        mysqli_stmt_close($mSStmt);
+    }
+
+    // Populate Expenses per month
+    $mExpSql = "SELECT DATE_FORMAT(expenseDate, '%Y-%m') as mKey, COALESCE(SUM(amount), 0.0) as exp
+                FROM expense
+                WHERE expenseDate BETWEEN ? AND ?
+                GROUP BY mKey";
+    $mEStmt = mysqli_prepare($conn, $mExpSql);
+    if ($mEStmt) {
+        mysqli_stmt_bind_param($mEStmt, 'ss', $startDate, $endDate);
+        mysqli_stmt_execute($mEStmt);
+        $mERes = mysqli_stmt_get_result($mEStmt);
+        while ($mer = mysqli_fetch_assoc($mERes)) {
+            if (isset($monthlyTrend[$mer['mKey']])) {
+                $monthlyTrend[$mer['mKey']]['expenses'] += (float)$mer['exp'];
+            }
+        }
+        mysqli_stmt_close($mEStmt);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -321,6 +401,48 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
                         <span class="small text-muted">
                             Gross: &#8369;<?php echo number_format($incomeMetrics['gross_income'], 2); ?>
                         </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visual Charts Section (Powered by Chart.js) -->
+        <div class="row g-4 mb-4">
+            <!-- 1. Income vs Expense Trend Bar/Line Chart -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-primary"></i>
+                            <span>Revenue vs. Operating Expense Trend</span>
+                        </h5>
+                        <span class="badge bg-light text-dark border small">Monthly Tracking</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="financialTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Income & Expense Composition Doughnuts -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-success"></i>
+                            <span>Expense Composition</span>
+                        </h5>
+                        <span class="badge bg-danger bg-opacity-10 text-danger small fw-bold">Overhead</span>
+                    </div>
+                    <div class="card-body p-3 d-flex flex-column justify-content-center align-items-center">
+                        <div style="position: relative; height: 240px; width: 100%;">
+                            <canvas id="expenseDoughnutChart"></canvas>
+                        </div>
+                        <div class="small text-muted text-center mt-2">
+                            Overhead breakdown by utility, rent, and labor salaries
+                        </div>
                     </div>
                 </div>
             </div>
@@ -492,6 +614,148 @@ $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetr
         </div>
 
     </div>
+
+    </div>
+
+    <!-- Chart.js Standalone Script with Offline Fallback -->
+    <script src="../../includes/js/chart.min.js"></script>
+    <script>
+    if (typeof Chart === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
+    }
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js failed to load.');
+            return;
+        }
+
+        // 1. Monthly Financial Trend Chart (Bar + Line)
+        const trendLabels = <?php echo json_encode(array_values(array_map(fn($m) => $m['label'], $monthlyTrend))); ?>;
+        const trendIncome = <?php echo json_encode(array_values(array_map(fn($m) => (float)$m['income'], $monthlyTrend))); ?>;
+        const trendExpense = <?php echo json_encode(array_values(array_map(fn($m) => (float)$m['expenses'], $monthlyTrend))); ?>;
+
+        const ctxTrend = document.getElementById('financialTrendChart')?.getContext('2d');
+        if (ctxTrend) {
+            new Chart(ctxTrend, {
+                type: 'bar',
+                data: {
+                    labels: trendLabels.length ? trendLabels : ['Current Period'],
+                    datasets: [
+                        {
+                            label: 'Gross Income (₱)',
+                            data: trendIncome.length ? trendIncome : [<?php echo (float)$incomeMetrics['gross_income']; ?>],
+                            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                            borderColor: '#10b981',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Overhead Expenses (₱)',
+                            data: trendExpense.length ? trendExpense : [<?php echo (float)$expenseMetrics['total_expense']; ?>],
+                            backgroundColor: 'rgba(239, 68, 68, 0.75)',
+                            borderColor: '#ef4444',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { size: 12, family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto' },
+                                boxWidth: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ₱' + Number(context.parsed.y).toLocaleString(undefined, { minimumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + Number(value).toLocaleString();
+                                },
+                                font: { size: 11 }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Overhead Expense Distribution Doughnut Chart
+        const expLabels = <?php echo json_encode(array_keys($expenseMetrics['by_category'])); ?>;
+        const expValues = <?php echo json_encode(array_values($expenseMetrics['by_category'])); ?>;
+        const totalExp = <?php echo (float)$expenseMetrics['total_expense']; ?>;
+
+        const ctxExp = document.getElementById('expenseDoughnutChart')?.getContext('2d');
+        if (ctxExp) {
+            new Chart(ctxExp, {
+                type: 'doughnut',
+                data: {
+                    labels: expLabels,
+                    datasets: [{
+                        data: totalExp > 0 ? expValues : [1],
+                        backgroundColor: totalExp > 0 ? [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(107, 114, 128, 0.8)'
+                        ] : ['rgba(203, 213, 225, 0.5)'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (totalExp === 0) return 'No recorded expenses in period';
+                                    const val = Number(context.parsed);
+                                    const pct = totalExp > 0 ? ((val / totalExp) * 100).toFixed(1) : 0;
+                                    return context.label + ': ₱' + val.toLocaleString(undefined, { minimumFractionDigits: 2 }) + ' (' + pct + '%)';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '62%'
+                }
+            });
+        }
+    });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

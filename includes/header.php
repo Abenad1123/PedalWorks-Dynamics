@@ -46,7 +46,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <a class="nav-link pw-nav-link <?php echo ($currPage === 'index.php') ? 'active' : ''; ?>" id="navLinkHome" href="/project/PedalWorks-Dynamics/index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link pw-nav-link" id="navLinkAbout" href="/project/PedalWorks-Dynamics/index.php#about">About</a>
+                    <a class="nav-link pw-nav-link <?php echo ($currPage === 'about.php') ? 'active' : ''; ?>" id="navLinkAbout" href="/project/PedalWorks-Dynamics/about.php">About</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link pw-nav-link <?php echo in_array($currPage, ['products.php', 'product_details.php'], true) ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/products.php">Products</a>
@@ -55,16 +55,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <a class="nav-link pw-nav-link <?php echo ($currPage === 'services.php') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/services.php">Services</a>
                 </li>
             </ul>
-            <script>
-            (function() {
-                if (window.location.hash === '#about') {
-                    var h = document.getElementById('navLinkHome');
-                    var a = document.getElementById('navLinkAbout');
-                    if (h) h.classList.remove('active');
-                    if (a) a.classList.add('active');
-                }
-            })();
-            </script>
 
             <div class="d-flex align-items-center gap-2 pw-nav-actions">
                 <?php 
