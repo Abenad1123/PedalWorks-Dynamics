@@ -2371,6 +2371,87 @@ a:hover {
     font-family: var(--pw-font-mono);
 }
 
+/* ==========================================================================
+   Frontend UI Engineering Enhancements: Canyon & Trek Production Standards
+   ========================================================================== */
+
+/* Canyon/Trek Mobile Sticky Bottom Purchase Bar */
+.pw-sticky-cart-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    background: rgba(14, 19, 25, 0.94);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid var(--pw-glass-border-light);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.65);
+    padding: 0.75rem 1rem;
+    transform: translateY(120%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pw-sticky-cart-bar.visible {
+    transform: translateY(0);
+}
+
+.pw-sticky-cart-price {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--pw-trail-amber);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Mobile Filter Bottom-Sheet / Drawer */
+.pw-mobile-filter-drawer {
+    background: rgba(14, 19, 25, 0.98) !important;
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border-top: 1px solid var(--pw-glass-border-light) !important;
+    color: #ffffff;
+}
+
+.pw-mobile-filter-drawer .offcanvas-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Accessible Interactive Stepper & Focus States */
+.pw-stepper-btn:focus-visible,
+.pw-btn-trail:focus-visible,
+.pw-btn-glass:focus-visible,
+.pw-segmented-option input:focus-visible + .pw-segmented-box {
+    outline: 2px solid var(--pw-trail-bright) !important;
+    outline-offset: 2px !important;
+}
+
+/* Accessible High-Contrast Form Inputs & Tooltips */
+.pw-form-control:focus,
+.pw-form-select:focus {
+    border-color: var(--pw-trail-bright) !important;
+    box-shadow: 0 0 0 3px var(--pw-trail-glow) !important;
+    outline: none !important;
+}
+
+/* Inline Live Validation Cue */
+.pw-field-feedback {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    margin-top: 0.35rem;
+}
+
+.pw-field-feedback.invalid {
+    color: #f87171;
+}
+
+.pw-field-feedback.valid {
+    color: #4ade80;
+}
+
+
 
 
 

@@ -201,13 +201,17 @@ if ($conn) {
             <?php endif; ?>
         </div>
 
-        <?php if ($search !== '' || $category !== '' || $inStockOnly || $sort !== 'name_asc'): ?>
-            <div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Mobile Offcanvas Filter Trigger -->
+            <button class="btn btn-sm pw-btn-glass d-md-none text-white rounded-pill px-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilterOffcanvas" aria-controls="mobileFilterOffcanvas">
+                <i class="fa-solid fa-sliders me-1 text-warning"></i> Filter &amp; Sort
+            </button>
+            <?php if ($search !== '' || $category !== '' || $inStockOnly || $sort !== 'name_asc'): ?>
                 <a href="products.php" class="text-muted small text-decoration-none">
                     <i class="fa-solid fa-xmark me-1"></i> Clear all filters
                 </a>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
 
     <!-- Product Grid -->
@@ -435,6 +439,59 @@ if ($conn) {
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+
+    <!-- Mobile Responsive Filter Drawer (Offcanvas) -->
+    <div class="offcanvas offcanvas-bottom pw-mobile-filter-drawer" tabindex="-1" id="mobileFilterOffcanvas" aria-labelledby="mobileFilterOffcanvasLabel" style="height: 70vh; border-top-left-radius: 20px; border-top-right-radius: 20px;">
+        <div class="offcanvas-header py-3 px-4">
+            <h5 class="offcanvas-title fw-bold text-white d-flex align-items-center gap-2" id="mobileFilterOffcanvasLabel">
+                <i class="fa-solid fa-sliders text-warning"></i> Refine Catalog
+            </h5>
+            <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <form method="GET" action="products.php" class="d-flex flex-column gap-3">
+                <div>
+                    <label for="mSearch" class="pw-form-label text-white">Search Keywords</label>
+                    <input type="text" class="form-control pw-form-control" id="mSearch" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search name, SKU, or specs...">
+                </div>
+
+                <div>
+                    <label for="mCategory" class="pw-form-label text-white">Category</label>
+                    <select class="form-select pw-form-select" id="mCategory" name="category">
+                        <option value="">All Categories</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat['name']); ?>" <?php echo ($category === $cat['name']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($cat['name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="mSort" class="pw-form-label text-white">Sort By</label>
+                    <select class="form-select pw-form-select" id="mSort" name="sort">
+                        <option value="name_asc" <?php echo ($sort === 'name_asc') ? 'selected' : ''; ?>>Name (A – Z)</option>
+                        <option value="price_asc" <?php echo ($sort === 'price_asc') ? 'selected' : ''; ?>>Price: Low to High</option>
+                        <option value="price_desc" <?php echo ($sort === 'price_desc') ? 'selected' : ''; ?>>Price: High to Low</option>
+                    </select>
+                </div>
+
+                <div class="form-check form-switch py-2">
+                    <input class="form-check-input" type="checkbox" role="switch" id="mInStock" name="in_stock" value="1" <?php echo $inStockOnly ? 'checked' : ''; ?>>
+                    <label class="form-check-label text-white small" for="mInStock">In-Stock Gear Only</label>
+                </div>
+
+                <div class="d-flex gap-2 mt-auto pt-3 border-top border-white border-opacity-10">
+                    <button type="submit" class="pw-btn-trail flex-grow-1 py-2 text-center justify-content-center">
+                        Apply Filters
+                    </button>
+                    <a href="products.php" class="pw-btn-glass py-2 px-3 text-center">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <?php include('./includes/footer.php'); ?>

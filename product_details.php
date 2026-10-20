@@ -757,6 +757,61 @@ include('includes/header.php');
         </div>
     </div>
 
+    <!-- Canyon/Trek-Inspired Sticky Bottom Purchase Bar -->
+    <?php if (!$isOutOfStock): ?>
+    <div class="pw-sticky-cart-bar d-flex align-items-center justify-content-between" id="pwStickyCartBar" role="region" aria-label="Quick purchase bar">
+        <div class="d-flex align-items-center gap-3">
+            <?php if (!empty($product['image']) && file_exists(__DIR__ . '/' . $product['image'])): ?>
+                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($product['image']); ?>" 
+                     alt="<?php echo htmlspecialchars($product['name']); ?>" 
+                     class="rounded border border-secondary border-opacity-25 d-none d-sm-block" 
+                     style="width: 46px; height: 46px; object-fit: cover;">
+            <?php endif; ?>
+            <div>
+                <div class="small fw-semibold text-white text-truncate d-none d-md-block" style="max-width: 280px;">
+                    <?php echo htmlspecialchars($product['name']); ?>
+                </div>
+                <div class="pw-sticky-cart-price">
+                    &#8369;<?php echo number_format($product['price'], 2); ?>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm pw-btn-glass rounded-pill px-3 py-2 text-white d-none d-sm-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#sizingGuideModal">
+                <i class="fa-solid fa-ruler-combined text-warning"></i> Sizing
+            </button>
+            <form action="cart_action.php" method="POST" class="m-0 d-inline-flex">
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="productID" value="<?php echo (int)$product['productID']; ?>">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="redirect" value="product_details.php?id=<?php echo (int)$product['productID']; ?>">
+                <button type="submit" class="pw-btn-trail py-2 px-3 text-nowrap">
+                    <i class="fa-solid fa-cart-shopping me-1"></i> Add to Cart
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const stickyBar = document.getElementById('pwStickyCartBar');
+        const mainBuyForm = document.querySelector('form[action="cart_action.php"]');
+        if (stickyBar && mainBuyForm) {
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        stickyBar.classList.remove('visible');
+                    } else {
+                        stickyBar.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+            observer.observe(mainBuyForm);
+        }
+    })();
+    </script>
+    <?php endif; ?>
+
     <?php endif; ?>
 </div>
 

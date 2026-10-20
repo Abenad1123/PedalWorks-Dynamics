@@ -672,6 +672,32 @@ function toggleFulfillment(method) {
         }
     }
 }
+
+// Client-side real-time inline validation for delivery address
+document.addEventListener('DOMContentLoaded', function() {
+    const addrField = document.getElementById('deliveryAddress');
+    if (addrField) {
+        addrField.addEventListener('input', function() {
+            const val = this.value.trim();
+            let feedback = document.getElementById('addrFeedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.id = 'addrFeedback';
+                this.parentNode.appendChild(feedback);
+            }
+            if (val.length === 0) {
+                feedback.className = 'pw-field-feedback invalid';
+                feedback.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Street address cannot be empty for courier delivery.';
+            } else if (val.length < 8) {
+                feedback.className = 'pw-field-feedback invalid';
+                feedback.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Please enter at least 8 characters for courier dispatch.';
+            } else {
+                feedback.className = 'pw-field-feedback valid';
+                feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> Address format looks complete.';
+            }
+        });
+    }
+});
 </script>
 
 <?php include('includes/footer.php'); ?>
