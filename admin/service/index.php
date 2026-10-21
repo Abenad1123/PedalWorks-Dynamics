@@ -57,12 +57,18 @@ if ($conn) {
     }
 
     if ($search !== '') {
-        $where[] = "(s.name LIKE ? OR s.sku LIKE ? OR s.description LIKE ?)";
-        $searchParam = "%" . $search . "%";
-        $params[] = $searchParam;
-        $params[] = $searchParam;
-        $params[] = $searchParam;
-        $types .= "sss";
+        if (preg_match('/^(?:id[:\s#]*|#)?\s*([0-9]+)$/i', $search, $matches) && (int)$matches[1] > 0) {
+            $where[] = "s.serviceID = ?";
+            $params[] = (int)$matches[1];
+            $types .= "i";
+        } else {
+            $where[] = "(s.name LIKE ? OR s.sku LIKE ? OR s.description LIKE ?)";
+            $searchParam = "%" . $search . "%";
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $types .= "sss";
+        }
     }
 
     if ($categoryFilter !== '') {
@@ -191,7 +197,7 @@ $activeModule = 'service';
                         <label class="form-label small fw-semibold text-muted mb-1" for="search">Keyword Search</label>
                         <div class="input-group input-group-sm">
                             <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="search" name="search" class="form-control" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search SKU, service title, or scope...">
+                            <input type="text" id="search" name="search" class="form-control" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search ID, SKU, service title, or scope...">
                         </div>
                     </div>
                     <div class="col-md-4">

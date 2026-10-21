@@ -61,12 +61,18 @@ if ($conn) {
     }
 
     if ($search !== '') {
-        $where[] = "(p.name LIKE ? OR p.sku LIKE ? OR p.description LIKE ?)";
-        $searchParam = "%" . $search . "%";
-        $params[] = $searchParam;
-        $params[] = $searchParam;
-        $params[] = $searchParam;
-        $types .= "sss";
+        if (preg_match('/^(?:id[:\s#]*|#)?\s*([0-9]+)$/i', $search, $matches) && (int)$matches[1] > 0) {
+            $where[] = "p.productID = ?";
+            $params[] = (int)$matches[1];
+            $types .= "i";
+        } else {
+            $where[] = "(p.name LIKE ? OR p.sku LIKE ? OR p.description LIKE ?)";
+            $searchParam = "%" . $search . "%";
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $types .= "sss";
+        }
     }
 
     if ($categoryFilter !== '') {
@@ -215,7 +221,7 @@ $activeModule = 'product';
                         <label class="form-label small fw-semibold text-muted mb-1" for="search">Keyword Search</label>
                         <div class="input-group input-group-sm">
                             <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="search" name="search" class="form-control" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search SKU, name, or description...">
+                            <input type="text" id="search" name="search" class="form-control" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search ID, SKU, name, or description...">
                         </div>
                     </div>
                     <div class="col-md-3">
