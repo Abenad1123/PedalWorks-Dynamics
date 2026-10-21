@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS `productSale` (
   `paymentMethod` ENUM('Cash on Delivery', 'Cash on Pickup') NOT NULL,
   `pickupMethod` ENUM('Delivery', 'In-Store Pickup') NOT NULL,
   `deliveryAddress` TEXT NULL,
-  `status` ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Received',
+  `status` ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Pending',
   `orderDate` DATETIME NOT NULL,
   PRIMARY KEY (`productSaleID`),
   INDEX `fk_productSale_customerAccount1_idx` (`customerAccountID` ASC),

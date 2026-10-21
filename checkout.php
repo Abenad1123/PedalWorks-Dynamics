@@ -93,8 +93,12 @@ $pickupMethod    = $_POST['pickupMethod'] ?? 'Delivery';
 $deliveryAddress = $_POST['deliveryAddress'] ?? ($customerData['address'] ?? '');
 $paymentMethod   = $_POST['paymentMethod'] ?? 'Cash on Delivery';
 
-// In-Store Pickup strictly enforces Cash on Pickup
-if ($pickupMethod === 'In-Store Pickup') {
+// Enforce payment methods strictly per fulfillment method:
+// - Doorstep Delivery allows ONLY Cash on Delivery
+// - In-Store Pickup allows ONLY Cash on Pickup
+if ($pickupMethod === 'Delivery') {
+    $paymentMethod = 'Cash on Delivery';
+} elseif ($pickupMethod === 'In-Store Pickup') {
     $paymentMethod = 'Cash on Pickup';
 }
 
@@ -118,11 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['deliveryAddress'] = 'Please provide a complete street address (minimum 8 characters).';
         }
 
-        // Doorstep Delivery allows either Cash on Delivery or Cash on Pickup
-        $validPayments = ['Cash on Delivery', 'Cash on Pickup'];
-        if (!in_array($paymentMethod, $validPayments, true)) {
-            $errors['paymentMethod'] = 'Please select a supported payment method.';
-        }
+        // Doorstep Delivery strictly allows ONLY Cash on Delivery
+        $paymentMethod = 'Cash on Delivery';
     } else {
         // In-store pickup doesn't strictly need a custom delivery address
         $deliveryAddress = 'In-Store Pickup: PedalWorks Basecamp, Km. 14 East Service Road, Western Bicutan, Taguig City';
@@ -174,9 +175,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Your shopping cart contains items that are no longer available.');
             }
 
-            // 2. Insert into productSale table
+            // 2. Insert into productSale table (Order initial status is 'Pending')
             $saleStmt = mysqli_prepare($conn, "INSERT INTO productSale (customerAccountID, paymentMethod, pickupMethod, deliveryAddress, status, orderDate) 
-                                               VALUES (?, ?, ?, ?, 'Received', NOW())");
+                                               VALUES (?, ?, ?, ?, 'Pending', NOW())");
             mysqli_stmt_bind_param($saleStmt, 'isss', $customerAccountID, $paymentMethod, $pickupMethod, $deliveryAddress);
             if (!mysqli_stmt_execute($saleStmt)) {
                 throw new Exception('Could not create order transaction: ' . mysqli_stmt_error($saleStmt));
@@ -506,34 +507,39 @@ include('includes/header.php');
                     </h5>
 
                     <div class="row g-3" id="paymentOptionsRow">
-                        <div class="col-sm-6" id="codOptionCol" style="<?php echo ($pickupMethod === 'In-Store Pickup') ? 'display: none;' : ''; ?>">
+                        <div class="col-12" id="codOptionCol" style="<?php echo ($pickupMethod === 'In-Store Pickup') ? 'display: none;' : ''; ?>">
                             <label class="pw-segmented-option">
                                 <input type="radio" name="paymentMethod" id="paymentMethodCOD" value="Cash on Delivery" 
-                                       <?php echo ($paymentMethod === 'Cash on Delivery' && $pickupMethod !== 'In-Store Pickup') ? 'checked' : ''; ?>
+                                       <?php echo ($pickupMethod !== 'In-Store Pickup') ? 'checked' : ''; ?>
                                        <?php echo ($pickupMethod === 'In-Store Pickup') ? 'disabled' : ''; ?>>
                                 <div class="pw-segmented-box h-100">
                                     <div class="d-flex align-items-center justify-content-between mb-1">
-                                        <span class="fw-semibold text-white">Cash on Delivery</span>
+                                        <span class="fw-semibold text-white">Cash on Delivery (COD)</span>
                                         <i class="fa-solid fa-money-bill-wave text-success"></i>
                                     </div>
-                                    <p class="text-white-50 small mb-0">Pay upon parcel arrival</p>
+                                    <p class="text-white-50 small mb-0">Pay upon parcel arrival at your doorstep</p>
                                 </div>
                             </label>
                         </div>
 
-                        <div class="<?php echo ($pickupMethod === 'In-Store Pickup') ? 'col-12' : 'col-sm-6'; ?>" id="copOptionCol">
+                        <div class="col-12" id="copOptionCol" style="<?php echo ($pickupMethod === 'Delivery') ? 'display: none;' : ''; ?>">
                             <label class="pw-segmented-option">
                                 <input type="radio" name="paymentMethod" id="paymentMethodCOP" value="Cash on Pickup" 
-                                       <?php echo ($paymentMethod === 'Cash on Pickup' || $pickupMethod === 'In-Store Pickup') ? 'checked' : ''; ?>>
+                                       <?php echo ($pickupMethod === 'In-Store Pickup') ? 'checked' : ''; ?>
+                                       <?php echo ($pickupMethod === 'Delivery') ? 'disabled' : ''; ?>>
                                 <div class="pw-segmented-box h-100">
                                     <div class="d-flex align-items-center justify-content-between mb-1">
-                                        <span class="fw-semibold text-white">Cash on Pickup</span>
+                                        <span class="fw-semibold text-white">Cash on Pickup (COP)</span>
                                         <i class="fa-solid fa-hand-holding-dollar text-warning"></i>
                                     </div>
-                                    <p class="text-white-50 small mb-0">Pay over-the-counter at basecamp</p>
+                                    <p class="text-white-50 small mb-0">Pay over-the-counter when collecting at Taguig Basecamp</p>
                                 </div>
                             </label>
                         </div>
+                    </div>
+                    <div id="deliveryPaymentNotice" class="text-white-50 small mt-3" style="<?php echo ($pickupMethod === 'Delivery') ? 'display: block;' : 'display: none;'; ?>">
+                        <i class="fa-solid fa-circle-info text-info me-1"></i>
+                        <span>Doorstep delivery orders strictly use Cash on Delivery (COD).</span>
                     </div>
                     <div id="pickupPaymentNotice" class="text-white-50 small mt-3" style="<?php echo ($pickupMethod === 'In-Store Pickup') ? 'display: block;' : 'display: none;'; ?>">
                         <i class="fa-solid fa-circle-info text-warning me-1"></i>
@@ -621,55 +627,49 @@ include('includes/header.php');
 
 <script>
 function toggleFulfillment(method) {
-    const addressGroup = document.getElementById('deliveryAddressGroup');
-    const pickupGroup  = document.getElementById('pickupInfoGroup');
-    const codCol       = document.getElementById('codOptionCol');
-    const copCol       = document.getElementById('copOptionCol');
-    const codRadio     = document.getElementById('paymentMethodCOD');
-    const copRadio     = document.getElementById('paymentMethodCOP');
-    const notice       = document.getElementById('pickupPaymentNotice');
+    const addressGroup  = document.getElementById('deliveryAddressGroup');
+    const pickupGroup   = document.getElementById('pickupInfoGroup');
+    const codCol        = document.getElementById('codOptionCol');
+    const copCol        = document.getElementById('copOptionCol');
+    const codRadio      = document.getElementById('paymentMethodCOD');
+    const copRadio      = document.getElementById('paymentMethodCOP');
+    const pickupNotice  = document.getElementById('pickupPaymentNotice');
+    const deliveryNotice = document.getElementById('deliveryPaymentNotice');
 
     if (method === 'In-Store Pickup') {
         addressGroup.style.display = 'none';
         pickupGroup.style.display = 'block';
 
-        // In-Store Pickup allows only Cash on Pickup
+        // In-Store Pickup allows ONLY Cash on Pickup
         if (codCol) codCol.style.display = 'none';
-        if (copCol) {
-            copCol.classList.remove('col-sm-6');
-            copCol.classList.add('col-12');
-        }
+        if (copCol) copCol.style.display = 'block';
         if (codRadio) {
             codRadio.disabled = true;
             codRadio.checked = false;
         }
         if (copRadio) {
+            copRadio.disabled = false;
             copRadio.checked = true;
         }
-        if (notice) notice.style.display = 'block';
+        if (pickupNotice) pickupNotice.style.display = 'block';
+        if (deliveryNotice) deliveryNotice.style.display = 'none';
     } else {
         addressGroup.style.display = 'block';
         pickupGroup.style.display = 'none';
 
-        // Doorstep Delivery allows choosing either Cash on Delivery or Cash on Pickup
-        if (codCol) {
-            codCol.style.display = '';
-            codCol.classList.remove('col-12');
-            codCol.classList.add('col-sm-6');
-        }
-        if (copCol) {
-            copCol.classList.remove('col-12');
-            copCol.classList.add('col-sm-6');
-        }
+        // Doorstep Delivery allows ONLY Cash on Delivery (COD)
+        if (codCol) codCol.style.display = 'block';
+        if (copCol) copCol.style.display = 'none';
         if (codRadio) {
             codRadio.disabled = false;
-        }
-        if (notice) notice.style.display = 'none';
-
-        // If neither is checked, default to Cash on Delivery
-        if (codRadio && copRadio && !codRadio.checked && !copRadio.checked) {
             codRadio.checked = true;
         }
+        if (copRadio) {
+            copRadio.disabled = true;
+            copRadio.checked = false;
+        }
+        if (deliveryNotice) deliveryNotice.style.display = 'block';
+        if (pickupNotice) pickupNotice.style.display = 'none';
     }
 }
 
