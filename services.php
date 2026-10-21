@@ -341,6 +341,20 @@ function getServiceIcon($categoryName) {
                             <?php echo htmlspecialchars($s['description'] ?? ''); ?>
                         </p>
 
+                        <?php 
+                        $sNameLower = strtolower($s['name']);
+                        $turnaround = '24–48h Turnaround';
+                        if (str_contains($sNameLower, 'wash') || str_contains($sNameLower, 'inspection') || str_contains($sNameLower, 'bleed') || str_contains($sNameLower, 'tune')) {
+                            $turnaround = 'Same-Day / 24h';
+                        } elseif (str_contains($sNameLower, 'paint') || str_contains($sNameLower, 'custom') || str_contains($sNameLower, 'overhaul') || str_contains($sNameLower, 'build')) {
+                            $turnaround = '3–5 Days';
+                        }
+                        ?>
+                        <div class="d-flex align-items-center justify-content-between mb-3 pt-2 border-top border-white border-opacity-10">
+                            <span class="pw-turnaround-pill"><i class="fa-solid fa-clock-rotate-left"></i> <?php echo $turnaround; ?></span>
+                            <span class="small text-white-50"><i class="fa-solid fa-screwdriver text-success me-1"></i>Labor Only</span>
+                        </div>
+
                         <!-- Service Meta & Action -->
                         <div class="pw-service-meta mt-auto">
                             <div class="pw-service-fee">
@@ -655,6 +669,19 @@ function getServiceIcon($categoryName) {
                                                   rows="3" 
                                                   placeholder="e.g., Specialized Rockhopper 29er. Rear hydraulic brake lever feels spongy, needs bleeding and new organic pads."></textarea>
                                         <div class="form-text text-white-50 small">Briefly describe the symptoms or specific parts you'd like us to inspect.</div>
+                                    </div>
+
+                                    <!-- REI-Inspired Pre-Dropoff Checklist -->
+                                    <div class="p-3 rounded mb-2" style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15);">
+                                        <div class="small fw-bold text-white mb-1">
+                                            <i class="fa-solid fa-clipboard-check text-warning me-1"></i> Pre-Dropoff Checklist &amp; Trust Policy:
+                                        </div>
+                                        <ul class="text-white-50 small mb-0 ps-3" style="font-size: 0.78rem; line-height: 1.6;">
+                                            <li>Please wipe down excessive mud before bringing the bike into the service bay.</li>
+                                            <li>Bring proprietary battery keys/chargers if bringing an e-bike.</li>
+                                            <li>Labor is guaranteed for 7 days of post-service trail riding.</li>
+                                            <li>Any required replacement parts will be quoted for your approval before installation.</li>
+                                        </ul>
                                     </div>
                                 </div>
                                 <div class="modal-footer pw-modal-footer">

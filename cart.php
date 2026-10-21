@@ -41,12 +41,6 @@ if ($conn) {
     }
 }
 
-// Flash alerts
-$successMsg = $_SESSION['success'] ?? '';
-$errorMsg   = $_SESSION['error'] ?? '';
-$warningMsg = $_SESSION['warning'] ?? '';
-unset($_SESSION['success'], $_SESSION['error'], $_SESSION['warning']);
-
 include('includes/header.php');
 ?>
 
@@ -80,29 +74,7 @@ include('includes/header.php');
     </div>
 
     <!-- Alert Messages -->
-    <?php if ($successMsg): ?>
-        <div class="alert alert-success pw-glass-alert alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
-            <i class="fa-solid fa-circle-check text-success fs-5"></i>
-            <div><?php echo $successMsg; ?></div>
-            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if ($warningMsg): ?>
-        <div class="alert alert-warning pw-glass-alert alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
-            <i class="fa-solid fa-triangle-exclamation text-warning fs-5"></i>
-            <div><?php echo $warningMsg; ?></div>
-            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if ($errorMsg): ?>
-        <div class="alert alert-danger pw-glass-alert alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
-            <i class="fa-solid fa-circle-exclamation text-danger fs-5"></i>
-            <div><?php echo $errorMsg; ?></div>
-            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
+    <?php include('includes/alert.php'); ?>
 
     <?php if (empty($cartItems)): ?>
         <!-- Apple HIG Empty State -->

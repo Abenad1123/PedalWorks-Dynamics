@@ -271,6 +271,42 @@ include('includes/header.php');
                             </div>
                         </div>
 
+                        <!-- Sizing Guide Trigger & Stock Assurance -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                            <button type="button" class="btn btn-sm pw-btn-glass rounded-pill px-3 py-1 text-white" data-bs-toggle="modal" data-bs-target="#sizingGuideModal">
+                                <i class="fa-solid fa-ruler-combined text-warning me-1"></i> Frame Sizing &amp; Fit Guide
+                            </button>
+                            <span class="small text-white-50"><i class="fa-solid fa-shield-halved text-success me-1"></i> Factory Calibrated</span>
+                        </div>
+
+                        <!-- Fulfillment Expectations (Canyon & Trek Inspired) -->
+                        <div class="pw-fulfillment-card mb-4">
+                            <div class="row g-2">
+                                <div class="col-sm-6">
+                                    <div class="pw-fulfillment-badge-row">
+                                        <div class="pw-fulfillment-badge-icon text-success">
+                                            <i class="fa-solid fa-store fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small fw-bold text-white">In-Store Pickup</div>
+                                            <div class="small text-white-50" style="font-size: 0.76rem;">Ready in 2h at Taguig Hub &bull; FREE</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="pw-fulfillment-badge-row">
+                                        <div class="pw-fulfillment-badge-icon text-warning">
+                                            <i class="fa-solid fa-truck-fast fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small fw-bold text-white">Doorstep Courier</div>
+                                            <div class="small text-white-50" style="font-size: 0.76rem;">Delivered in 2–3 Days &bull; COD OK</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Short Description -->
                         <div class="mb-4 pb-3 border-bottom border-white border-opacity-10">
                             <h6 class="text-white fw-bold mb-2">Overview</h6>
@@ -598,6 +634,183 @@ include('includes/header.php');
                 </a>
             </div>
         </div>
+
+    <!-- Canyon & Trek Inspired Rider Sizing & Frame Fit Modal -->
+    <div class="modal fade" id="sizingGuideModal" tabindex="-1" aria-labelledby="sizingGuideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content pw-modal-content">
+                <div class="modal-header pw-modal-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-ruler-combined text-warning fs-5"></i>
+                        <h5 class="modal-title fw-bold text-white mb-0" id="sizingGuideModalLabel">
+                            Rider Sizing &amp; Frame Fit Guide
+                        </h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-white-50 small mb-3">
+                        Choosing the right bicycle size ensures optimum power transfer, comfort, and injury prevention on the trail or asphalt. Measure your height without shoes and check your inseam (crotch to floor).
+                    </p>
+
+                    <h6 class="text-white fw-bold mb-2">Road, Gravel &amp; Endurance Frames</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="pw-sizing-table">
+                            <thead>
+                                <tr>
+                                    <th>Rider Height (Metric)</th>
+                                    <th>Rider Height (Imperial)</th>
+                                    <th>Suggested Size</th>
+                                    <th>Frame Size (cm)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>152 – 160 cm</td>
+                                    <td>5'0" – 5'3"</td>
+                                    <td><span class="pw-sizing-badge">XS</span></td>
+                                    <td>47 – 49 cm</td>
+                                </tr>
+                                <tr>
+                                    <td>160 – 168 cm</td>
+                                    <td>5'3" – 5'6"</td>
+                                    <td><span class="pw-sizing-badge">S</span></td>
+                                    <td>50 – 52 cm</td>
+                                </tr>
+                                <tr>
+                                    <td>168 – 178 cm</td>
+                                    <td>5'6" – 5'10"</td>
+                                    <td><span class="pw-sizing-badge">M</span></td>
+                                    <td>53 – 55 cm</td>
+                                </tr>
+                                <tr>
+                                    <td>178 – 185 cm</td>
+                                    <td>5'10" – 6'1"</td>
+                                    <td><span class="pw-sizing-badge">L</span></td>
+                                    <td>56 – 58 cm</td>
+                                </tr>
+                                <tr>
+                                    <td>185 – 195+ cm</td>
+                                    <td>6'1" – 6'5"+</td>
+                                    <td><span class="pw-sizing-badge">XL</span></td>
+                                    <td>59 – 61+ cm</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h6 class="text-white fw-bold mb-2">Mountain Bike (MTB &amp; Trail Hardtail)</h6>
+                    <div class="table-responsive mb-3">
+                        <table class="pw-sizing-table">
+                            <thead>
+                                <tr>
+                                    <th>Rider Height</th>
+                                    <th>MTB Size</th>
+                                    <th>Wheel Recommendation</th>
+                                    <th>Standover Clearance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>150 – 165 cm</td>
+                                    <td><span class="pw-sizing-badge">Small (15")</span></td>
+                                    <td>27.5"</td>
+                                    <td>&ge; 2 inches</td>
+                                </tr>
+                                <tr>
+                                    <td>165 – 178 cm</td>
+                                    <td><span class="pw-sizing-badge">Medium (17.5")</span></td>
+                                    <td>27.5" or 29er</td>
+                                    <td>&ge; 2 inches</td>
+                                </tr>
+                                <tr>
+                                    <td>178 – 188 cm</td>
+                                    <td><span class="pw-sizing-badge">Large (19.5")</span></td>
+                                    <td>29er</td>
+                                    <td>&ge; 3 inches</td>
+                                </tr>
+                                <tr>
+                                    <td>188+ cm</td>
+                                    <td><span class="pw-sizing-badge">X-Large (21.5")</span></td>
+                                    <td>29er</td>
+                                    <td>&ge; 3 inches</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-3 rounded" style="background: rgba(234, 88, 12, 0.08); border: 1px solid rgba(234, 88, 12, 0.25);">
+                        <div class="d-flex align-items-center gap-2 text-warning small fw-bold mb-1">
+                            <i class="fa-solid fa-wrench"></i> Need a custom physical bike fitting?
+                        </div>
+                        <div class="text-white-50 small">
+                            Visit our Taguig Basecamp workshop where our master mechanics can adjust your saddle setback, cockpit reach, and stem height during in-store pickup.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer pw-modal-footer">
+                    <button type="button" class="pw-btn-trail py-2 px-3" data-bs-dismiss="modal">
+                        Understood, Return to Bicycle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canyon/Trek-Inspired Sticky Bottom Purchase Bar -->
+    <?php if (!$isOutOfStock): ?>
+    <div class="pw-sticky-cart-bar d-flex align-items-center justify-content-between" id="pwStickyCartBar" role="region" aria-label="Quick purchase bar">
+        <div class="d-flex align-items-center gap-3">
+            <?php if (!empty($product['image']) && file_exists(__DIR__ . '/' . $product['image'])): ?>
+                <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($product['image']); ?>" 
+                     alt="<?php echo htmlspecialchars($product['name']); ?>" 
+                     class="rounded border border-secondary border-opacity-25 d-none d-sm-block" 
+                     style="width: 46px; height: 46px; object-fit: cover;">
+            <?php endif; ?>
+            <div>
+                <div class="small fw-semibold text-white text-truncate d-none d-md-block" style="max-width: 280px;">
+                    <?php echo htmlspecialchars($product['name']); ?>
+                </div>
+                <div class="pw-sticky-cart-price">
+                    &#8369;<?php echo number_format($product['price'], 2); ?>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm pw-btn-glass rounded-pill px-3 py-2 text-white d-none d-sm-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#sizingGuideModal">
+                <i class="fa-solid fa-ruler-combined text-warning"></i> Sizing
+            </button>
+            <form action="cart_action.php" method="POST" class="m-0 d-inline-flex">
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="productID" value="<?php echo (int)$product['productID']; ?>">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="redirect" value="product_details.php?id=<?php echo (int)$product['productID']; ?>">
+                <button type="submit" class="pw-btn-trail py-2 px-3 text-nowrap">
+                    <i class="fa-solid fa-cart-shopping me-1"></i> Add to Cart
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const stickyBar = document.getElementById('pwStickyCartBar');
+        const mainBuyForm = document.querySelector('form[action="cart_action.php"]');
+        if (stickyBar && mainBuyForm) {
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        stickyBar.classList.remove('visible');
+                    } else {
+                        stickyBar.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+            observer.observe(mainBuyForm);
+        }
+    })();
+    </script>
+    <?php endif; ?>
 
     <?php endif; ?>
 </div>

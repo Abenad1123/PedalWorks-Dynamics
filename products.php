@@ -7,6 +7,8 @@ include('./includes/header.php');
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? trim($_GET['category']) : '';
+$sort = isset($_GET['sort']) ? trim($_GET['sort']) : 'name_asc';
+$inStockOnly = isset($_GET['in_stock']) && $_GET['in_stock'] === '1';
 
 // Fetch categories for filter dropdown and pills
 $categories = [];
@@ -41,11 +43,22 @@ if ($conn) {
         $types .= "s";
     }
 
+    if ($inStockOnly) {
+        $where[] = "p.stock > 0";
+    }
+
+    $orderBy = "p.name ASC";
+    if ($sort === 'price_asc') {
+        $orderBy = "p.price ASC";
+    } elseif ($sort === 'price_desc') {
+        $orderBy = "p.price DESC";
+    }
+
     $sql = "SELECT p.*, pc.name AS categoryName 
             FROM product p 
             LEFT JOIN productCategory pc ON p.productCategoryID = pc.productCategoryID 
             WHERE " . implode(" AND ", $where) . " 
-            ORDER BY p.name ASC";
+            ORDER BY " . $orderBy;
 
     $stmt = mysqli_prepare($conn, $sql);
     if ($stmt) {
@@ -85,16 +98,16 @@ if ($conn) {
         </div>
     </div>
 
-    <!-- Search & Filter Controls -->
+    <!-- Search & Filter Controls (Trek & Canyon Inspired) -->
     <div class="pw-filter-card">
         <form method="GET" action="products.php" class="row g-3 align-items-center">
-            <div class="col-lg-6 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <label for="search" class="pw-form-label">
                     Search Catalog
                 </label>
                 <input type="text" class="form-control pw-form-control" id="search" name="search" 
                        value="<?php echo htmlspecialchars($search); ?>" 
-                       placeholder="Search by product name, SKU, or specifications...">
+                       placeholder="Search by product name, SKU, or specs...">
             </div>
 
             <div class="col-lg-3 col-md-3">
@@ -111,11 +124,26 @@ if ($conn) {
                 </select>
             </div>
 
-            <div class="col-lg-3 col-md-3 d-flex align-items-end gap-2 mt-md-4 pt-md-2">
-                <button type="submit" class="pw-btn-trail w-100">
+            <div class="col-lg-2 col-md-3">
+                <label for="sort" class="pw-form-label">
+                    Sort By
+                </label>
+                <select class="form-select pw-form-select" id="sort" name="sort">
+                    <option value="name_asc" <?php echo ($sort === 'name_asc') ? 'selected' : ''; ?>>Name (A – Z)</option>
+                    <option value="price_asc" <?php echo ($sort === 'price_asc') ? 'selected' : ''; ?>>Price: Low to High</option>
+                    <option value="price_desc" <?php echo ($sort === 'price_desc') ? 'selected' : ''; ?>>Price: High to Low</option>
+                </select>
+            </div>
+
+            <div class="col-lg-3 col-md-12 d-flex flex-wrap align-items-end gap-2 mt-md-4 pt-md-2">
+                <div class="form-check form-switch me-auto mb-2 mb-lg-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="in_stock" name="in_stock" value="1" <?php echo $inStockOnly ? 'checked' : ''; ?>>
+                    <label class="form-check-label text-white small" for="in_stock">In-Stock Only</label>
+                </div>
+                <button type="submit" class="pw-btn-trail flex-grow-1">
                     Apply
                 </button>
-                <?php if ($search !== '' || $category !== ''): ?>
+                <?php if ($search !== '' || $category !== '' || $inStockOnly || $sort !== 'name_asc'): ?>
                     <a href="products.php" class="pw-btn-glass text-nowrap" title="Reset Filters">
                         Reset
                     </a>
@@ -125,12 +153,21 @@ if ($conn) {
 
         <!-- Quick Category Strip -->
         <div class="pw-category-strip mt-3 mb-0 pt-3 border-top border-secondary border-opacity-25 justify-content-start">
-            <a href="products.php<?php echo !empty($search) ? '?search=' . urlencode($search) : ''; ?>" 
+            <a href="products.php<?php 
+                $qParams = [];
+                if (!empty($search)) $qParams['search'] = $search;
+                if ($sort !== 'name_asc') $qParams['sort'] = $sort;
+                if ($inStockOnly) $qParams['in_stock'] = '1';
+                echo !empty($qParams) ? '?' . http_build_query($qParams) : '';
+               ?>" 
                class="pw-filter-pill <?php echo ($category === '') ? 'active' : ''; ?>">
                 All Items
             </a>
-            <?php foreach ($categories as $cat): ?>
-                <a href="products.php?category=<?php echo urlencode($cat['name']); ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" 
+            <?php foreach ($categories as $cat): 
+                $cParams = $qParams;
+                $cParams['category'] = $cat['name'];
+            ?>
+                <a href="products.php?<?php echo http_build_query($cParams); ?>" 
                    class="pw-filter-pill <?php echo ($category === $cat['name']) ? 'active' : ''; ?>">
                     <?php echo htmlspecialchars($cat['name']); ?>
                 </a>
@@ -138,25 +175,43 @@ if ($conn) {
         </div>
     </div>
 
-    <!-- Active Filters Summary & Result Count -->
+    <!-- Active Filters Summary & Result Count (Trek Inspired) -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-        <div class="text-white-50 small">
-            Showing <strong class="text-white"><?php echo count($products); ?></strong> products
+        <div class="text-white-50 small d-flex flex-wrap align-items-center gap-2">
+            <span>Showing <strong class="text-white"><?php echo count($products); ?></strong> products</span>
             <?php if ($category !== ''): ?>
-                in <span class="badge rounded-pill text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); font-weight: 500;"><?php echo htmlspecialchars($category); ?></span>
+                <span class="badge rounded-pill text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); font-weight: 500;">
+                    Category: <?php echo htmlspecialchars($category); ?>
+                </span>
             <?php endif; ?>
             <?php if ($search !== ''): ?>
-                matching <span class="badge rounded-pill" style="background: rgba(209, 102, 41, 0.15); border: 1px solid rgba(209, 102, 41, 0.3); color: var(--pw-trail-amber); font-weight: 500;">"<?php echo htmlspecialchars($search); ?>"</span>
+                <span class="badge rounded-pill" style="background: rgba(209, 102, 41, 0.15); border: 1px solid rgba(209, 102, 41, 0.3); color: var(--pw-trail-amber); font-weight: 500;">
+                    Keyword: "<?php echo htmlspecialchars($search); ?>"
+                </span>
+            <?php endif; ?>
+            <?php if ($inStockOnly): ?>
+                <span class="badge rounded-pill bg-success bg-opacity-20 text-success border border-success border-opacity-25">
+                    <i class="fa-solid fa-check me-1"></i>In-Stock Only
+                </span>
+            <?php endif; ?>
+            <?php if ($sort === 'price_asc'): ?>
+                <span class="badge rounded-pill text-white-50 border border-white border-opacity-10">Price: Low to High</span>
+            <?php elseif ($sort === 'price_desc'): ?>
+                <span class="badge rounded-pill text-white-50 border border-white border-opacity-10">Price: High to Low</span>
             <?php endif; ?>
         </div>
 
-        <?php if ($search !== '' || $category !== ''): ?>
-            <div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Mobile Offcanvas Filter Trigger -->
+            <button class="btn btn-sm pw-btn-glass d-md-none text-white rounded-pill px-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilterOffcanvas" aria-controls="mobileFilterOffcanvas">
+                <i class="fa-solid fa-sliders me-1 text-warning"></i> Filter &amp; Sort
+            </button>
+            <?php if ($search !== '' || $category !== '' || $inStockOnly || $sort !== 'name_asc'): ?>
                 <a href="products.php" class="text-muted small text-decoration-none">
                     <i class="fa-solid fa-xmark me-1"></i> Clear all filters
                 </a>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
 
     <!-- Product Grid -->
@@ -240,6 +295,13 @@ if ($conn) {
                                 echo htmlspecialchars(mb_strimwidth($desc, 0, 110, '...')); 
                                 ?>
                             </p>
+
+                            <!-- Dual Fulfillment Availability (Trek Inspired) -->
+                            <div class="d-flex align-items-center gap-2 mb-3 text-white-50" style="font-size: 0.72rem;">
+                                <span><i class="fa-solid fa-store text-success me-1"></i>In-Store Pickup</span>
+                                <span>&bull;</span>
+                                <span><i class="fa-solid fa-truck-fast text-warning me-1"></i>Courier COD</span>
+                            </div>
 
                             <!-- Product Card Footer -->
                             <div class="pw-product-footer d-flex align-items-center justify-content-between gap-2">
@@ -377,6 +439,59 @@ if ($conn) {
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+
+    <!-- Mobile Responsive Filter Drawer (Offcanvas) -->
+    <div class="offcanvas offcanvas-bottom pw-mobile-filter-drawer" tabindex="-1" id="mobileFilterOffcanvas" aria-labelledby="mobileFilterOffcanvasLabel" style="height: 70vh; border-top-left-radius: 20px; border-top-right-radius: 20px;">
+        <div class="offcanvas-header py-3 px-4">
+            <h5 class="offcanvas-title fw-bold text-white d-flex align-items-center gap-2" id="mobileFilterOffcanvasLabel">
+                <i class="fa-solid fa-sliders text-warning"></i> Refine Catalog
+            </h5>
+            <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <form method="GET" action="products.php" class="d-flex flex-column gap-3">
+                <div>
+                    <label for="mSearch" class="pw-form-label text-white">Search Keywords</label>
+                    <input type="text" class="form-control pw-form-control" id="mSearch" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search name, SKU, or specs...">
+                </div>
+
+                <div>
+                    <label for="mCategory" class="pw-form-label text-white">Category</label>
+                    <select class="form-select pw-form-select" id="mCategory" name="category">
+                        <option value="">All Categories</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat['name']); ?>" <?php echo ($category === $cat['name']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($cat['name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="mSort" class="pw-form-label text-white">Sort By</label>
+                    <select class="form-select pw-form-select" id="mSort" name="sort">
+                        <option value="name_asc" <?php echo ($sort === 'name_asc') ? 'selected' : ''; ?>>Name (A – Z)</option>
+                        <option value="price_asc" <?php echo ($sort === 'price_asc') ? 'selected' : ''; ?>>Price: Low to High</option>
+                        <option value="price_desc" <?php echo ($sort === 'price_desc') ? 'selected' : ''; ?>>Price: High to Low</option>
+                    </select>
+                </div>
+
+                <div class="form-check form-switch py-2">
+                    <input class="form-check-input" type="checkbox" role="switch" id="mInStock" name="in_stock" value="1" <?php echo $inStockOnly ? 'checked' : ''; ?>>
+                    <label class="form-check-label text-white small" for="mInStock">In-Stock Gear Only</label>
+                </div>
+
+                <div class="d-flex gap-2 mt-auto pt-3 border-top border-white border-opacity-10">
+                    <button type="submit" class="pw-btn-trail flex-grow-1 py-2 text-center justify-content-center">
+                        Apply Filters
+                    </button>
+                    <a href="products.php" class="pw-btn-glass py-2 px-3 text-center">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <?php include('./includes/footer.php'); ?>

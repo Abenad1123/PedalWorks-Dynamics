@@ -6,6 +6,22 @@
     </div>
 <?php endif; ?>
 
+<?php if (isset($_SESSION['warning'])): ?>
+    <div class="alert alert-warning pw-glass-alert alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="fa-solid fa-triangle-exclamation text-warning fs-5"></i>
+        <div><?php echo htmlspecialchars($_SESSION['warning']); unset($_SESSION['warning']); ?></div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['info'])): ?>
+    <div class="alert alert-info pw-glass-alert alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="fa-solid fa-circle-info text-info fs-5"></i>
+        <div><?php echo htmlspecialchars($_SESSION['info']); unset($_SESSION['info']); ?></div>
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
 <?php 
 $errMsg = $_SESSION['error'] ?? $_SESSION['message'] ?? null;
 if ($errMsg): 
@@ -17,4 +33,5 @@ if ($errMsg):
         <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
+
 

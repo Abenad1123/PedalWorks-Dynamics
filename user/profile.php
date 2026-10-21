@@ -178,9 +178,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 
             // If a new photo was uploaded and an old photo exists, delete the old file safely
             if ($shouldUpdatePhoto && $oldPhoto) {
-                $oldPath = __DIR__ . '/../assets/images/uploads/users/' . $oldPhoto;
-                if (file_exists($oldPath)) {
-                    unlink($oldPath);
+                $safeOldFilename = basename($oldPhoto);
+                $oldPath = __DIR__ . '/../assets/images/uploads/users/' . $safeOldFilename;
+                $targetReal = realpath($oldPath);
+                $uploadDirReal = realpath(__DIR__ . '/../assets/images/uploads/users');
+                if ($targetReal && $uploadDirReal && str_starts_with($targetReal, $uploadDirReal) && file_exists($targetReal)) {
+                    unlink($targetReal);
                 }
             }
 

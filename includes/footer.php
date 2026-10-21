@@ -102,11 +102,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function checkHash() {
-            if (window.location.hash === '#about') {
-                updateNavState('about');
-            } else if (window.location.hash === '' || window.location.hash === '#hero') {
-                if (window.scrollY < 300) {
-                    updateNavState('home');
+            if (window.location.pathname.endsWith('index.php') || window.location.pathname.endsWith('/')) {
+                if (window.location.hash === '#about') {
+                    updateNavState('about');
+                } else if (window.location.hash === '' || window.location.hash === '#hero') {
+                    if (window.scrollY < 300) {
+                        updateNavState('home');
+                    }
                 }
             }
         }
@@ -114,37 +116,23 @@ document.addEventListener('DOMContentLoaded', function () {
         checkHash();
         window.addEventListener('hashchange', checkHash);
 
-        aboutLink.addEventListener('click', function (e) {
-            e.preventDefault();
-            const navHeight = nav ? nav.offsetHeight : 70;
-            const targetPos = aboutSection.getBoundingClientRect().top + window.scrollY - navHeight;
-            updateNavState('about');
-            if (history.pushState) {
-                history.pushState(null, '', '#about');
-            } else {
-                window.location.hash = '#about';
-            }
-            window.scrollTo({
-                top: targetPos,
-                behavior: 'smooth'
-            });
-        });
-
         homeLink.addEventListener('click', function (e) {
-            e.preventDefault();
-            updateNavState('home');
-            if (history.pushState) {
-                history.pushState(null, '', window.location.pathname);
+            if (window.location.pathname.endsWith('index.php') || window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                updateNavState('home');
+                if (history.pushState) {
+                    history.pushState(null, '', window.location.pathname);
+                }
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
             }
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
         });
 
         let scrollTicking = false;
         window.addEventListener('scroll', function () {
-            if (!scrollTicking) {
+            if (!scrollTicking && (window.location.pathname.endsWith('index.php') || window.location.pathname.endsWith('/'))) {
                 window.requestAnimationFrame(function () {
                     const navHeight = nav ? nav.offsetHeight : 70;
                     const scrollY = window.scrollY;

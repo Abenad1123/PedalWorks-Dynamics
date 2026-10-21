@@ -166,7 +166,7 @@ include('../includes/header.php');
         <div class="d-flex flex-column gap-4">
             <?php foreach ($orders as $order): 
                 $saleId = (int)$order['productSaleID'];
-                $status = $order['orderStatus'] ?? 'Received';
+                $status = $order['orderStatus'] ?? 'Pending';
                 $isHighlighted = ($highlightOrderID === $saleId);
 
                 // Badge styling

@@ -26,7 +26,7 @@ try {
         ) ENGINE = InnoDB");
 
         @mysqli_query($conn, "ALTER TABLE `productSale` MODIFY COLUMN `status` 
-            ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Received'");
+            ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Pending'");
 
         @mysqli_query($conn, "CREATE OR REPLACE VIEW `vw_order_transaction_details` AS
             SELECT 

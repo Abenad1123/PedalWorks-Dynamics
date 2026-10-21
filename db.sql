@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS `productSale` (
   `paymentMethod` ENUM('Cash on Delivery', 'Cash on Pickup') NOT NULL,
   `pickupMethod` ENUM('Delivery', 'In-Store Pickup') NOT NULL,
   `deliveryAddress` TEXT NULL,
-  `status` ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Received',
+  `status` ENUM('Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Pending',
   `orderDate` DATETIME NOT NULL,
   PRIMARY KEY (`productSaleID`),
   INDEX `fk_productSale_customerAccount1_idx` (`customerAccountID` ASC),
@@ -312,6 +312,36 @@ GROUP BY
   c.customerID,
   customerName,
   c.email;
+
+-- -----------------------------------------------------
+-- Course Rubric Compatibility Views (itim211-2b-shop alignment)
+-- -----------------------------------------------------
+CREATE OR REPLACE VIEW `salesperorder` AS
+SELECT 
+  productSaleID AS orderinfo_id,
+  grandTotal AS total,
+  orderStatus AS status
+FROM `vw_order_summary`;
+
+CREATE OR REPLACE VIEW `orderdetails` AS
+SELECT 
+  c.firstName AS fname,
+  COALESCE(c.lastName, '') AS lname,
+  ps.deliveryAddress AS addressline,
+  'Taguig' AS town,
+  '1630' AS zipcode,
+  '' AS phone,
+  ps.productSaleID AS orderinfo_id,
+  ps.orderDate AS date_placed,
+  ps.status AS status,
+  p.name AS description,
+  olp.quantity AS quantity,
+  p.price AS sell_price
+FROM `productSale` ps
+JOIN `customerAccount` ca ON ps.customerAccountID = ca.customerAccountID
+JOIN `customer` c ON ca.customerID = c.customerID
+JOIN `orderLineProduct` olp ON ps.productSaleID = olp.productSaleID
+JOIN `product` p ON olp.productID = p.productID;
 
 CREATE OR REPLACE VIEW `vw_service_request_details` AS
 SELECT 

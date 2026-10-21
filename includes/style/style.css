@@ -2208,5 +2208,250 @@ a:hover {
     }
 }
 
+/* --------------------------------------------------------------------------
+   18. UI/UX Modernization Components (Canyon / Trek / REI Inspired)
+   -------------------------------------------------------------------------- */
+
+/* Checkout Stepper */
+.pw-checkout-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--pw-glass-border);
+    border-radius: var(--pw-radius-lg);
+}
+
+.pw-step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--pw-text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.pw-step-item.active {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.pw-step-item.completed {
+    color: var(--pw-trail-amber);
+}
+
+.pw-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pw-step-item.active .pw-step-num {
+    background: var(--pw-trail-amber);
+    color: #ffffff;
+    border-color: var(--pw-trail-amber);
+    box-shadow: 0 0 10px rgba(234, 88, 12, 0.5);
+}
+
+.pw-step-item.completed .pw-step-num {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.pw-step-divider {
+    flex-grow: 1;
+    max-width: 60px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.pw-step-divider.active {
+    background: var(--pw-trail-amber);
+}
+
+/* Fulfillment Trust Badges on Product Details */
+.pw-fulfillment-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--pw-glass-border);
+    border-radius: var(--pw-radius-md);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.pw-fulfillment-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pw-fulfillment-badge-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Service Turnaround & Inclusions */
+.pw-turnaround-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--pw-radius-pill);
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.pw-service-parts-disclaimer {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: var(--pw-radius-sm);
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--pw-text-muted);
+}
+
+/* Sizing Guide Table */
+.pw-sizing-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 1rem;
+}
+
+.pw-sizing-table th {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.pw-sizing-table td {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pw-sizing-table tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.pw-sizing-badge {
+    background: rgba(234, 88, 12, 0.15);
+    border: 1px solid rgba(234, 88, 12, 0.35);
+    color: var(--pw-trail-amber);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: var(--pw-font-mono);
+}
+
+/* ==========================================================================
+   Frontend UI Engineering Enhancements: Canyon & Trek Production Standards
+   ========================================================================== */
+
+/* Canyon/Trek Mobile Sticky Bottom Purchase Bar */
+.pw-sticky-cart-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    background: rgba(14, 19, 25, 0.94);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid var(--pw-glass-border-light);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.65);
+    padding: 0.75rem 1rem;
+    transform: translateY(120%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pw-sticky-cart-bar.visible {
+    transform: translateY(0);
+}
+
+.pw-sticky-cart-price {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--pw-trail-amber);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Mobile Filter Bottom-Sheet / Drawer */
+.pw-mobile-filter-drawer {
+    background: rgba(14, 19, 25, 0.98) !important;
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border-top: 1px solid var(--pw-glass-border-light) !important;
+    color: #ffffff;
+}
+
+.pw-mobile-filter-drawer .offcanvas-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Accessible Interactive Stepper & Focus States */
+.pw-stepper-btn:focus-visible,
+.pw-btn-trail:focus-visible,
+.pw-btn-glass:focus-visible,
+.pw-segmented-option input:focus-visible + .pw-segmented-box {
+    outline: 2px solid var(--pw-trail-bright) !important;
+    outline-offset: 2px !important;
+}
+
+/* Accessible High-Contrast Form Inputs & Tooltips */
+.pw-form-control:focus,
+.pw-form-select:focus {
+    border-color: var(--pw-trail-bright) !important;
+    box-shadow: 0 0 0 3px var(--pw-trail-glow) !important;
+    outline: none !important;
+}
+
+/* Inline Live Validation Cue */
+.pw-field-feedback {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    margin-top: 0.35rem;
+}
+
+.pw-field-feedback.invalid {
+    color: #f87171;
+}
+
+.pw-field-feedback.valid {
+    color: #4ade80;
+}
+
+
+
 
 
