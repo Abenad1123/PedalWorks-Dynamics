@@ -86,7 +86,7 @@ include('./includes/header.php');
                     </p>
 
                     <!-- Homepage Catalog Search Form (Quiz 3 Requirement) -->
-                    <form action="products.php" method="GET" class="pw-hero-search mb-4" style="max-width: 500px;">
+                    <form action="products.php" method="GET" class="pw-hero-search mb-4" style="max-width: 520px;">
                         <div class="input-group">
                             <span class="input-group-text pw-input-group-text" style="background: rgba(13, 18, 25, 0.85); border-color: rgba(255, 255, 255, 0.15);">
                                 <i class="fa-solid fa-magnifying-glass text-warning"></i>
@@ -101,6 +101,19 @@ include('./includes/header.php');
                         </div>
                     </form>
 
+                    <!-- Canyon/Trek Authentic Quick Specs Pill Bar -->
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 px-3 py-2 small fw-normal border border-white border-opacity-10">
+                            <i class="fa-solid fa-shield-halved text-success me-1"></i> Factory Calibrated
+                        </span>
+                        <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 px-3 py-2 small fw-normal border border-white border-opacity-10">
+                            <i class="fa-solid fa-store text-warning me-1"></i> Free Taguig Basecamp Pickup
+                        </span>
+                        <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 px-3 py-2 small fw-normal border border-white border-opacity-10">
+                            <i class="fa-solid fa-truck-fast text-primary me-1"></i> Courier COD Available
+                        </span>
+                    </div>
+
                     <div class="d-flex flex-wrap gap-3 pw-hero-actions">
                         <a href="#products" class="pw-btn-trail">
                             <i class="fa-solid fa-compass"></i> Explore Trail Catalog
@@ -112,7 +125,7 @@ include('./includes/header.php');
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="pw-hero-visual-card pw-tilt-card">
+                    <div class="pw-hero-visual-card">
                         <div class="pw-hero-image-wrapper">
                             <img src="assets/images/hero_banner.jpg" 
                                  alt="PedalWorks Dynamics Expedition Trail Rig" 
@@ -149,7 +162,7 @@ include('./includes/header.php');
         <div class="container">
             <div class="row g-4">
                 <div class="col-lg-3 col-sm-6">
-                    <div class="pw-feature-card pw-tilt-card">
+                    <div class="pw-feature-card">
                         <div class="pw-feature-icon">
                             <i class="fa-solid fa-mountain-sun"></i>
                         </div>
@@ -158,7 +171,7 @@ include('./includes/header.php');
                     </div>
                 </div>
                 <div class="col-lg-3 col-sm-6">
-                    <div class="pw-feature-card pw-tilt-card">
+                    <div class="pw-feature-card">
                         <div class="pw-feature-icon">
                             <i class="fa-solid fa-screwdriver-wrench"></i>
                         </div>
@@ -167,7 +180,7 @@ include('./includes/header.php');
                     </div>
                 </div>
                 <div class="col-lg-3 col-sm-6">
-                    <div class="pw-feature-card pw-tilt-card">
+                    <div class="pw-feature-card">
                         <div class="pw-feature-icon">
                             <i class="fa-solid fa-truck-fast"></i>
                         </div>
@@ -176,7 +189,7 @@ include('./includes/header.php');
                     </div>
                 </div>
                 <div class="col-lg-3 col-sm-6">
-                    <div class="pw-feature-card pw-tilt-card">
+                    <div class="pw-feature-card">
                         <div class="pw-feature-icon">
                             <i class="fa-solid fa-file-invoice-dollar"></i>
                         </div>
@@ -224,7 +237,7 @@ include('./includes/header.php');
                     $cImg = $categoryImages[$cName] ?? 'assets/images/categories/category_bikes.jpg';
                 ?>
                 <div class="col-lg-3 col-sm-6">
-                    <a href="products.php?category=<?php echo urlencode($cName); ?>" class="pw-category-card pw-tilt-card">
+                    <a href="products.php?category=<?php echo urlencode($cName); ?>" class="pw-category-card">
                         <div class="pw-category-img-wrapper">
                             <img src="<?php echo htmlspecialchars($cImg); ?>" alt="<?php echo htmlspecialchars($cName); ?>" class="pw-category-img" loading="lazy" decoding="async">
                             <div class="pw-category-overlay">
@@ -277,7 +290,7 @@ include('./includes/header.php');
                         $isOutOfStock = ($product['stock'] <= 0);
                 ?>
                 <div class="col-xl-3 col-lg-4 col-md-6 pw-product-item">
-                    <div class="pw-product-card pw-tilt-card">
+                    <div class="pw-product-card">
                         <div class="pw-product-img-box">
                             <span class="pw-category-tag"><?php echo htmlspecialchars($catName); ?></span>
                             <span class="pw-stock-indicator <?php echo $isOutOfStock ? 'text-danger' : ($isLowStock ? 'text-warning' : ''); ?>">
@@ -305,6 +318,12 @@ include('./includes/header.php');
                         </div>
 
                         <div class="pw-product-body">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-uppercase text-white-50" style="font-size: 0.68rem; letter-spacing: 0.06em; font-weight: 600;">Authentic Gear</span>
+                                <span class="badge rounded-pill bg-success bg-opacity-25 text-white border border-success border-opacity-25" style="font-size: 0.65rem; font-weight: 500;">
+                                    <i class="fa-solid fa-check me-1 text-success"></i>Certified
+                                </span>
+                            </div>
                             <h5 class="pw-product-title"><?php echo htmlspecialchars($product['name']); ?></h5>
                             <p class="pw-product-spec"><?php echo htmlspecialchars($product['description'] ?? ''); ?></p>
 
@@ -376,7 +395,7 @@ include('./includes/header.php');
                         $catName = $service['categoryName'] ?? 'Workshop';
                 ?>
                 <div class="col-lg-4 col-md-6">
-                    <div class="pw-service-card pw-tilt-card">
+                    <div class="pw-service-card">
                         <div class="pw-service-icon-box">
                             <i class="fa-solid fa-wrench"></i>
                         </div>
@@ -412,7 +431,7 @@ include('./includes/header.php');
 
     <section class="py-5 pw-scroll-section" id="workshop-basecamp">
         <div class="container">
-            <div class="pw-workshop-banner pw-tilt-card">
+            <div class="pw-workshop-banner">
                 <div class="row align-items-center g-4">
                     <div class="col-lg-8">
                         <div class="pw-section-eyebrow mb-3">

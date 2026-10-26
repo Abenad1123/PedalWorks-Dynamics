@@ -499,37 +499,38 @@
     }
 
     /* ==========================================================================
-       4. INTERACTIVE 3D MOUSE PARALLAX TILT (Native GPU Acceleration)
+       4. HERO DEPTH PARALLAX (Natural layered depth, zero jitter)
        ========================================================================== */
-    function initCardMouseTilt() {
-        const tiltCards = document.querySelectorAll('.pw-tilt-card, .pw-hero-visual-card');
+    function initHeroCardParallax() {
+        const heroCard = document.querySelector('.pw-hero-visual-card');
+        if (!heroCard) return;
 
-        tiltCards.forEach(card => {
-            let ticking = false;
+        const imageWrapper = heroCard.querySelector('.pw-hero-image-wrapper') || heroCard;
+        let ticking = false;
 
-            card.addEventListener('mousemove', (e) => {
-                if (ticking) return;
-                ticking = true;
+        heroCard.addEventListener('mousemove', (e) => {
+            if (ticking) return;
+            ticking = true;
 
-                requestAnimationFrame(() => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
+            requestAnimationFrame(() => {
+                const rect = heroCard.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
 
-                    const rotateX = -((y - centerY) / centerY) * 4;
-                    const rotateY = ((x - centerX) / centerX) * 4;
+                // Restrict tilt to max 2.5 degrees for authentic high-end feel
+                const rotateX = -((y - centerY) / centerY) * 2.5;
+                const rotateY = ((x - centerX) / centerX) * 2.5;
 
-                    card.style.transform = `perspective(800px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateZ(4px)`;
-                    ticking = false;
-                });
-            }, { passive: true });
-
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+                imageWrapper.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translate3d(0, -3px, 8px)`;
+                ticking = false;
             });
+        }, { passive: true });
+
+        heroCard.addEventListener('mouseleave', () => {
+            imageWrapper.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translate3d(0, 0, 0)';
         });
     }
 
@@ -629,7 +630,7 @@
         refreshLayoutMetrics();
         initHeroIntro();
         initScrollReveals();
-        initCardMouseTilt();
+        initHeroCardParallax();
         initFilterTransitions();
         initWaypointClicks();
 

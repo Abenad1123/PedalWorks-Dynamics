@@ -122,7 +122,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.16;
+    opacity: 0.07;
     z-index: 9;
     will-change: transform;
     pointer-events: none;
@@ -131,11 +131,11 @@
 /* Floating Expedition Compass Motif */
 .pw-parallax-compass {
     position: absolute;
-    width: 320px;
-    height: 320px;
+    width: 280px;
+    height: 280px;
     top: 35%;
-    right: -80px;
-    opacity: 0.08;
+    right: -60px;
+    opacity: 0.04;
     z-index: 9;
     will-change: transform;
     pointer-events: none;
@@ -365,17 +365,54 @@
 }
 
 /* --------------------------------------------------------------------------
-   7. Card Interactive Micro-Tilt & Specular Shimmer
+   7. Pro-Shop Card Elevation & Tactile Hover States
    -------------------------------------------------------------------------- */
-.pw-tilt-card {
-    transform-style: preserve-3d;
+.pw-feature-card,
+.pw-category-card,
+.pw-product-card,
+.pw-service-card,
+.pw-workshop-banner {
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.28s ease, 
+                background-color 0.28s ease;
+    will-change: transform, box-shadow;
+}
+
+.pw-feature-card:hover,
+.pw-category-card:hover,
+.pw-product-card:hover,
+.pw-service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(46, 107, 82, 0.22);
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+.pw-product-card .pw-product-img {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pw-product-card:hover .pw-product-img {
+    transform: scale(1.04);
+}
+
+/* Hero Visual Card: Subtle Specular Depth */
+.pw-hero-visual-card {
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
     will-change: transform;
-    backface-visibility: hidden;
-    transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+    border-radius: var(--pw-radius-lg, 18px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(209, 102, 41, 0.15);
+}
+
+/* Fallback for any legacy class */
+.pw-tilt-card {
+    will-change: transform;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .pw-tilt-card:hover {
-    box-shadow: var(--pw-glass-shadow-lg), 0 0 30px rgba(46, 95, 72, 0.35);
+    transform: translateY(-4px);
+    box-shadow: var(--pw-glass-shadow-lg);
 }
 
 /* Topographic elevation line animation */
