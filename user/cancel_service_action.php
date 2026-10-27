@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include('../includes/config.php');
 
-// Auth Guard
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['error'] = 'Please sign in to manage your workshop requests.';
     header('Location: ../login.php');
@@ -25,7 +24,6 @@ if ($customerServiceID <= 0 || !$conn) {
     exit;
 }
 
-// Ensure the request belongs to this customer and is still Pending
 $checkStmt = mysqli_prepare($conn, "SELECT customerServiceID, status FROM customerService WHERE customerServiceID = ? AND customerAccountID = ? LIMIT 1");
 if ($checkStmt) {
     mysqli_stmt_bind_param($checkStmt, 'ii', $customerServiceID, $customerAccountID);

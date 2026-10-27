@@ -1,21 +1,16 @@
 <?php
-/**
- * Admin Orders Management
- */
+
 session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
 
-// Access Control: Inventory Managers, Accounting Administrators, or Super Admin
 requireAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 
 $activeModule = 'orders';
 
-// Filters & Search
 $statusFilter = isset($_GET['status']) ? trim($_GET['status']) : 'all';
 $searchQuery  = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Base query using MySQL VIEW vw_order_summary (Unit 1 rubric)
 $sql = "SELECT * FROM `vw_order_summary`";
 $where = [];
 $params = [];
@@ -43,7 +38,6 @@ if (!empty($where)) {
 }
 $sql .= " ORDER BY productSaleID DESC";
 
-// Execute prepared statement
 $orders = [];
 $stmt = mysqli_prepare($conn, $sql);
 if ($stmt) {
@@ -60,7 +54,6 @@ if ($stmt) {
     mysqli_stmt_close($stmt);
 }
 
-// KPI Statistics
 $kpis = [
     'total'       => 0,
     'pending'     => 0,
@@ -97,12 +90,10 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
 </head>
 <body class="bg-light">
 
-    <!-- Top Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -110,7 +101,6 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
             </ol>
         </nav>
 
-        <!-- Header Section -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <div>
                 <h1 class="h3 fw-bold mb-1">Customer Orders &amp; Transactions</h1>
@@ -126,7 +116,6 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
             </div>
         </div>
 
-        <!-- Feedback Alert Messages -->
         <?php if (!empty($_SESSION['actionSuccess'])): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($_SESSION['actionSuccess']); ?>
@@ -143,7 +132,6 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
             <?php unset($_SESSION['actionError']); ?>
         <?php endif; ?>
 
-        <!-- KPI Metric Cards -->
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-xl-3">
                 <div class="pw-stat-card border-start border-primary border-4">
@@ -202,7 +190,6 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
             </div>
         </div>
 
-        <!-- Filter & Search Toolbar -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-3">
                 <form action="index.php" method="GET" class="row g-2 align-items-center">
@@ -235,7 +222,6 @@ if ($kpiRes && $kRow = mysqli_fetch_assoc($kpiRes)) {
             </div>
         </div>
 
-        <!-- Orders Table Card -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold fs-6">Orders Directory</h5>

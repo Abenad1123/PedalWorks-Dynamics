@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include('../includes/config.php');
 
-// Auth Guard: Customer Login Required (FR9 Requirement)
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['error'] = 'Please sign in to view your order history.';
     header('Location: ../login.php');
@@ -15,14 +14,13 @@ $customerAccountID = (int)$_SESSION['customerAccountID'];
 $orders = [];
 
 if ($conn) {
-    // Attempt querying MySQL VIEW vw_order_summary first (Unit 1 Rubric)
+
     $viewSql = "SELECT productSaleID, orderDate, orderStatus, paymentMethod, pickupMethod, deliveryAddress, totalDistinctItems, totalItemCount, grandTotal 
                 FROM vw_order_summary 
                 WHERE customerAccountID = ? 
                 ORDER BY orderDate DESC, productSaleID DESC";
     $stmt = @mysqli_prepare($conn, $viewSql);
 
-    // Fallback directly to tables if view is not yet defined
     if (!$stmt) {
         $tableSql = "SELECT ps.productSaleID, ps.orderDate, ps.status AS orderStatus, ps.paymentMethod, ps.pickupMethod, ps.deliveryAddress,
                             COUNT(olp.orderLineProductID) AS totalDistinctItems,
@@ -48,7 +46,6 @@ if ($conn) {
     }
 }
 
-// Fetch line items for each order using vw_order_transaction_details (or fallback)
 $orderItems = [];
 if (!empty($orders) && $conn) {
     foreach ($orders as $ord) {
@@ -81,7 +78,6 @@ if (!empty($orders) && $conn) {
         }
     }
 
-    // Fetch attached workshop labor requests (FR15)
     $attachedServices = [];
     $saleIds = array_map(function($o) { return (int)$o['productSaleID']; }, $orders);
     if (!empty($saleIds)) {
@@ -105,7 +101,7 @@ include('../includes/header.php');
 ?>
 
 <div class="container py-5">
-    <!-- Breadcrumb & Header -->
+
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
         <div>
             <nav aria-label="breadcrumb">
@@ -130,7 +126,6 @@ include('../includes/header.php');
         </a>
     </div>
 
-    <!-- Celebration Banner for newly placed order -->
     <?php if ($justPlaced && $highlightOrderID > 0): ?>
         <div class="alert alert-success pw-glass-alert d-flex align-items-center gap-3 p-4 mb-5 border-success border-opacity-25" role="alert">
             <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success text-white p-3 flex-shrink-0">
@@ -146,7 +141,7 @@ include('../includes/header.php');
     <?php endif; ?>
 
     <?php if (empty($orders)): ?>
-        <!-- Apple HIG Empty State -->
+
         <div class="pw-order-card text-center py-5 px-4 my-4">
             <div class="mb-3">
                 <div class="d-inline-flex align-items-center justify-content-center rounded-circle" 
@@ -169,7 +164,6 @@ include('../includes/header.php');
                 $status = $order['orderStatus'] ?? 'Pending';
                 $isHighlighted = ($highlightOrderID === $saleId);
 
-                // Badge styling
                 $badgeClass = 'pw-badge-status-received';
                 $badgeIcon  = 'fa-circle-dot';
                 if ($status === 'Pending') {
@@ -192,7 +186,7 @@ include('../includes/header.php');
                 $items = $orderItems[$saleId] ?? [];
             ?>
                 <div class="pw-order-card <?php echo $isHighlighted ? 'border-primary' : ''; ?>" style="<?php echo $isHighlighted ? 'box-shadow: 0 0 0 2px rgba(209, 102, 41, 0.5);' : ''; ?>">
-                    <!-- Order Card Header -->
+
                     <div class="p-4 border-bottom border-white border-opacity-10">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                             <div>
@@ -228,7 +222,6 @@ include('../includes/header.php');
                         </div>
                     </div>
 
-                    <!-- Order Fulfillment & Payment Metadata -->
                     <div class="pw-order-meta-bar">
                         <div class="row g-3 small">
                             <div class="col-md-4">
@@ -258,7 +251,6 @@ include('../includes/header.php');
                         </div>
                     </div>
 
-                    <!-- Itemized Order Lines -->
                     <div class="p-4">
                         <h6 class="text-uppercase small text-white-50 fw-semibold mb-3" style="letter-spacing: 0.05em;">Purchased Items</h6>
                         <div class="d-flex flex-column gap-3">

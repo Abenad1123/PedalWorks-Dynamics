@@ -16,12 +16,12 @@ if (isset($_SESSION['error'])) {
     unset($_SESSION['error']);
 }
 
-// Filter parameters
+ 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $categoryFilter = isset($_GET['category']) ? trim($_GET['category']) : '';
 $showArchived = isset($_GET['show_archived']) && $_GET['show_archived'] === '1';
 
-// Fetch service categories for dropdown
+ 
 $categories = [];
 if ($conn) {
     $catRes = mysqli_query($conn, "SELECT * FROM serviceCategory ORDER BY name ASC");
@@ -32,7 +32,7 @@ if ($conn) {
     }
 }
 
-// Query services
+ 
 $serviceList = [];
 $totalActiveServices = 0;
 $totalBookings = 0;
@@ -117,12 +117,12 @@ $activeModule = 'service';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
+    
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Breadcrumbs -->
+        
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -130,7 +130,7 @@ $activeModule = 'service';
             </ol>
         </nav>
 
-        <!-- Header Section -->
+        
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <div>
                 <h1 class="h3 fw-bold mb-1">
@@ -143,7 +143,7 @@ $activeModule = 'service';
             </a>
         </div>
 
-        <!-- System Alerts -->
+        
         <?php if ($successMessage !== ''): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($successMessage); ?>
@@ -158,7 +158,7 @@ $activeModule = 'service';
             </div>
         <?php endif; ?>
 
-        <!-- Stat KPI Cards -->
+        
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-md-4">
                 <div class="card border-0 shadow-sm h-100 border-start border-primary border-4">
@@ -189,7 +189,7 @@ $activeModule = 'service';
             </div>
         </div>
 
-        <!-- Filter & Search Card -->
+        
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <form method="get" action="index.php" class="row g-3 align-items-center">
@@ -231,7 +231,7 @@ $activeModule = 'service';
             </div>
         </div>
 
-        <!-- Service Directory Table Card -->
+        
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <span class="fw-semibold text-dark">

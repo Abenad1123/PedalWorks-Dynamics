@@ -65,12 +65,10 @@ $activeModule = 'admin';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>

@@ -1,20 +1,7 @@
-/* ==========================================================================
-   PedalWorks Dynamics — Established Mountain Parallax Scroll System
-   Multi-Layer Landscape Animation Powered by Anime.js
-   Scope: ONLY applies to index.php (Homepage)
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   1. Perspective & Wrapper
-   -------------------------------------------------------------------------- */
 .pw-homepage-wrapper {
     position: relative;
-    /* Clean container without perspective to ensure fixed children bind to viewport */
 }
 
-/* --------------------------------------------------------------------------
-   2. Multi-Layer Mountain Parallax Stage (Fixed to Viewport)
-   -------------------------------------------------------------------------- */
 .pw-mountain-parallax {
     position: fixed !important;
     top: 0;
@@ -29,7 +16,6 @@
     transform: translateZ(0);
 }
 
-/* Layer Base: Stacks all 7 mountain depth planes */
 .pw-mountain-layer {
     position: absolute;
     bottom: -15%;
@@ -45,7 +31,6 @@
     transform-origin: center bottom;
 }
 
-/* Specific Layer Stacking & Initial Appearance */
 .pw-mountain-layer-0 {
     z-index: 1;
     top: 0;
@@ -84,7 +69,6 @@
     z-index: 7;
 }
 
-/* Atmospheric Mountain Mist Layers for Natural Cinematic Depth */
 .pw-mountain-mist {
     position: absolute;
     inset: 0;
@@ -104,18 +88,16 @@
     opacity: 0.9;
 }
 
-/* Adventure Atmospheric Tint & Readability Overlay for Glassmorphism */
 .pw-mountain-tint {
     position: absolute;
     inset: 0;
     z-index: 8;
-    background: 
+    background:
         radial-gradient(circle at 50% 25%, rgba(209, 102, 41, 0.22) 0%, transparent 55%),
         linear-gradient(180deg, rgba(7, 18, 13, 0.45) 0%, rgba(9, 24, 17, 0.35) 45%, rgba(5, 13, 9, 0.88) 100%);
     pointer-events: none;
 }
 
-/* Topographic Trail Elevation Curves Overlay */
 .pw-parallax-contours {
     position: absolute;
     top: 0;
@@ -128,7 +110,6 @@
     pointer-events: none;
 }
 
-/* Floating Expedition Compass Motif */
 .pw-parallax-compass {
     position: absolute;
     width: 280px;
@@ -141,9 +122,6 @@
     pointer-events: none;
 }
 
-/* --------------------------------------------------------------------------
-   3. Content Elevation & Layering
-   -------------------------------------------------------------------------- */
 .pw-hero-section,
 .pw-section,
 .pw-features-section,
@@ -152,9 +130,6 @@
     z-index: 10;
 }
 
-/* --------------------------------------------------------------------------
-   4. Floating Trail Waypoint Progress Rail (Fixed on Desktop & Laptop)
-   -------------------------------------------------------------------------- */
 .pw-trail-progress-rail {
     position: fixed !important;
     right: 1.5rem;
@@ -194,7 +169,6 @@
     user-select: none;
 }
 
-/* Meter Container with Track and Dots */
 .pw-trail-meter {
     position: relative;
     width: 24px;
@@ -288,9 +262,6 @@
     transform: translateY(-50%) translateX(0);
 }
 
-/* --------------------------------------------------------------------------
-   5. Hero Scroll Cue (Prompting the User to Descend the Trail)
-   -------------------------------------------------------------------------- */
 .pw-scroll-cue {
     position: absolute;
     bottom: 1.5rem;
@@ -341,9 +312,6 @@
     100% { transform: translateY(0); opacity: 1; }
 }
 
-/* --------------------------------------------------------------------------
-   6. Animation Initial States (Applied smoothly when JS initializes)
-   -------------------------------------------------------------------------- */
 .pw-anim-ready .pw-hero-title,
 .pw-anim-ready .pw-hero-desc,
 .pw-anim-ready .pw-hero-actions,
@@ -364,17 +332,14 @@
     transform: translateY(35px);
 }
 
-/* --------------------------------------------------------------------------
-   7. Pro-Shop Card Elevation & Tactile Hover States
-   -------------------------------------------------------------------------- */
 .pw-feature-card,
 .pw-category-card,
 .pw-product-card,
 .pw-service-card,
 .pw-workshop-banner {
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
-                box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
-                border-color 0.28s ease, 
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.28s ease,
                 background-color 0.28s ease;
     will-change: transform, box-shadow;
 }
@@ -396,7 +361,6 @@
     transform: scale(1.04);
 }
 
-/* Hero Visual Card: Subtle Specular Depth */
 .pw-hero-visual-card {
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
     will-change: transform;
@@ -404,7 +368,6 @@
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(209, 102, 41, 0.15);
 }
 
-/* Fallback for any legacy class */
 .pw-tilt-card {
     will-change: transform;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -415,7 +378,6 @@
     box-shadow: var(--pw-glass-shadow-lg);
 }
 
-/* Topographic elevation line animation */
 .pw-topo-path {
     stroke-dasharray: 600;
     stroke-dashoffset: 600;
@@ -426,7 +388,6 @@
     stroke-dashoffset: 0;
 }
 
-/* Pulse animation on waypoint icons */
 .pw-pulse-ring {
     position: absolute;
     inset: -6px;
@@ -443,9 +404,6 @@
     100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* --------------------------------------------------------------------------
-   8. Responsive Adjustments & Reduced Motion
-   -------------------------------------------------------------------------- */
 @media (max-width: 991.98px) {
     .pw-trail-progress-rail {
         display: none !important;
@@ -461,7 +419,6 @@
     }
 }
 
-/* Accessibility: Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
     .pw-mountain-parallax,
     .pw-mountain-layer,

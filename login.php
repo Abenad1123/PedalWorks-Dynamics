@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $identifier = trim($_POST['identifier'] ?? $_POST['username'] ?? '');
     $password   = trim($_POST['password'] ?? '');
 
-    // Server-side validation
     if ($identifier === '') {
         $fieldErrors['identifier'] = 'Email address or username is required.';
         $errors[] = 'Email address or username is required.';
@@ -30,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$conn) {
             $errors[] = 'Database is offline. Please ensure MySQL is running in XAMPP.';
         } else {
-            // 1. Query Admin account (allows username or future email)
+
             $adminSql = "SELECT adminAccountID, username, password, role FROM adminAccount WHERE username = ? LIMIT 1";
             $adminStmt = mysqli_prepare($conn, $adminSql);
             mysqli_stmt_bind_param($adminStmt, 's', $identifier);
@@ -51,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            // 2. Query Customer account by Email OR Username
             $custSql = "SELECT ca.customerAccountID, ca.customerID, ca.username, ca.password, ca.status, 
                                c.firstName, c.lastName, c.email, c.photo 
                         FROM customerAccount ca 
@@ -128,7 +126,6 @@ include('./includes/header.php');
                 </div>
             <?php endif; ?>
 
-            <!-- Login Form -->
             <form action="login.php" method="POST" autocomplete="on" novalidate>
                 <div class="mb-3">
                     <label for="identifier" class="form-label text-white-50 small fw-semibold">

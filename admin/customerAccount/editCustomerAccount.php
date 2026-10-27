@@ -17,7 +17,6 @@ if ($editID <= 0) {
     exit;
 }
 
-// Handle Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_customer'])) {
     $firstName = trim($_POST['firstName'] ?? '');
     $lastName  = trim($_POST['lastName'] ?? '');
@@ -99,7 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_customer'])) {
     }
 }
 
-// Load current record
 $customer = null;
 if ($conn) {
     $selStmt = mysqli_prepare($conn, "SELECT c.*, ca.customerAccountID, ca.username, ca.status 
@@ -131,12 +129,10 @@ $activeModule = 'customer';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>

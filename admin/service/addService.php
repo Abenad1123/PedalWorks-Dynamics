@@ -7,7 +7,6 @@ requireAdminRole(['Service & Repair Manager']);
 $errors = [];
 $fieldErrors = [];
 
-// Fetch service categories
 $categories = [];
 if ($conn) {
     $catRes = mysqli_query($conn, "SELECT serviceCategoryID, name FROM serviceCategory ORDER BY name ASC");
@@ -18,7 +17,6 @@ if ($conn) {
     }
 }
 
-// Fetch existing image assets
 $existingImages = [];
 $assetsDir = __DIR__ . '/../../assets/images';
 if (is_dir($assetsDir)) {
@@ -45,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
     $description = trim($rawDescription);
     $imagePath   = trim($rawImageSelect);
 
-    // 1. SKU validation
     if ($sku === '') {
         $fieldErrors['sku'] = 'Service SKU is required.';
         $errors[] = 'Service SKU is required.';
@@ -57,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         $errors[] = 'SKU length must be between 3 and 30 characters.';
     }
 
-    // 2. Name validation
     if ($name === '') {
         $fieldErrors['name'] = 'Service Package Title is required.';
         $errors[] = 'Service Package Title is required.';
@@ -69,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         $errors[] = 'Service Name cannot exceed 100 characters.';
     }
 
-    // 3. Category validation
     if ($rawCategoryID === '' || $categoryID <= 0) {
         $fieldErrors['serviceCategoryID'] = 'Please select a valid service category.';
         $errors[] = 'Please select a valid service category.';
@@ -85,7 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         mysqli_stmt_close($chkCat);
     }
 
-    // 4. Labor Fee / Price validation
     if (trim($rawPrice) === '') {
         $fieldErrors['price'] = 'Standard Labor Fee is required.';
         $errors[] = 'Standard Labor Fee is required.';
@@ -99,7 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         $price = round((float)$rawPrice, 2);
     }
 
-    // 5. Check SKU uniqueness among active services
     if (!isset($fieldErrors['sku']) && $conn) {
         $chkStmt = mysqli_prepare($conn, "SELECT serviceID FROM service WHERE sku = ? AND endDate IS NULL LIMIT 1");
         mysqli_stmt_bind_param($chkStmt, 's', $sku);
@@ -112,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         mysqli_stmt_close($chkStmt);
     }
 
-    // Handle Image Upload if provided
     if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
         $fileTmp = $_FILES['image_file']['tmp_name'];
         $fileName = $_FILES['image_file']['name'];
@@ -141,7 +133,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         }
     }
 
-    // Insert Service
     if (empty($errors) && $conn) {
         $insStmt = mysqli_prepare($conn, "INSERT INTO service (sku, name, image, description, price, serviceCategoryID, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, NOW(), NULL)");
         mysqli_stmt_bind_param($insStmt, 'ssssdi', $sku, $name, $imagePath, $description, $price, $categoryID);
@@ -149,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
         if (mysqli_stmt_execute($insStmt)) {
             $newServiceID = mysqli_insert_id($conn);
 
-            // Record primary image in serviceImage table
             if (!empty($imagePath)) {
                 $siStmt = mysqli_prepare($conn, "INSERT INTO serviceImage (serviceID, imagePath, isPrimary) VALUES (?, ?, 1)");
                 if ($siStmt) {
@@ -159,7 +149,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_service'])) {
                 }
             }
 
-            // Handle additional gallery photos upload
             if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
                 $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
                 if (!is_dir($uploadTargetDir)) {
@@ -214,12 +203,10 @@ $activeModule = 'service';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4" style="max-width: 900px;">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -228,7 +215,6 @@ $activeModule = 'service';
             </ol>
         </nav>
 
-        <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 fw-bold mb-1">
@@ -241,7 +227,6 @@ $activeModule = 'service';
             </a>
         </div>
 
-        <!-- Validation Errors -->
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                 <h6 class="alert-heading fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Please resolve the following issues:</h6>
@@ -254,7 +239,6 @@ $activeModule = 'service';
             </div>
         <?php endif; ?>
 
-        <!-- Form Card -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3">
                 <span class="fw-semibold text-dark">
@@ -262,9 +246,9 @@ $activeModule = 'service';
                 </span>
             </div>
             <div class="card-body p-4">
-                <!-- Service Form -->
+
                 <form action="addService.php" method="post" enctype="multipart/form-data" novalidate>
-                    
+
                     <div class="row g-3 mb-3">
                         <div class="col-md-5">
                             <label for="sku" class="form-label small fw-semibold text-muted">Service SKU <span class="text-danger">*</span></label>
@@ -329,7 +313,6 @@ $activeModule = 'service';
                         <textarea id="description" name="description" class="form-control" rows="4" placeholder="Detail the inspection points, cleaning procedure, adjustments, lubrication, and parts included in this service package..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
                     </div>
 
-                    <!-- Image Media Box -->
                     <div class="card bg-light border mb-4">
                         <div class="card-body">
                             <h6 class="fw-semibold text-dark mb-3">
@@ -357,7 +340,6 @@ $activeModule = 'service';
 
                             <hr class="my-3 text-secondary opacity-25">
 
-                            <!-- Gallery Photos Upload -->
                             <div>
                                 <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
                                     <i class="fa-solid fa-images text-info"></i>
@@ -371,7 +353,6 @@ $activeModule = 'service';
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="d-flex justify-content-end gap-2">
                         <a href="index.php" class="btn btn-secondary">
                             <i class="fa-solid fa-xmark me-1"></i>Cancel

@@ -6,7 +6,6 @@ if (session_status() === PHP_SESSION_NONE) {
 include('includes/config.php');
 include('includes/profanity_filter.php');
 
-// Auth Guard: Only logged-in customers can submit or edit reviews
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['error'] = 'Please sign in to share or edit your gear review.';
     header('Location: login.php');
@@ -26,7 +25,6 @@ $reviewID   = !empty($_POST['reviewID']) ? (int)$_POST['reviewID'] : 0;
 $rating     = isset($_POST['rating']) ? (int)$_POST['rating'] : 5;
 $reviewText = isset($_POST['reviewText']) ? trim($_POST['reviewText']) : '';
 
-// Determine redirect destination
 $redirect = 'products.php';
 if ($productID !== null && $productID > 0) {
     $redirect = 'product_details.php?id=' . $productID . '#reviews';
@@ -40,7 +38,6 @@ if (!$conn) {
     exit;
 }
 
-// 1. Validation (Server-side validation)
 $fieldErrors = [];
 if ($rating < 1 || $rating > 5) {
     $fieldErrors[] = 'Please provide a valid rating between 1 and 5 stars.';
@@ -59,11 +56,10 @@ if (!empty($fieldErrors)) {
     exit;
 }
 
-// 2. Verified Customer Check (Ensure customer has purchased or availed the item)
 $isVerified = false;
 
 if ($productID !== null && $productID > 0) {
-    // Check if customer purchased this product
+
     $vpSql = "SELECT COUNT(*) AS c 
               FROM productSale ps 
               JOIN orderLineProduct olp ON ps.productSaleID = olp.productSaleID 
@@ -79,7 +75,7 @@ if ($productID !== null && $productID > 0) {
         mysqli_stmt_close($vpStmt);
     }
 } elseif ($serviceID !== null && $serviceID > 0) {
-    // Check if customer availed this service
+
     $vsSql = "SELECT COUNT(*) AS c 
               FROM customerService 
               WHERE customerAccountID = ? AND serviceID = ?";
@@ -101,12 +97,10 @@ if (!$isVerified) {
     exit;
 }
 
-// 3. Mask inappropriate words via regex
 $cleanText = maskProfanity($reviewText);
 
-// 4. Handle Create or Update
 if ($action === 'update' && $reviewID > 0) {
-    // Ensure review exists and belongs to the current user
+
     $chkStmt = mysqli_prepare($conn, "SELECT reviewID FROM review WHERE reviewID = ? AND customerAccountID = ? LIMIT 1");
     mysqli_stmt_bind_param($chkStmt, 'ii', $reviewID, $customerAccountID);
     mysqli_stmt_execute($chkStmt);
@@ -142,8 +136,7 @@ if ($action === 'update' && $reviewID > 0) {
         mysqli_stmt_close($dStmt);
     }
 } else {
-    // Create new review
-    // Check if user already reviewed this item; if so, update instead or notify
+
     $dupSql = "SELECT reviewID FROM review WHERE customerAccountID = ? AND " . 
               ($productID !== null ? "productID = ?" : "serviceID = ?") . " LIMIT 1";
     $dupStmt = mysqli_prepare($conn, $dupSql);
@@ -155,7 +148,7 @@ if ($action === 'update' && $reviewID > 0) {
     mysqli_stmt_close($dupStmt);
 
     if ($dupRow) {
-        // Automatically update the user's existing review
+
         $existID = (int)$dupRow['reviewID'];
         $uStmt = mysqli_prepare($conn, "UPDATE review SET rating = ?, reviewText = ?, cleanText = ?, updatedAt = NOW() WHERE reviewID = ?");
         mysqli_stmt_bind_param($uStmt, 'issi', $rating, $reviewText, $cleanText, $existID);
@@ -166,7 +159,7 @@ if ($action === 'update' && $reviewID > 0) {
         }
         mysqli_stmt_close($uStmt);
     } else {
-        // Insert new review record
+
         $insSql = "INSERT INTO review (customerAccountID, productID, serviceID, rating, reviewText, cleanText, createdAt) 
                    VALUES (?, ?, ?, ?, ?, ?, NOW())";
         $insStmt = mysqli_prepare($conn, $insSql);

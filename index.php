@@ -16,7 +16,7 @@ include('./includes/header.php');
     <div class="pw-mountain-mist pw-mountain-mist-near"></div>
     <div class="pw-mountain-layer pw-mountain-layer-5" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_5.png');"></div>
     <div class="pw-mountain-layer pw-mountain-layer-6" style="background-image: url('/project/PedalWorks-Dynamics/includes/images/mountain/layer_6.png');"></div>
-    
+
     <div class="pw-mountain-tint"></div>
 
     <svg class="pw-parallax-contours" viewBox="0 0 1200 800" fill="none" preserveAspectRatio="xMidYMid slice">
@@ -85,7 +85,6 @@ include('./includes/header.php');
                         Explore high-performance bicycles, expedition components, attachments, and certified safety gear. From rugged mountain descents to daily city rides, our Taguig workshop keeps your journey running smoothly.
                     </p>
 
-                    <!-- Homepage Catalog Search Form (Quiz 3 Requirement) -->
                     <form action="products.php" method="GET" class="pw-hero-search mb-4" style="max-width: 520px;">
                         <div class="input-group">
                             <span class="input-group-text pw-input-group-text" style="background: rgba(13, 18, 25, 0.85); border-color: rgba(255, 255, 255, 0.15);">
@@ -101,7 +100,6 @@ include('./includes/header.php');
                         </div>
                     </form>
 
-                    <!-- Canyon/Trek Authentic Quick Specs Pill Bar -->
                     <div class="d-flex flex-wrap gap-2 mb-4">
                         <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 px-3 py-2 small fw-normal border border-white border-opacity-10">
                             <i class="fa-solid fa-shield-halved text-success me-1"></i> Factory Calibrated
@@ -305,7 +303,7 @@ include('./includes/header.php');
                                 }
                                 ?>
                             </span>
-                            
+
                             <?php if (!empty($product['image']) && file_exists(__DIR__ . '/' . $product['image'])): ?>
                                 <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="pw-product-img" loading="lazy" decoding="async">
                             <?php else: ?>
@@ -395,7 +393,7 @@ include('./includes/header.php');
                         $catName = $service['categoryName'] ?? 'Workshop';
                 ?>
                 <div class="col-lg-4 col-md-6">
-                    <div class="pw-service-card">
+                    <a href="services.php?service_id=<?php echo (int)$service['serviceID']; ?>" class="pw-service-card text-decoration-none">
                         <div class="pw-service-icon-box">
                             <i class="fa-solid fa-wrench"></i>
                         </div>
@@ -411,7 +409,7 @@ include('./includes/header.php');
                                 <i class="fa-solid fa-tag me-1"></i><?php echo htmlspecialchars($catName); ?>
                             </span>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 <?php 
                     endforeach;

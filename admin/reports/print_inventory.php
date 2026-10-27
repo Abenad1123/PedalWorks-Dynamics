@@ -3,7 +3,6 @@ session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
 
-// Access Control: Inventory Manager, Accounting Administrator, or Super Administrator (FR20)
 requireAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 
 $products = [];
@@ -112,7 +111,6 @@ if ($conn) {
 </head>
 <body>
 
-    <!-- Non-Print Floating Toolbar -->
     <div class="no-print bg-dark text-white py-2 sticky-top shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="small">
@@ -131,7 +129,7 @@ if ($conn) {
     </div>
 
     <div class="print-container">
-        <!-- Letterhead Header -->
+
         <div class="report-header d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="fw-bold mb-0 text-dark">PedalWorks Dynamics</h2>
@@ -144,7 +142,6 @@ if ($conn) {
             </div>
         </div>
 
-        <!-- Metadata & Summary Grid -->
         <div class="row g-2 mb-3 p-3 bg-light rounded border">
             <div class="col-sm-3">
                 <span class="text-muted small d-block">Audit Date:</span>
@@ -164,7 +161,6 @@ if ($conn) {
             </div>
         </div>
 
-        <!-- Stock Health Alert Bar -->
         <div class="d-flex justify-content-between align-items-center mb-3 small text-muted">
             <span>
                 Stock Status: 
@@ -175,7 +171,6 @@ if ($conn) {
             <span>Audited By: <strong><?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></strong></span>
         </div>
 
-        <!-- Inventory Table -->
         <table class="table table-bordered table-inventory mb-4">
             <thead class="table-light">
                 <tr class="small text-uppercase">
@@ -236,7 +231,6 @@ if ($conn) {
             </tfoot>
         </table>
 
-        <!-- Signatures Section -->
         <div class="row pt-3 mt-4">
             <div class="col-6">
                 <div class="signature-line">

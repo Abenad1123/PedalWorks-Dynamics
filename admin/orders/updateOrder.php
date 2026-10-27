@@ -11,7 +11,6 @@ require '../../PHPMailer/src/PHPMailer.php';
 require '../../PHPMailer/src/SMTP.php';
 require '../../includes/fpdf/fpdf.php';
 
-// Access Control
 requireAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -36,7 +35,6 @@ if (!in_array($status, $validStatuses, true)) {
     exit;
 }
 
-// Check previous status for inventory synchronization
 $prevStatus = '';
 $chkStmt = mysqli_prepare($conn, "SELECT status FROM productSale WHERE productSaleID = ? LIMIT 1");
 if ($chkStmt) {
@@ -49,7 +47,6 @@ if ($chkStmt) {
     mysqli_stmt_close($chkStmt);
 }
 
-// 1. Update status using Prepared Statements
 $sql = "UPDATE productSale SET status = ? WHERE productSaleID = ?";
 $stmt = mysqli_prepare($conn, $sql);
 if (!$stmt) {
@@ -67,7 +64,6 @@ if (!$executed) {
     exit;
 }
 
-// 2. Fetch order & customer info using Prepared Statements
 $stmt = mysqli_prepare($conn, "SELECT 
         ps.productSaleID,
         ps.orderDate,
@@ -87,7 +83,6 @@ mysqli_stmt_execute($stmt);
 $order = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 mysqli_stmt_close($stmt);
 
-// 3. Fetch line items using Prepared Statements
 $items = [];
 $stmt = mysqli_prepare($conn, "SELECT 
         olp.productID,
@@ -106,7 +101,6 @@ while ($row = mysqli_fetch_assoc($res)) {
 }
 mysqli_stmt_close($stmt);
 
-// 4. Inventory synchronization: restore stock if cancelled, deduct if uncancelled
 if ($prevStatus !== 'Cancelled' && $status === 'Cancelled') {
     $stockStmt = mysqli_prepare($conn, "UPDATE product SET stock = stock + ? WHERE productID = ?");
     if ($stockStmt) {
@@ -131,7 +125,6 @@ if ($prevStatus !== 'Cancelled' && $status === 'Cancelled') {
     }
 }
 
-// Fetch linked workshop services if any
 $services = [];
 $stmt = mysqli_prepare($conn, "SELECT 
         s.name AS serviceName,
@@ -147,7 +140,6 @@ while ($sRow = mysqli_fetch_assoc($sRes)) {
 }
 mysqli_stmt_close($stmt);
 
-// Calculate totals
 $grandTotal = 0;
 foreach ($items as $it) {
     $grandTotal += (float)$it['subtotal'];
@@ -156,7 +148,6 @@ foreach ($services as $srv) {
     $grandTotal += (float)$srv['price'];
 }
 
-// 4. Generate PDF receipt using FPDF
 $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
@@ -170,7 +161,6 @@ $pdf->Cell(0, 6, 'Customer: ' . ($order['customerName'] ?? 'Valued Customer') . 
 $pdf->Cell(0, 6, 'Payment: ' . ($order['paymentMethod'] ?? 'N/A') . ' | Fulfillment: ' . ($order['pickupMethod'] ?? 'N/A'), 0, 1);
 $pdf->Ln(4);
 
-// Header Table
 $pdf->SetFillColor(230, 230, 230);
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell(95, 8, 'Item Description', 1, 0, 'L', true);
@@ -178,7 +168,6 @@ $pdf->Cell(25, 8, 'Qty', 1, 0, 'C', true);
 $pdf->Cell(35, 8, 'Unit Price', 1, 0, 'R', true);
 $pdf->Cell(35, 8, 'Subtotal', 1, 1, 'R', true);
 
-// Rows
 $pdf->SetFont('Arial', '', 10);
 foreach ($items as $it) {
     $pdf->Cell(95, 7, ' ' . substr($it['productName'], 0, 45), 1, 0, 'L');
@@ -199,10 +188,9 @@ $pdf->Cell(35, 8, 'PHP ' . number_format($grandTotal, 2), 1, 1, 'R');
 
 $pdfContent = $pdf->Output('S');
 
-// 5. Send notification email with attached receipt via SMTP
 $mail = new PHPMailer();
 try {
-    // Server settings
+
     $mail->isSMTP();
     $mail->Host       = 'sandbox.smtp.mailtrap.io';
     $mail->SMTPAuth   = true;
@@ -210,12 +198,10 @@ try {
     $mail->Username   = '312649aee7d340';
     $mail->Password   = '7bec3dc61ba28b';
 
-    // Recipients
     $mail->setFrom('orders@pedalworks.com', 'PedalWorks Dynamics');
     $customerEmail = !empty($order['customerEmail']) ? $order['customerEmail'] : 'customer@example.com';
     $mail->addAddress($customerEmail, $order['customerName'] ?? 'Customer');
 
-    // Build line items list HTML
     $itemsHtml = '';
     foreach ($items as $it) {
         $itemsHtml .= "<tr>
@@ -234,7 +220,6 @@ try {
         </tr>";
     }
 
-    // Content
     $mail->isHTML(true);
     $mail->Subject = "Order #PW-ORD-{$orderId} Status Updated to {$status}";
     $mail->Body    = "<h3>Hello " . htmlspecialchars($order['customerName'] ?? 'Customer') . ",</h3>
@@ -262,7 +247,6 @@ try {
 
     $mail->AltBody = "Hello " . ($order['customerName'] ?? 'Customer') . ",\nYour order #PW-ORD-{$orderId} status has been updated to {$status}.\nGrand Total: PHP " . number_format($grandTotal, 2) . "\nReceipt PDF is attached.";
 
-    // Attach PDF receipt
     $mail->addStringAttachment($pdfContent, "receipt_order_{$orderId}.pdf");
 
     $mail->send();

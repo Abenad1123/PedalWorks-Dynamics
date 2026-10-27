@@ -21,7 +21,6 @@ if (!$conn) {
     exit;
 }
 
-// Find customerAccountID for this customer
 $accStmt = mysqli_prepare($conn, "SELECT customerAccountID FROM customerAccount WHERE customerID = ? LIMIT 1");
 mysqli_stmt_bind_param($accStmt, 'i', $deleteID);
 mysqli_stmt_execute($accStmt);
@@ -31,7 +30,6 @@ mysqli_stmt_close($accStmt);
 
 $customerAccountID = $accRow ? (int)$accRow['customerAccountID'] : 0;
 
-// Check if customer has dependent orders or service requests
 $hasOrders = false;
 $hasServices = false;
 

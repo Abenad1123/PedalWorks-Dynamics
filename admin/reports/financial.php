@@ -3,17 +3,14 @@ session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
 
-// Access Control: Accounting Administrator or Super Administrator (FR18 & FR19)
 requireAdminRole(['Accounting Administrator', 'Super Administrator']);
 
 $activeModule = 'reports';
 
-// Date Range Filtering
 $preset = isset($_GET['preset']) ? trim($_GET['preset']) : 'month';
 $startDate = isset($_GET['start_date']) ? trim($_GET['start_date']) : '';
 $endDate   = isset($_GET['end_date']) ? trim($_GET['end_date']) : '';
 
-// Calculate start and end date boundaries based on preset
 $today = date('Y-m-d');
 switch ($preset) {
     case 'today':
@@ -54,9 +51,6 @@ switch ($preset) {
         break;
 }
 
-// -------------------------------------------------------------------------
-// FR18: SALES INCOME TRACKING (Completed Orders & Completed Services)
-// -------------------------------------------------------------------------
 $incomeMetrics = [
     'product_sales'    => 0.0,
     'completed_orders' => 0,
@@ -70,7 +64,7 @@ $completedOrdersList = [];
 $completedServicesList = [];
 
 if ($conn) {
-    // 1. Product Sales Income (Completed orders only)
+
     $prodSql = "SELECT ps.productSaleID, ps.orderDate, ps.pickupMethod, ps.paymentMethod,
                        CONCAT(c.firstName, IF(c.lastName IS NOT NULL AND c.lastName <> '', CONCAT(' ', c.lastName), '')) as customerName,
                        COALESCE(SUM(olp.quantity), 0) as totalItems,
@@ -97,7 +91,6 @@ if ($conn) {
         mysqli_stmt_close($pStmt);
     }
 
-    // 2. Repair Services Income (Completed services only)
     $servSql = "SELECT cs.customerServiceID, cs.requestDate, cs.scheduledDate, s.name as serviceName, s.price as laborPrice,
                        sc.name as categoryName,
                        CONCAT(c.firstName, IF(c.lastName IS NOT NULL AND c.lastName <> '', CONCAT(' ', c.lastName), '')) as customerName,
@@ -127,9 +120,6 @@ if ($conn) {
     $incomeMetrics['gross_income'] = $incomeMetrics['product_sales'] + $incomeMetrics['service_labor'];
 }
 
-// -------------------------------------------------------------------------
-// FR19: EXPENSE REPORTING & NET PROFIT/LOSS CALCULATION
-// -------------------------------------------------------------------------
 $expenseMetrics = [
     'total_expense' => 0.0,
     'by_category'   => [
@@ -168,19 +158,16 @@ if ($conn) {
     }
 }
 
-// Net Operating Income / Profit
 $netIncome = $incomeMetrics['gross_income'] - $expenseMetrics['total_expense'];
 $profitMargin = ($incomeMetrics['gross_income'] > 0) ? ($netIncome / $incomeMetrics['gross_income']) * 100 : 0.0;
 
-// Monthly Breakdown for Financial Trend Chart
 $monthlyTrend = [];
 if ($conn) {
-    // Generate months between startDate and endDate (up to 12 months for chart readability)
+
     $cursor = new DateTime($startDate);
     $endCursor = new DateTime($endDate);
     $endCursor->modify('last day of this month');
-    
-    // Safety cap: max 12 data points
+
     $iter = 0;
     while ($cursor <= $endCursor && $iter < 12) {
         $mKey = $cursor->format('Y-m');
@@ -194,7 +181,6 @@ if ($conn) {
         $iter++;
     }
 
-    // Populate Product Sales per month
     $mProdSql = "SELECT DATE_FORMAT(ps.orderDate, '%Y-%m') as mKey, COALESCE(SUM(olp.quantity * p.price), 0.0) as rev
                  FROM productSale ps
                  JOIN orderLineProduct olp ON ps.productSaleID = olp.productSaleID
@@ -214,7 +200,6 @@ if ($conn) {
         mysqli_stmt_close($mStmt);
     }
 
-    // Populate Workshop Labor per month
     $mServSql = "SELECT DATE_FORMAT(COALESCE(cs.scheduledDate, cs.requestDate), '%Y-%m') as mKey, COALESCE(SUM(s.price), 0.0) as rev
                  FROM customerService cs
                  JOIN service s ON cs.serviceID = s.serviceID
@@ -233,7 +218,6 @@ if ($conn) {
         mysqli_stmt_close($mSStmt);
     }
 
-    // Populate Expenses per month
     $mExpSql = "SELECT DATE_FORMAT(expenseDate, '%Y-%m') as mKey, COALESCE(SUM(amount), 0.0) as exp
                 FROM expense
                 WHERE expenseDate BETWEEN ? AND ?
@@ -272,7 +256,6 @@ if ($conn) {
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Page Header -->
         <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-4 border-bottom gap-3">
             <div>
                 <nav aria-label="breadcrumb">
@@ -287,7 +270,7 @@ if ($conn) {
                 <p class="text-muted small mb-0">Automated revenue logging and summary report of total income versus expenses.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <!-- Printable Reports Buttons -->
+
                 <a href="print_financial.php?preset=<?php echo urlencode($preset); ?>&start_date=<?php echo urlencode(substr($startDate, 0, 10)); ?>&end_date=<?php echo urlencode(substr($endDate, 0, 10)); ?>" 
                    target="_blank" class="btn btn-outline-dark btn-sm px-3 shadow-sm">
                     <i class="fa-solid fa-print me-1 text-primary"></i> Print Financial Summary
@@ -301,7 +284,6 @@ if ($conn) {
             </div>
         </div>
 
-        <!-- Period Selector Card -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <form method="GET" action="financial.php" class="row g-3 align-items-center">
@@ -332,7 +314,6 @@ if ($conn) {
             </div>
         </div>
 
-        <!-- Active Period Banner -->
         <div class="d-flex align-items-center justify-content-between p-3 mb-4 rounded bg-white shadow-sm border-start border-primary border-4">
             <div class="d-flex align-items-center gap-2">
                 <i class="fa-regular fa-calendar-check text-primary fs-5"></i>
@@ -344,9 +325,8 @@ if ($conn) {
             </span>
         </div>
 
-        <!-- KPI Financial Summary Cards -->
         <div class="row g-3 mb-4">
-            <!-- 1. Total Product Sales Income -->
+
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm kpi-card h-100 border-start border-info border-4">
                     <div class="card-body">
@@ -359,7 +339,6 @@ if ($conn) {
                 </div>
             </div>
 
-            <!-- 2. Workshop Service Labor Revenue -->
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm kpi-card h-100 border-start border-warning border-4">
                     <div class="card-body">
@@ -372,7 +351,6 @@ if ($conn) {
                 </div>
             </div>
 
-            <!-- 3. Total Overhead Expenses -->
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm kpi-card h-100 border-start border-danger border-4">
                     <div class="card-body">
@@ -385,7 +363,6 @@ if ($conn) {
                 </div>
             </div>
 
-            <!-- 4. Net Operating Profit / Loss -->
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm kpi-card h-100 border-start <?php echo ($netIncome >= 0) ? 'border-success' : 'border-danger'; ?> border-4">
                     <div class="card-body">
@@ -406,9 +383,8 @@ if ($conn) {
             </div>
         </div>
 
-        <!-- Visual Charts Section (Powered by Chart.js) -->
         <div class="row g-4 mb-4">
-            <!-- 1. Income vs Expense Trend Bar/Line Chart -->
+
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -426,7 +402,6 @@ if ($conn) {
                 </div>
             </div>
 
-            <!-- 2. Income & Expense Composition Doughnuts -->
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -448,9 +423,8 @@ if ($conn) {
             </div>
         </div>
 
-        <!-- Income vs Expenses Breakdown Table Row -->
         <div class="row g-4 mb-4">
-            <!-- Left: Income Streams -->
+
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -510,7 +484,6 @@ if ($conn) {
                 </div>
             </div>
 
-            <!-- Right: Expenses by Category -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -556,7 +529,6 @@ if ($conn) {
             </div>
         </div>
 
-        <!-- Recent Completed Transactions in Selected Period -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0 fw-bold">
@@ -617,7 +589,6 @@ if ($conn) {
 
     </div>
 
-    <!-- Chart.js Standalone Script with Offline Fallback -->
     <script src="../../includes/js/chart.min.js"></script>
     <script>
     if (typeof Chart === 'undefined') {

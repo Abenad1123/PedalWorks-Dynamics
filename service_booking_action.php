@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include('includes/config.php');
 
-// Auth Guard: Require logged-in customer (FR15 Requirement)
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['warning'] = 'Please sign in to schedule a workshop repair appointment.';
     header('Location: login.php');
@@ -23,7 +22,6 @@ $notes             = isset($_POST['notes']) ? trim($_POST['notes']) : '';
 
 $errors = [];
 
-// 1. Validate Service ID
 if ($serviceID <= 0 || !$conn) {
     $errors[] = 'Please select a valid workshop service.';
 } else {
@@ -42,7 +40,6 @@ if ($serviceID <= 0 || !$conn) {
     }
 }
 
-// 2. Validate Scheduled Date
 $scheduledDateFormatted = null;
 if ($scheduledDateRaw === '') {
     $errors[] = 'Please choose a preferred appointment date.';
@@ -51,7 +48,7 @@ if ($scheduledDateRaw === '') {
     if (!$timestamp) {
         $errors[] = 'Invalid appointment date format provided.';
     } else {
-        // Must be in the future (at least current time or later)
+
         $minTime = strtotime(date('Y-m-d 08:00:00'));
         if ($timestamp < $minTime) {
             $errors[] = 'Appointment date cannot be in the past.';
@@ -61,7 +58,6 @@ if ($scheduledDateRaw === '') {
     }
 }
 
-// 3. Validate Notes
 if (mb_strlen($notes) > 1000) {
     $errors[] = 'Notes cannot exceed 1,000 characters.';
 }
@@ -72,7 +68,6 @@ if (!empty($errors)) {
     exit;
 }
 
-// Insert into customerService with initial 'Pending' status
 $insertSql = "INSERT INTO customerService (serviceID, customerAccountID, requestDate, scheduledDate, notes, status) 
               VALUES (?, ?, NOW(), ?, ?, 'Pending')";
 $stmt = mysqli_prepare($conn, $insertSql);

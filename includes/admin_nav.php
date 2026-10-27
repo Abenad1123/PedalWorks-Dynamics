@@ -3,7 +3,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Ensure auth helper functions exist if not already included
 if (!function_exists('hasAdminRole')) {
     include_once(__DIR__ . '/admin_auth.php');
 }
@@ -33,7 +32,6 @@ if (!$activeModule) {
     }
 }
 
-// Role checks for each navigation tab & menu item
 $canAccessOrders    = hasAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 $canAccessProducts  = hasAdminRole(['Inventory Manager']);
 $canAccessServices  = hasAdminRole(['Service & Repair Manager']);
@@ -372,22 +370,20 @@ body.bg-light {
 
 <nav class="navbar navbar-expand-lg navbar-dark pw-admin-navbar sticky-top shadow-sm">
     <div class="container-fluid px-3 px-xl-4">
-        <!-- Brand / Logo -->
+
         <a class="navbar-brand" href="/project/PedalWorks-Dynamics/admin/dashboard.php">
             <i class="fa-solid fa-person-biking text-warning fs-5"></i>
             <span>PedalWorks</span>
             <span class="navbar-brand-badge">Admin</span>
         </a>
 
-        <!-- Mobile Hamburger Toggler -->
         <button class="navbar-toggler border-0 shadow-none px-2 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <i class="fa-solid fa-bars text-light fs-5"></i>
         </button>
 
-        <!-- Navbar Menu Items -->
         <div class="collapse navbar-collapse" id="adminNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-2 gap-lg-1">
-                <!-- 1. Dashboard -->
+
                 <li class="nav-item">
                     <a class="nav-link <?php echo ($activeModule === 'dashboard') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/dashboard.php">
                         <i class="fa-solid fa-gauge"></i>
@@ -395,7 +391,6 @@ body.bg-light {
                     </a>
                 </li>
 
-                <!-- 2. Customer Orders -->
                 <?php if ($canAccessOrders): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo ($activeModule === 'orders') ? 'active' : ''; ?>" href="/project/PedalWorks-Dynamics/admin/orders/index.php">
@@ -405,7 +400,6 @@ body.bg-light {
                     </li>
                 <?php endif; ?>
 
-                <!-- 3. Catalog Dropdown (Products, Services) -->
                 <?php if ($hasCatalogGroup): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?php echo $isCatalogActive ? 'active' : ''; ?>" href="#" id="catalogDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -433,7 +427,6 @@ body.bg-light {
                     </li>
                 <?php endif; ?>
 
-                <!-- 3. Operations Dropdown (Service Tracking, Expenses) -->
                 <?php if ($hasOperationsGroup): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?php echo $isOperationsActive ? 'active' : ''; ?>" href="#" id="operationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -461,7 +454,6 @@ body.bg-light {
                     </li>
                 <?php endif; ?>
 
-                <!-- 4. Reports (Standalone link or clean dropdown) -->
                 <?php if ($canAccessReports): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?php echo $isReportsActive ? 'active' : ''; ?>" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -492,7 +484,6 @@ body.bg-light {
                     </li>
                 <?php endif; ?>
 
-                <!-- 5. Users Dropdown (Customers, Staff) -->
                 <?php if ($hasUserGroup): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?php echo $isUserActive ? 'active' : ''; ?>" href="#" id="usersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -521,7 +512,6 @@ body.bg-light {
                 <?php endif; ?>
             </ul>
 
-            <!-- Right-Hand Actions: Storefront Button & Apple-styled Profile Dropdown -->
             <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
                 <a href="/project/PedalWorks-Dynamics/index.php" target="_blank" class="btn btn-outline-light btn-sm pw-admin-storefront-btn">
                     <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Storefront

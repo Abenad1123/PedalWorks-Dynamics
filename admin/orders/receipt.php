@@ -8,7 +8,6 @@ if ($orderId <= 0) {
     die("Invalid order ID.");
 }
 
-// Fetch order details
 $stmt = mysqli_prepare($conn, "SELECT 
         ps.productSaleID,
         ps.orderDate,
@@ -32,7 +31,6 @@ if (!$order) {
     die("Order not found.");
 }
 
-// Fetch items
 $items = [];
 $stmt = mysqli_prepare($conn, "SELECT 
         p.name AS productName,
@@ -50,7 +48,6 @@ while ($r = mysqli_fetch_assoc($res)) {
 }
 mysqli_stmt_close($stmt);
 
-// Fetch services
 $services = [];
 $stmt = mysqli_prepare($conn, "SELECT 
         s.name AS serviceName,
@@ -66,7 +63,6 @@ while ($s = mysqli_fetch_assoc($sRes)) {
 }
 mysqli_stmt_close($stmt);
 
-// Calculate total
 $grandTotal = 0;
 foreach ($items as $it) {
     $grandTotal += (float)$it['subtotal'];
@@ -75,7 +71,6 @@ foreach ($services as $srv) {
     $grandTotal += (float)$srv['price'];
 }
 
-// Generate PDF
 $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
@@ -89,7 +84,6 @@ $pdf->Cell(0, 6, 'Customer: ' . ($order['customerName'] ?? 'Valued Customer') . 
 $pdf->Cell(0, 6, 'Payment: ' . ($order['paymentMethod'] ?? 'N/A') . ' | Fulfillment: ' . ($order['pickupMethod'] ?? 'N/A'), 0, 1);
 $pdf->Ln(4);
 
-// Header Table
 $pdf->SetFillColor(230, 230, 230);
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell(95, 8, 'Item Description', 1, 0, 'L', true);
@@ -97,7 +91,6 @@ $pdf->Cell(25, 8, 'Qty', 1, 0, 'C', true);
 $pdf->Cell(35, 8, 'Unit Price', 1, 0, 'R', true);
 $pdf->Cell(35, 8, 'Subtotal', 1, 1, 'R', true);
 
-// Rows
 $pdf->SetFont('Arial', '', 10);
 foreach ($items as $it) {
     $pdf->Cell(95, 7, ' ' . substr($it['productName'], 0, 45), 1, 0, 'L');

@@ -7,7 +7,6 @@ requireAdminRole(['Inventory Manager']);
 $errors = [];
 $fieldErrors = [];
 
-// Fetch product categories
 $categories = [];
 if ($conn) {
     $catRes = mysqli_query($conn, "SELECT productCategoryID, name FROM productCategory ORDER BY name ASC");
@@ -18,7 +17,6 @@ if ($conn) {
     }
 }
 
-// Fetch existing image files in assets/images/ for convenience
 $existingImages = [];
 $assetsDir = __DIR__ . '/../../assets/images';
 if (is_dir($assetsDir)) {
@@ -49,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     $description       = trim($rawDescription);
     $imagePath         = trim($rawImageSelect);
 
-    // 1. SKU validation (PHP)
     if ($sku === '') {
         $fieldErrors['sku'] = 'Product SKU is required.';
         $errors[] = 'Product SKU is required.';
@@ -61,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         $errors[] = 'SKU length must be between 3 and 30 characters.';
     }
 
-    // 2. Product Name validation (PHP)
     if ($name === '') {
         $fieldErrors['name'] = 'Product Title / Name is required.';
         $errors[] = 'Product Title / Name is required.';
@@ -73,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         $errors[] = 'Product Name cannot exceed 100 characters.';
     }
 
-    // 3. Category validation (PHP)
     if ($rawCategoryID === '' || $categoryID <= 0) {
         $fieldErrors['productCategoryID'] = 'Please select a valid product category.';
         $errors[] = 'Please select a valid product category.';
@@ -89,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         mysqli_stmt_close($catStmt);
     }
 
-    // 4. Retail Price validation (PHP)
     if (trim($rawPrice) === '') {
         $fieldErrors['price'] = 'Retail Price is required.';
         $errors[] = 'Retail Price is required.';
@@ -103,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         $price = round((float)$rawPrice, 2);
     }
 
-    // 5. Initial Stock validation (PHP)
     if (trim($rawStock) === '') {
         $fieldErrors['stock'] = 'Initial Stock quantity is required.';
         $errors[] = 'Initial Stock quantity is required.';
@@ -114,7 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         $stock = (int)$rawStock;
     }
 
-    // 6. Low Stock Alert Threshold validation (PHP)
     if (trim($rawLowStockThreshold) === '') {
         $lowStockThreshold = 5;
     } elseif (!ctype_digit(strval(trim($rawLowStockThreshold)))) {
@@ -124,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         $lowStockThreshold = (int)$rawLowStockThreshold;
     }
 
-    // 7. Check SKU uniqueness among active products (PHP)
     if (!isset($fieldErrors['sku']) && $conn) {
         $skuStmt = mysqli_prepare($conn, "SELECT productID FROM product WHERE sku = ? AND endDate IS NULL LIMIT 1");
         mysqli_stmt_bind_param($skuStmt, 's', $sku);
@@ -137,7 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         mysqli_stmt_close($skuStmt);
     }
 
-    // 8. Image Upload validation (PHP)
     if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] !== UPLOAD_ERR_NO_FILE) {
         if ($_FILES['image_file']['error'] !== UPLOAD_ERR_OK) {
             $errors[] = 'File upload error occurred (code: ' . (int)$_FILES['image_file']['error'] . ').';
@@ -172,7 +162,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         }
     }
 
-    // Insert Product into Database
     if (empty($errors) && $conn) {
         $insStmt = mysqli_prepare($conn, "INSERT INTO product (sku, name, description, productCategoryID, image, price, stock, lowStockThreshold, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NULL)");
         mysqli_stmt_bind_param($insStmt, 'sssissdi', $sku, $name, $description, $categoryID, $imagePath, $price, $stock, $lowStockThreshold);
@@ -180,7 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         if (mysqli_stmt_execute($insStmt)) {
             $newProductID = mysqli_insert_id($conn);
 
-            // Record primary image in productImage table
             if (!empty($imagePath)) {
                 $piStmt = mysqli_prepare($conn, "INSERT INTO productImage (productID, imagePath, isPrimary) VALUES (?, ?, 1)");
                 if ($piStmt) {
@@ -190,7 +178,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
                 }
             }
 
-            // Handle additional gallery photos upload
             if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
                 $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
                 if (!is_dir($uploadTargetDir)) {
@@ -245,12 +232,10 @@ $activeModule = 'product';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4" style="max-width: 900px;">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -259,7 +244,6 @@ $activeModule = 'product';
             </ol>
         </nav>
 
-        <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 fw-bold mb-1">
@@ -272,7 +256,6 @@ $activeModule = 'product';
             </a>
         </div>
 
-        <!-- Validation Errors -->
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                 <h6 class="alert-heading fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Please resolve the following issues:</h6>
@@ -285,7 +268,6 @@ $activeModule = 'product';
             </div>
         <?php endif; ?>
 
-        <!-- Form Card -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3">
                 <span class="fw-semibold text-dark">
@@ -293,9 +275,9 @@ $activeModule = 'product';
                 </span>
             </div>
             <div class="card-body p-4">
-                <!-- Product Form -->
+
                 <form action="addProduct.php" method="post" enctype="multipart/form-data" novalidate>
-                    
+
                     <div class="row g-3 mb-3">
                         <div class="col-md-5">
                             <label for="sku" class="form-label small fw-semibold text-muted">Product SKU <span class="text-danger">*</span></label>
@@ -382,7 +364,6 @@ $activeModule = 'product';
                         <textarea id="description" name="description" class="form-control" rows="4" placeholder="Detailed product specifications, frame material, components, rider fit, etc..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
                     </div>
 
-                    <!-- Image Media Card -->
                     <div class="card bg-light border mb-4">
                         <div class="card-body">
                             <h6 class="fw-semibold text-dark mb-3">
@@ -410,7 +391,6 @@ $activeModule = 'product';
 
                             <hr class="my-3 text-secondary opacity-25">
 
-                            <!-- Gallery Photos Upload -->
                             <div>
                                 <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
                                     <i class="fa-solid fa-images text-info"></i>
@@ -424,7 +404,6 @@ $activeModule = 'product';
                         </div>
                     </div>
 
-                    <!-- Submit Buttons -->
                     <div class="d-flex justify-content-end gap-2">
                         <a href="index.php" class="btn btn-secondary">
                             <i class="fa-solid fa-xmark me-1"></i>Cancel

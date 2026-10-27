@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $productID = isset($_POST['productID']) ? (int)$_POST['productID'] : 0;
 }
 
-// Fetch all products for selector if no ID provided
 $allProducts = [];
 if ($conn) {
     $apRes = mysqli_query($conn, "SELECT productID, sku, name, price, endDate FROM product ORDER BY (endDate IS NULL) DESC, name ASC");
@@ -23,7 +22,6 @@ if ($conn) {
     }
 }
 
-// If no product ID selected yet, display selection view
 if ($productID <= 0) {
     $activeModule = 'product';
     ?>
@@ -81,7 +79,6 @@ if ($productID <= 0) {
     exit;
 }
 
-// Load current product details
 $product = null;
 if ($conn) {
     $stmt = mysqli_prepare($conn, "SELECT p.*, pc.name AS categoryName 
@@ -101,7 +98,6 @@ if (!$product) {
     exit;
 }
 
-// Fetch categories
 $categories = [];
 if ($conn) {
     $catRes = mysqli_query($conn, "SELECT productCategoryID, name FROM productCategory ORDER BY name ASC");
@@ -112,7 +108,6 @@ if ($conn) {
     }
 }
 
-// Fetch existing image assets
 $existingImages = [];
 $assetsDir = __DIR__ . '/../../assets/images';
 if (is_dir($assetsDir)) {
@@ -124,7 +119,6 @@ if (is_dir($assetsDir)) {
     }
 }
 
-// Handle Set Primary Image Action
 if (isset($_GET['set_primary_img']) && $conn) {
     $targetImgID = (int)$_GET['set_primary_img'];
     $findStmt = mysqli_prepare($conn, "SELECT imagePath FROM productImage WHERE productImageID = ? AND productID = ? LIMIT 1");
@@ -134,11 +128,11 @@ if (isset($_GET['set_primary_img']) && $conn) {
         $findRes = mysqli_stmt_get_result($findStmt);
         if ($targetRow = mysqli_fetch_assoc($findRes)) {
             $newPrimaryPath = $targetRow['imagePath'];
-            // Reset old primary
+
             mysqli_query($conn, "UPDATE productImage SET isPrimary = 0 WHERE productID = " . (int)$productID);
-            // Set new primary
+
             mysqli_query($conn, "UPDATE productImage SET isPrimary = 1 WHERE productImageID = " . (int)$targetImgID);
-            // Update product.image
+
             $uProdStmt = mysqli_prepare($conn, "UPDATE product SET image = ? WHERE productID = ?");
             mysqli_stmt_bind_param($uProdStmt, 'si', $newPrimaryPath, $productID);
             mysqli_stmt_execute($uProdStmt);
@@ -152,7 +146,6 @@ if (isset($_GET['set_primary_img']) && $conn) {
     exit;
 }
 
-// Handle Delete Image Action
 if (isset($_GET['delete_img']) && $conn) {
     $targetImgID = (int)$_GET['delete_img'];
     $delStmt = mysqli_prepare($conn, "DELETE FROM productImage WHERE productImageID = ? AND productID = ?");
@@ -161,7 +154,6 @@ if (isset($_GET['delete_img']) && $conn) {
         mysqli_stmt_execute($delStmt);
         mysqli_stmt_close($delStmt);
 
-        // Check if any primary image remains
         $chkPri = mysqli_query($conn, "SELECT imagePath FROM productImage WHERE productID = " . (int)$productID . " ORDER BY isPrimary DESC, productImageID ASC LIMIT 1");
         if ($chkRow = mysqli_fetch_assoc($chkPri)) {
             mysqli_query($conn, "UPDATE productImage SET isPrimary = 1 WHERE productID = " . (int)$productID . " AND imagePath = '" . mysqli_real_escape_string($conn, $chkRow['imagePath']) . "'");
@@ -179,7 +171,6 @@ if (isset($_GET['delete_img']) && $conn) {
     exit;
 }
 
-// Fetch all photos for this product
 $productImages = [];
 if ($conn) {
     $imgStmt = mysqli_prepare($conn, "SELECT productImageID, imagePath, isPrimary FROM productImage WHERE productID = ? ORDER BY isPrimary DESC, productImageID ASC");
@@ -194,7 +185,6 @@ if ($conn) {
     }
 }
 
-// Handle Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     $rawName              = $_POST['name'] ?? '';
     $rawCategoryID        = $_POST['productCategoryID'] ?? '';
@@ -210,7 +200,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     $description       = trim($rawDescription);
     $imagePath         = trim($rawImageSelect ?: $product['image']);
 
-    // 1. Name validation
     if ($name === '') {
         $fieldErrors['name'] = 'Product Title / Name is required.';
         $errors[] = 'Product Title / Name is required.';
@@ -222,7 +211,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         $errors[] = 'Product Name cannot exceed 100 characters.';
     }
 
-    // 2. Category validation
     if ($rawCategoryID === '' || $categoryID <= 0) {
         $fieldErrors['productCategoryID'] = 'Please select a valid product category.';
         $errors[] = 'Please select a valid product category.';
@@ -238,7 +226,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         mysqli_stmt_close($catStmt);
     }
 
-    // 3. Price validation
     if (trim($rawPrice) === '') {
         $fieldErrors['price'] = 'Retail Price is required.';
         $errors[] = 'Retail Price is required.';
@@ -252,7 +239,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         $newPrice = round((float)$rawPrice, 2);
     }
 
-    // 4. Low Stock Alert Threshold validation
     if (trim($rawLowStockThreshold) === '') {
         $fieldErrors['lowStockThreshold'] = 'Low stock threshold is required.';
         $errors[] = 'Low stock threshold is required.';
@@ -263,7 +249,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         $lowStockThreshold = (int)$rawLowStockThreshold;
     }
 
-    // 5. Handle Image Upload if provided
     if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] !== UPLOAD_ERR_NO_FILE) {
         if ($_FILES['image_file']['error'] !== UPLOAD_ERR_OK) {
             $errors[] = 'File upload error occurred (code: ' . (int)$_FILES['image_file']['error'] . ').';
@@ -305,27 +290,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         $currentStock = (int)$product['stock'];
 
         if ($isPriceChanged) {
-            // Price History Versioning: Close previous version with endDate = NOW(), insert new version with new price
+
             mysqli_begin_transaction($conn);
             try {
-                // 1. Close current active version
+
                 $closeStmt = mysqli_prepare($conn, "UPDATE product SET endDate = NOW() WHERE sku = ? AND endDate IS NULL");
                 mysqli_stmt_bind_param($closeStmt, 's', $sku);
                 mysqli_stmt_execute($closeStmt);
                 mysqli_stmt_close($closeStmt);
 
-                // 2. Insert new version with updated price and attributes
                 $insStmt = mysqli_prepare($conn, "INSERT INTO product (sku, name, description, productCategoryID, image, price, stock, lowStockThreshold, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NULL)");
                 mysqli_stmt_bind_param($insStmt, 'sssissdi', $sku, $name, $description, $categoryID, $imagePath, $newPrice, $currentStock, $lowStockThreshold);
                 mysqli_stmt_execute($insStmt);
                 $newProductID = mysqli_insert_id($conn);
                 mysqli_stmt_close($insStmt);
 
-                // Copy previous images to new product version
                 mysqli_query($conn, "INSERT INTO productImage (productID, imagePath, isPrimary)
                     SELECT $newProductID, imagePath, isPrimary FROM productImage WHERE productID = " . (int)$productID);
 
-                // Update primary if changed
                 if (!empty($imagePath)) {
                     mysqli_query($conn, "UPDATE productImage SET isPrimary = 0 WHERE productID = $newProductID");
                     $chkImg = mysqli_query($conn, "SELECT productImageID FROM productImage WHERE productID = $newProductID AND imagePath = '" . mysqli_real_escape_string($conn, $imagePath) . "' LIMIT 1");
@@ -336,7 +318,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
                     }
                 }
 
-                // Upload additional gallery photos for new version
                 if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
                     $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
                     if (!is_dir($uploadTargetDir)) mkdir($uploadTargetDir, 0777, true);
@@ -367,12 +348,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
                 $errors[] = 'Failed to update product price history: ' . $e->getMessage();
             }
         } else {
-            // Update product in place (no price change)
+
             $upStmt = mysqli_prepare($conn, "UPDATE product SET name = ?, description = ?, productCategoryID = ?, image = ?, lowStockThreshold = ? WHERE productID = ?");
             mysqli_stmt_bind_param($upStmt, 'ssisii', $name, $description, $categoryID, $imagePath, $lowStockThreshold, $productID);
 
             if (mysqli_stmt_execute($upStmt)) {
-                // Sync primary image in productImage
+
                 if (!empty($imagePath)) {
                     mysqli_query($conn, "UPDATE productImage SET isPrimary = 0 WHERE productID = " . (int)$productID);
                     $chkImg = mysqli_query($conn, "SELECT productImageID FROM productImage WHERE productID = " . (int)$productID . " AND imagePath = '" . mysqli_real_escape_string($conn, $imagePath) . "' LIMIT 1");
@@ -383,7 +364,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
                     }
                 }
 
-                // Handle additional gallery images upload
                 if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
                     $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
                     if (!is_dir($uploadTargetDir)) mkdir($uploadTargetDir, 0777, true);
@@ -428,12 +408,10 @@ $activeModule = 'product';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4" style="max-width: 920px;">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -442,7 +420,6 @@ $activeModule = 'product';
             </ol>
         </nav>
 
-        <!-- Header Section -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <div>
                 <h1 class="h3 fw-bold mb-1">
@@ -469,7 +446,6 @@ $activeModule = 'product';
             </div>
         <?php endif; ?>
 
-        <!-- Validation Errors -->
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                 <h6 class="alert-heading fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Please resolve the following issues:</h6>
@@ -482,7 +458,6 @@ $activeModule = 'product';
             </div>
         <?php endif; ?>
 
-        <!-- Form Card -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3">
                 <span class="fw-semibold text-dark">
@@ -490,7 +465,7 @@ $activeModule = 'product';
                 </span>
             </div>
             <div class="card-body p-4">
-                <!-- Edit Product Form -->
+
                 <form action="editProduct.php" method="post" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="productID" value="<?php echo (int)$product['productID']; ?>">
 
@@ -561,7 +536,6 @@ $activeModule = 'product';
                         </div>
                     </div>
 
-                    <!-- Current Inventory Info Banner -->
                     <div class="p-3 bg-light rounded border mb-3 d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-muted small fw-semibold d-block">Current Available Stock Level:</span>
@@ -579,7 +553,6 @@ $activeModule = 'product';
                         <textarea id="description" name="description" class="form-control" rows="4"><?php echo htmlspecialchars($_POST['description'] ?? $product['description'] ?? ''); ?></textarea>
                     </div>
 
-                    <!-- Media Assets Box -->
                     <div class="card bg-light border mb-4">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -591,7 +564,6 @@ $activeModule = 'product';
                                 </span>
                             </div>
 
-                            <!-- Current Gallery Photos Grid -->
                             <?php if (!empty($productImages)): ?>
                                 <div class="row g-3 mb-4">
                                     <?php foreach ($productImages as $pi): ?>
@@ -648,7 +620,6 @@ $activeModule = 'product';
 
                             <hr class="my-3 text-secondary opacity-25">
 
-                            <!-- Add Multiple Additional Photos to Gallery -->
                             <div>
                                 <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
                                     <i class="fa-solid fa-cloud-arrow-up text-info"></i>
@@ -662,7 +633,6 @@ $activeModule = 'product';
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="d-flex justify-content-end gap-2">
                         <a href="index.php" class="btn btn-secondary">
                             <i class="fa-solid fa-xmark me-1"></i>Cancel

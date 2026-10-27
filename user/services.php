@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include('../includes/config.php');
 
-// Auth Guard: Customer Login Required (FR15/FR16 Live Tracking)
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['error'] = 'Please sign in to view your workshop service requests.';
     header('Location: ../login.php');
@@ -18,7 +17,7 @@ $statusFilter      = isset($_GET['status']) ? trim($_GET['status']) : 'all';
 $services = [];
 
 if ($conn) {
-    // Attempt querying MySQL VIEW vw_service_request_details first
+
     $sql = "SELECT * FROM vw_service_request_details WHERE customerAccountID = ?";
     $params = [$customerAccountID];
     $types = "i";
@@ -35,7 +34,7 @@ if ($conn) {
 
     $stmt = @mysqli_prepare($conn, $sql);
     if (!$stmt) {
-        // Fallback directly to tables if view is not yet defined
+
         $fallbackSql = "SELECT cs.customerServiceID, cs.requestDate, cs.scheduledDate, cs.notes, cs.status AS serviceStatus, cs.productSaleID,
                                s.serviceID, s.sku AS serviceSku, s.name AS serviceName, s.description AS serviceDescription, s.price AS servicePrice,
                                sc.name AS serviceCategoryName,
@@ -65,7 +64,6 @@ if ($conn) {
     }
 }
 
-// Helper to determine status style and step order
 function getServiceStatusMeta($status) {
     switch ($status) {
         case 'Pending':
@@ -89,7 +87,7 @@ include('../includes/header.php');
 ?>
 
 <div class="container py-5">
-    <!-- Breadcrumb & Header -->
+
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
             <nav aria-label="breadcrumb">
@@ -114,7 +112,6 @@ include('../includes/header.php');
 
     <?php include('../includes/alert.php'); ?>
 
-    <!-- Filter Pills -->
     <div class="d-flex flex-wrap gap-2 mb-4">
         <a href="services.php?status=all" class="pw-filter-pill <?php echo ($statusFilter === 'all') ? 'active' : ''; ?>">
             All Requests (<?php echo count($services); ?>)
@@ -149,7 +146,7 @@ include('../includes/header.php');
                 $isCancelled = ($svc['serviceStatus'] === 'Cancelled');
             ?>
             <div class="pw-order-card p-4 <?php echo $isHighlighted ? 'border border-warning' : ''; ?>" id="req-<?php echo $svc['customerServiceID']; ?>">
-                <!-- Top Row: Ref, Service Name, Status Badge -->
+
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom border-white border-opacity-10">
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
@@ -178,7 +175,6 @@ include('../includes/header.php');
                     </div>
                 </div>
 
-                <!-- Apple HIG Step Progress Tracker (FR16) -->
                 <?php if (!$isCancelled): ?>
                 <div class="mb-4 p-3 rounded" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
                     <div class="small text-white-50 fw-semibold mb-3">Service Lifecycle Stage:</div>
@@ -212,7 +208,6 @@ include('../includes/header.php');
                 </div>
                 <?php endif; ?>
 
-                <!-- Details Metadata Grid -->
                 <div class="row g-3 p-3 rounded mb-3 pw-order-meta-bar">
                     <div class="col-sm-6 col-md-3">
                         <span class="small text-white-50 d-block">Requested On</span>
@@ -250,7 +245,6 @@ include('../includes/header.php');
                     </div>
                 </div>
 
-                <!-- Notes / Issue Description -->
                 <?php if (!empty($svc['notes'])): ?>
                 <div class="p-3 rounded mb-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
                     <span class="small text-white-50 d-block fw-semibold mb-1">
@@ -262,7 +256,6 @@ include('../includes/header.php');
                 </div>
                 <?php endif; ?>
 
-                <!-- Actions -->
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2">
                     <span class="small text-white-50">
                         <i class="fa-solid fa-shield-halved text-success me-1"></i> All repairs covered by our 30-day trail safety warranty
@@ -283,7 +276,6 @@ include('../includes/header.php');
                 </div>
             </div>
 
-            <!-- Cancel Confirmation Modal -->
             <?php if ($svc['serviceStatus'] === 'Pending'): ?>
             <div class="modal fade" id="cancelModal_<?php echo $svc['customerServiceID']; ?>" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">

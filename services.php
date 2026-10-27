@@ -8,7 +8,6 @@ include('./includes/header.php');
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? trim($_GET['category']) : '';
 
-// Fetch service categories for filter dropdown and quick pills
 $categories = [];
 if ($conn) {
     $catQuery = @mysqli_query($conn, "SELECT * FROM serviceCategory ORDER BY name ASC");
@@ -19,7 +18,6 @@ if ($conn) {
     }
 }
 
-// Build service search and filter query
 $services = [];
 if ($conn) {
     $where = ["s.endDate IS NULL"];
@@ -63,7 +61,6 @@ if ($conn) {
     }
 }
 
-// Reviews and verified availed service lookups
 $serviceReviews = [];
 $serviceRatingStats = [];
 $customerAccountID = (int)($_SESSION['customerAccountID'] ?? 0);
@@ -89,7 +86,7 @@ if ($conn) {
             }
             $serviceRatingStats[$sId]['total']++;
             $serviceRatingStats[$sId]['sum'] += (int)$rRow['rating'];
-            
+
             if ($customerAccountID > 0 && (int)$rRow['customerAccountID'] === $customerAccountID) {
                 $userReviewsByService[$sId] = $rRow;
             }
@@ -109,7 +106,6 @@ if ($conn) {
         }
     }
 
-    // Fetch all service gallery photos
     $serviceAllImages = [];
     $siQuery = @mysqli_query($conn, "SELECT serviceImageID, serviceID, imagePath, isPrimary FROM serviceImage ORDER BY isPrimary DESC, serviceImageID ASC");
     if ($siQuery) {
@@ -119,7 +115,6 @@ if ($conn) {
     }
 }
 
-// Helper function to pick icon by service category
 function getServiceIcon($categoryName) {
     switch ($categoryName) {
         case 'Bicycle Repair':
@@ -141,7 +136,6 @@ function getServiceIcon($categoryName) {
 <div class="container py-4">
     <?php include('./includes/alert.php'); ?>
 
-    <!-- Workshop Hero Header -->
     <div class="row align-items-center mb-4 g-3">
         <div class="col-12">
             <h1 class="pw-hero-title mb-2">
@@ -153,7 +147,6 @@ function getServiceIcon($categoryName) {
         </div>
     </div>
 
-    <!-- Workshop Highlights Row -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="pw-workshop-spec-card">
@@ -190,7 +183,6 @@ function getServiceIcon($categoryName) {
         </div>
     </div>
 
-    <!-- Search & Filter Controls -->
     <div class="pw-filter-card">
         <form method="GET" action="services.php" class="row g-3 align-items-center">
             <div class="col-lg-6 col-md-6">
@@ -228,7 +220,6 @@ function getServiceIcon($categoryName) {
             </div>
         </form>
 
-        <!-- Quick Category Strip -->
         <div class="pw-category-strip mt-3 mb-0 pt-3 border-top border-secondary border-opacity-25 justify-content-start">
             <a href="services.php<?php echo !empty($search) ? '?search=' . urlencode($search) : ''; ?>" 
                class="pw-filter-pill <?php echo ($category === '') ? 'active' : ''; ?>">
@@ -243,7 +234,6 @@ function getServiceIcon($categoryName) {
         </div>
     </div>
 
-    <!-- Active Filters Summary & Result Count -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
         <div class="text-white-50 small">
             Showing <strong class="text-white"><?php echo count($services); ?></strong> workshop services
@@ -264,7 +254,6 @@ function getServiceIcon($categoryName) {
         <?php endif; ?>
     </div>
 
-    <!-- Services Grid -->
     <?php if (empty($services)): ?>
         <div class="pw-filter-card text-center py-5">
             <div class="pw-feature-icon mb-3">
@@ -287,7 +276,7 @@ function getServiceIcon($categoryName) {
             ?>
                 <div class="col-lg-4 col-md-6">
                     <div class="pw-service-card">
-                        <!-- Top Image / Category Visual Box -->
+
                         <?php if (!empty($s['image']) && file_exists(__DIR__ . '/' . $s['image'])): ?>
                             <div class="pw-service-img-box">
                                 <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($s['image']); ?>" 
@@ -308,7 +297,6 @@ function getServiceIcon($categoryName) {
                             </div>
                         <?php endif; ?>
 
-                        <!-- SKU Badge -->
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <span class="pw-sku-mono">
                                 <i class="fa-solid fa-barcode me-1 opacity-75"></i><?php echo htmlspecialchars($s['sku']); ?>
@@ -320,7 +308,6 @@ function getServiceIcon($categoryName) {
                             <?php endif; ?>
                         </div>
 
-                        <!-- Service Title -->
                         <h4 class="pw-service-title" title="<?php echo htmlspecialchars($s['name']); ?>">
                             <?php echo htmlspecialchars($s['name']); ?>
                         </h4>
@@ -336,7 +323,6 @@ function getServiceIcon($categoryName) {
                             </div>
                         <?php endif; ?>
 
-                        <!-- Description -->
                         <p class="pw-service-desc">
                             <?php echo htmlspecialchars($s['description'] ?? ''); ?>
                         </p>
@@ -355,7 +341,6 @@ function getServiceIcon($categoryName) {
                             <span class="small text-white-50"><i class="fa-solid fa-screwdriver text-success me-1"></i>Labor Only</span>
                         </div>
 
-                        <!-- Service Meta & Action -->
                         <div class="pw-service-meta mt-auto">
                             <div class="pw-service-fee">
                                 <span>Base Labor Fee</span>
@@ -386,7 +371,6 @@ function getServiceIcon($categoryName) {
                     </div>
                 </div>
 
-                <!-- Service Quick View Modal -->
                 <div class="modal fade" id="<?php echo $modalId; ?>" tabindex="-1" aria-labelledby="<?php echo $modalId; ?>Label" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content pw-modal-content">
@@ -484,7 +468,6 @@ function getServiceIcon($categoryName) {
                                     </div>
                                 </div>
 
-                                <!-- Service Reviews Section -->
                                 <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
                                 <div class="mt-3">
                                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -499,7 +482,6 @@ function getServiceIcon($categoryName) {
                                         <?php endif; ?>
                                     </div>
 
-                                    <!-- Customer Availed Service Review Form -->
                                     <?php 
                                     $isServiceAvailed = !empty($availedServices[$currSid]);
                                     $sUserReview = $userReviewsByService[$currSid] ?? null;
@@ -564,7 +546,6 @@ function getServiceIcon($categoryName) {
                                         </div>
                                     <?php endif; ?>
 
-                                    <!-- Reviews List -->
                                     <?php $currentReviews = $serviceReviews[$currSid] ?? []; ?>
                                     <?php if (empty($currentReviews)): ?>
                                         <p class="text-white-50 small mb-0 fst-italic">No reviews yet for this workshop service. Be the first to share your experience!</p>
@@ -616,7 +597,6 @@ function getServiceIcon($categoryName) {
                     </div>
                 </div>
 
-                <!-- Standalone Appointment Booking Modal (FR15) -->
                 <?php if (!empty($_SESSION['customerAccountID'])): ?>
                 <div class="modal fade" id="bookModal_<?php echo $s['serviceID']; ?>" tabindex="-1" aria-labelledby="bookModalLabel_<?php echo $s['serviceID']; ?>" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
@@ -633,7 +613,7 @@ function getServiceIcon($categoryName) {
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body p-4">
-                                    <!-- Service Summary Card -->
+
                                     <div class="p-3 mb-3 rounded d-flex align-items-center justify-content-between" style="background: rgba(255,255,255,0.04); border: 1px solid var(--pw-glass-border);">
                                         <div>
                                             <div class="small text-white-50"><?php echo htmlspecialchars($catName); ?></div>
@@ -645,7 +625,6 @@ function getServiceIcon($categoryName) {
                                         </div>
                                     </div>
 
-                                    <!-- Preferred Scheduled Date & Time -->
                                     <div class="mb-3">
                                         <label class="form-label text-white small fw-bold">
                                             <i class="fa-solid fa-clock me-1 text-warning"></i> Preferred Date &amp; Time
@@ -659,7 +638,6 @@ function getServiceIcon($categoryName) {
                                         <div class="form-text text-white-50 small">Workshop operates Monday to Saturday, 8:00 AM - 6:00 PM.</div>
                                     </div>
 
-                                    <!-- Bike Model & Issue Description -->
                                     <div class="mb-3">
                                         <label class="form-label text-white small fw-bold">
                                             <i class="fa-solid fa-bicycle me-1 text-warning"></i> Bike Model &amp; Issue Notes
@@ -671,7 +649,6 @@ function getServiceIcon($categoryName) {
                                         <div class="form-text text-white-50 small">Briefly describe the symptoms or specific parts you'd like us to inspect.</div>
                                     </div>
 
-                                    <!-- REI-Inspired Pre-Dropoff Checklist -->
                                     <div class="p-3 rounded mb-2" style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.15);">
                                         <div class="small fw-bold text-white mb-1">
                                             <i class="fa-solid fa-clipboard-check text-warning me-1"></i> Pre-Dropoff Checklist &amp; Trust Policy:
@@ -700,7 +677,6 @@ function getServiceIcon($categoryName) {
         </div>
     <?php endif; ?>
 
-    <!-- Basecamp Walk-in & Workshop Guarantee Banner -->
     <div class="pw-workshop-banner" id="basecamp-info">
         <div class="row align-items-center g-4">
             <div class="col-lg-8">
@@ -745,5 +721,40 @@ function getServiceIcon($categoryName) {
         </div>
     </div>
 </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const serviceId = params.get('service_id') || params.get('service') || params.get('id');
+    let targetModalId = null;
+
+    if (serviceId) {
+        targetModalId = 'servModal' + serviceId;
+    } else if (window.location.hash && window.location.hash.startsWith('#servModal')) {
+        targetModalId = window.location.hash.substring(1);
+    }
+
+    if (targetModalId) {
+        const modalEl = document.getElementById(targetModalId);
+        if (modalEl) {
+            const triggerOpen = function () {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    bsModal.show();
+                    const cardCol = modalEl.previousElementSibling;
+                    if (cardCol) {
+                        cardCol.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            };
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                triggerOpen();
+            } else {
+                window.addEventListener('load', triggerOpen);
+            }
+        }
+    }
+});
+</script>
 
 <?php include('./includes/footer.php'); ?>

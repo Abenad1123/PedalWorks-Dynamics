@@ -14,7 +14,7 @@ try {
         }
     }
     if ($conn) {
-        // Ensure VIEWS and schema for Order Management exist
+
         @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `customerCart` (
             `customerCartID` INT NOT NULL AUTO_INCREMENT,
             `customerAccountID` INT NOT NULL,

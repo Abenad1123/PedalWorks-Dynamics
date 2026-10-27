@@ -21,14 +21,12 @@ if (!$conn) {
     exit;
 }
 
-// 1. Prevent deleting currently logged-in account
 if (isset($_SESSION['adminAccountID']) && (int)$_SESSION['adminAccountID'] === $deleteID) {
     $_SESSION['error'] = 'You cannot delete your own active administrator account.';
     header('Location: index.php');
     exit;
 }
 
-// 2. Fetch the target admin record
 $checkStmt = mysqli_prepare($conn, "SELECT adminAccountID, username, role FROM adminAccount WHERE adminAccountID = ? LIMIT 1");
 mysqli_stmt_bind_param($checkStmt, 'i', $deleteID);
 mysqli_stmt_execute($checkStmt);
@@ -42,7 +40,6 @@ if (!$targetAdmin) {
     exit;
 }
 
-// 3. Prevent deleting the last Super Administrator
 if ($targetAdmin['role'] === 'Super Administrator') {
     $countSuperRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM adminAccount WHERE role = 'Super Administrator'");
     $countSuper = ($countSuperRes && ($row = mysqli_fetch_assoc($countSuperRes))) ? (int)$row['c'] : 0;
@@ -53,7 +50,6 @@ if ($targetAdmin['role'] === 'Super Administrator') {
     }
 }
 
-// 4. Foreign Key Safeguards: Check customerService and expense
 $hasServices = false;
 $hasExpenses = false;
 
@@ -76,7 +72,6 @@ if ($hasServices || $hasExpenses) {
     exit;
 }
 
-// 5. Execute Delete
 $delStmt = mysqli_prepare($conn, "DELETE FROM adminAccount WHERE adminAccountID = ?");
 mysqli_stmt_bind_param($delStmt, 'i', $deleteID);
 if (mysqli_stmt_execute($delStmt)) {

@@ -10,7 +10,6 @@ $category = isset($_GET['category']) ? trim($_GET['category']) : '';
 $sort = isset($_GET['sort']) ? trim($_GET['sort']) : 'name_asc';
 $inStockOnly = isset($_GET['in_stock']) && $_GET['in_stock'] === '1';
 
-// Fetch categories for filter dropdown and pills
 $categories = [];
 if ($conn) {
     $catQuery = @mysqli_query($conn, "SELECT * FROM productCategory ORDER BY name ASC");
@@ -21,7 +20,6 @@ if ($conn) {
     }
 }
 
-// Build product search and filter query
 $products = [];
 if ($conn) {
     $where = ["p.endDate IS NULL"];
@@ -80,7 +78,6 @@ if ($conn) {
 <div class="container py-4">
     <?php include('./includes/alert.php'); ?>
 
-    <!-- Catalog Hero Section -->
     <div class="row align-items-center mb-4 g-3">
         <div class="col-lg-8">
             <h1 class="pw-hero-title mb-2">
@@ -98,7 +95,6 @@ if ($conn) {
         </div>
     </div>
 
-    <!-- Search & Filter Controls (Trek & Canyon Inspired) -->
     <div class="pw-filter-card">
         <form method="GET" action="products.php" class="row g-3 align-items-center">
             <div class="col-lg-4 col-md-6">
@@ -151,7 +147,6 @@ if ($conn) {
             </div>
         </form>
 
-        <!-- Quick Category Strip -->
         <div class="pw-category-strip mt-3 mb-0 pt-3 border-top border-secondary border-opacity-25 justify-content-start">
             <a href="products.php<?php 
                 $qParams = [];
@@ -175,7 +170,6 @@ if ($conn) {
         </div>
     </div>
 
-    <!-- Active Filters Summary & Result Count (Trek Inspired) -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
         <div class="text-white-50 small d-flex flex-wrap align-items-center gap-2">
             <span>Showing <strong class="text-white"><?php echo count($products); ?></strong> products</span>
@@ -202,7 +196,7 @@ if ($conn) {
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <!-- Mobile Offcanvas Filter Trigger -->
+
             <button class="btn btn-sm pw-btn-glass d-md-none text-white rounded-pill px-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilterOffcanvas" aria-controls="mobileFilterOffcanvas">
                 <i class="fa-solid fa-sliders me-1 text-warning"></i> Filter &amp; Sort
             </button>
@@ -214,7 +208,6 @@ if ($conn) {
         </div>
     </div>
 
-    <!-- Product Grid -->
     <?php if (empty($products)): ?>
         <div class="pw-filter-card text-center py-5">
             <div class="pw-feature-icon mb-3">
@@ -238,10 +231,10 @@ if ($conn) {
             ?>
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="pw-product-card">
-                        <!-- Product Showcase Stage -->
+
                         <div class="pw-product-img-box">
                             <span class="pw-category-tag"><?php echo htmlspecialchars($catName); ?></span>
-                            
+
                             <span class="pw-stock-indicator <?php echo $isOutOfStock ? 'out-of-stock' : ($isLowStock ? 'low-stock' : 'in-stock'); ?>">
                                 <span class="pw-dot"></span>
                                 <?php 
@@ -272,7 +265,6 @@ if ($conn) {
                             <?php endif; ?>
                         </div>
 
-                        <!-- Product Body -->
                         <div class="pw-product-body">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="pw-sku-mono">
@@ -296,14 +288,12 @@ if ($conn) {
                                 ?>
                             </p>
 
-                            <!-- Dual Fulfillment Availability (Trek Inspired) -->
                             <div class="d-flex align-items-center gap-2 mb-3 text-white-50" style="font-size: 0.72rem;">
                                 <span><i class="fa-solid fa-store text-success me-1"></i>In-Store Pickup</span>
                                 <span>&bull;</span>
                                 <span><i class="fa-solid fa-truck-fast text-warning me-1"></i>Courier COD</span>
                             </div>
 
-                            <!-- Product Card Footer -->
                             <div class="pw-product-footer d-flex align-items-center justify-content-between gap-2">
                                 <div class="pw-product-price">
                                     <span class="pw-price-label">PRICE</span>
@@ -334,7 +324,6 @@ if ($conn) {
                     </div>
                 </div>
 
-                <!-- Product Quick View Modal -->
                 <div class="modal fade" id="<?php echo $modalId; ?>" tabindex="-1" aria-labelledby="<?php echo $modalId; ?>Label" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content pw-modal-content">
@@ -440,7 +429,6 @@ if ($conn) {
         </div>
     <?php endif; ?>
 
-    <!-- Mobile Responsive Filter Drawer (Offcanvas) -->
     <div class="offcanvas offcanvas-bottom pw-mobile-filter-drawer" tabindex="-1" id="mobileFilterOffcanvas" aria-labelledby="mobileFilterOffcanvasLabel" style="height: 70vh; border-top-left-radius: 20px; border-top-right-radius: 20px;">
         <div class="offcanvas-header py-3 px-4">
             <h5 class="offcanvas-title fw-bold text-white d-flex align-items-center gap-2" id="mobileFilterOffcanvasLabel">

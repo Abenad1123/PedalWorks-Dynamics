@@ -23,7 +23,6 @@ if (!$conn) {
     exit;
 }
 
-// Find service
 $stmt = mysqli_prepare($conn, "SELECT serviceID, sku, name, endDate FROM service WHERE serviceID = ? LIMIT 1");
 mysqli_stmt_bind_param($stmt, 'i', $deleteID);
 mysqli_stmt_execute($stmt);
@@ -37,7 +36,6 @@ if (!$service) {
     exit;
 }
 
-// Check for service requests in customerService
 $hasRequests = false;
 $csCheck = mysqli_query($conn, "SELECT COUNT(*) as c FROM customerService WHERE serviceID = $deleteID");
 if ($csCheck && ($r = mysqli_fetch_assoc($csCheck)) && (int)$r['c'] > 0) {
@@ -58,7 +56,7 @@ if ($action === 'permanent') {
         mysqli_stmt_close($delStmt);
     }
 } else {
-    // Default: Deactivate / Archive
+
     if ($service['endDate'] !== null) {
         $_SESSION['error'] = 'Service "' . htmlspecialchars($service['name']) . '" is already archived.';
     } else {

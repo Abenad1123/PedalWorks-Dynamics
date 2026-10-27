@@ -23,7 +23,6 @@ if ($editID <= 0) {
     exit;
 }
 
-// Handle Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_admin'])) {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -40,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_admin'])) {
     }
 
     if (empty($errors) && $conn) {
-        // Check username uniqueness excluding current admin
+
         $chkStmt = mysqli_prepare($conn, "SELECT adminAccountID FROM adminAccount WHERE username = ? AND adminAccountID != ? LIMIT 1");
         mysqli_stmt_bind_param($chkStmt, 'si', $username, $editID);
         mysqli_stmt_execute($chkStmt);
@@ -50,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_admin'])) {
         }
         mysqli_stmt_close($chkStmt);
 
-        // Check if demoting the only Super Administrator
         $currStmt = mysqli_prepare($conn, "SELECT role FROM adminAccount WHERE adminAccountID = ? LIMIT 1");
         mysqli_stmt_bind_param($currStmt, 'i', $editID);
         mysqli_stmt_execute($currStmt);
@@ -92,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_admin'])) {
     }
 }
 
-// Fetch existing details
 $adminData = null;
 if ($conn) {
     $selStmt = mysqli_prepare($conn, "SELECT adminAccountID, username, role FROM adminAccount WHERE adminAccountID = ? LIMIT 1");
@@ -121,12 +118,10 @@ $activeModule = 'admin';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>

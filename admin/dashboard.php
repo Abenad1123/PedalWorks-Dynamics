@@ -10,44 +10,38 @@ $totalAdmins = 0;
 $lowStockCount = 0;
 
 if ($conn) {
-    // Current products
+
     $pRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM product WHERE endDate IS NULL");
     if ($pRes && ($r = mysqli_fetch_assoc($pRes))) {
         $totalProducts = (int)$r['c'];
     }
 
-    // Current services
     $sRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM service WHERE endDate IS NULL");
     if ($sRes && ($r = mysqli_fetch_assoc($sRes))) {
         $totalServices = (int)$r['c'];
     }
 
-    // Total customers
     $cRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM customer");
     if ($cRes && ($r = mysqli_fetch_assoc($cRes))) {
         $totalCustomers = (int)$r['c'];
     }
 
-    // Total staff administrators
     $aRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM adminAccount");
     if ($aRes && ($r = mysqli_fetch_assoc($aRes))) {
         $totalAdmins = (int)$r['c'];
     }
 
-    // Low stock items
     $lsRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM product WHERE endDate IS NULL AND stock <= lowStockThreshold");
     if ($lsRes && ($r = mysqli_fetch_assoc($lsRes))) {
         $lowStockCount = (int)$r['c'];
     }
 
-    // Pending repair service requests (FR16)
     $pendingServicesCount = 0;
     $srvRes = mysqli_query($conn, "SELECT COUNT(*) as c FROM customerService WHERE status = 'Pending'");
     if ($srvRes && ($r = mysqli_fetch_assoc($srvRes))) {
         $pendingServicesCount = (int)$r['c'];
     }
 
-    // Current month expenses (FR17)
     $thisMonthExpenses = 0.0;
     $nowMonth = date('Y-m');
     $expRes = mysqli_query($conn, "SELECT COALESCE(SUM(amount), 0.0) as amt FROM expense WHERE DATE_FORMAT(expenseDate, '%Y-%m') = '{$nowMonth}'");
@@ -55,7 +49,6 @@ if ($conn) {
         $thisMonthExpenses = (float)$r['amt'];
     }
 
-    // Customer Orders stats
     $totalOrdersCount = 0;
     $pendingOrdersCount = 0;
     $ordRes = mysqli_query($conn, "SELECT 
@@ -68,7 +61,6 @@ if ($conn) {
     }
 }
 
-// Module access checks
 $canManageOrders    = hasAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 $canManageProducts  = hasAdminRole(['Inventory Manager']);
 $canManageServices  = hasAdminRole(['Service & Repair Manager']);
@@ -84,7 +76,7 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - PedalWorks Dynamics</title>
-    <!-- Bootstrap 5 CDN matching itim211 source example -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -100,13 +92,10 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../includes/admin_nav.php'); ?>
 
-    <!-- Main Content Area -->
     <div class="container py-4">
 
-        <!-- Welcome Banner -->
         <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-4 border-bottom gap-2">
             <div>
                 <h1 class="h3 mb-1 fw-bold">
@@ -124,7 +113,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
             </div>
         </div>
 
-        <!-- Success & Error System Alerts -->
         <?php include('../includes/alert.php'); ?>
 
         <?php if ($lowStockCount > 0 && $canManageProducts): ?>
@@ -137,7 +125,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
             </div>
         <?php endif; ?>
 
-        <!-- Summary Metric Cards -->
         <div class="row g-3 mb-4">
             <div class="col-12 col-sm-6 col-lg-3">
                 <div class="card shadow-sm h-100 border-start border-primary border-4">
@@ -204,7 +191,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
             </div>
         </div>
 
-        <!-- Management Modules Grid -->
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h2 class="h5 mb-0 fw-bold text-secondary d-flex align-items-center gap-2">
                 <i class="fa-solid fa-cubes text-primary"></i>
@@ -214,7 +200,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
         </div>
         <div class="row g-4">
 
-            <!-- 1. Customer Orders & Transactions -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageOrders ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -247,7 +232,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 2. Products Module -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageProducts ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -281,7 +265,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 3. Services Module -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -315,7 +298,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 4. Service Tracking Module -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageServices ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -346,7 +328,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 5. Customer Accounts Module -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageCustomers ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -380,7 +361,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 6. Admin Accounts Module -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageAdmins ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -414,7 +394,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 7. Overhead Expenses Module -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageExpenses ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -443,7 +422,6 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
                 </div>
             </div>
 
-            <!-- 8. Reports & Printable Statements -->
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="card shadow-sm h-100 pw-dash-card <?php echo !$canManageReports ? 'opacity-75 border-secondary-subtle' : ''; ?>">
                     <div class="card-body d-flex flex-column">
@@ -482,14 +460,12 @@ $currentRole        = $_SESSION['role'] ?? 'Staff Member';
 
         </div>
 
-        <!-- Footer Info -->
         <div class="mt-5 pt-3 border-top text-center text-muted small">
             <p class="mb-0">PedalWorks Dynamics &bull; Store &amp; Workshop Operations Management System</p>
         </div>
 
     </div>
 
-    <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

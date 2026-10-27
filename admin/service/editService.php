@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $serviceID = isset($_POST['serviceID']) ? (int)$_POST['serviceID'] : 0;
 }
 
-// Fetch all services for selector dropdown if no ID given
 $allServices = [];
 if ($conn) {
     $asRes = mysqli_query($conn, "SELECT serviceID, sku, name, price, endDate FROM service ORDER BY (endDate IS NULL) DESC, name ASC");
@@ -23,7 +22,6 @@ if ($conn) {
     }
 }
 
-// If no ID selected, display selection view
 if ($serviceID <= 0) {
     $activeModule = 'service';
     ?>
@@ -81,7 +79,6 @@ if ($serviceID <= 0) {
     exit;
 }
 
-// Load service details
 $service = null;
 if ($conn) {
     $stmt = mysqli_prepare($conn, "SELECT s.*, sc.name AS categoryName 
@@ -101,7 +98,6 @@ if (!$service) {
     exit;
 }
 
-// Fetch categories
 $categories = [];
 if ($conn) {
     $catRes = mysqli_query($conn, "SELECT serviceCategoryID, name FROM serviceCategory ORDER BY name ASC");
@@ -112,7 +108,6 @@ if ($conn) {
     }
 }
 
-// Fetch existing image assets
 $existingImages = [];
 $assetsDir = __DIR__ . '/../../assets/images';
 if (is_dir($assetsDir)) {
@@ -124,7 +119,6 @@ if (is_dir($assetsDir)) {
     }
 }
 
-// Handle Set Primary Image Action
 if (isset($_GET['set_primary_img']) && $conn) {
     $targetImgID = (int)$_GET['set_primary_img'];
     $findStmt = mysqli_prepare($conn, "SELECT imagePath FROM serviceImage WHERE serviceImageID = ? AND serviceID = ? LIMIT 1");
@@ -149,7 +143,6 @@ if (isset($_GET['set_primary_img']) && $conn) {
     exit;
 }
 
-// Handle Delete Image Action
 if (isset($_GET['delete_img']) && $conn) {
     $targetImgID = (int)$_GET['delete_img'];
     $delStmt = mysqli_prepare($conn, "DELETE FROM serviceImage WHERE serviceImageID = ? AND serviceID = ?");
@@ -158,7 +151,6 @@ if (isset($_GET['delete_img']) && $conn) {
         mysqli_stmt_execute($delStmt);
         mysqli_stmt_close($delStmt);
 
-        // Check if any primary image remains
         $chkPri = mysqli_query($conn, "SELECT imagePath FROM serviceImage WHERE serviceID = " . (int)$serviceID . " ORDER BY isPrimary DESC, serviceImageID ASC LIMIT 1");
         if ($chkRow = mysqli_fetch_assoc($chkPri)) {
             mysqli_query($conn, "UPDATE serviceImage SET isPrimary = 1 WHERE serviceID = " . (int)$serviceID . " AND imagePath = '" . mysqli_real_escape_string($conn, $chkRow['imagePath']) . "'");
@@ -176,7 +168,6 @@ if (isset($_GET['delete_img']) && $conn) {
     exit;
 }
 
-// Fetch all photos for this service
 $serviceImages = [];
 if ($conn) {
     $imgStmt = mysqli_prepare($conn, "SELECT serviceImageID, imagePath, isPrimary FROM serviceImage WHERE serviceID = ? ORDER BY isPrimary DESC, serviceImageID ASC");
@@ -191,7 +182,6 @@ if ($conn) {
     }
 }
 
-// Handle Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
     $rawName        = $_POST['name'] ?? '';
     $rawCategoryID  = $_POST['serviceCategoryID'] ?? '';
@@ -205,7 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
     $description = trim($rawDescription);
     $imagePath   = trim($rawImageSelect ?: $service['image']);
 
-    // 1. Name validation
     if ($name === '') {
         $fieldErrors['name'] = 'Service Package Title is required.';
         $errors[] = 'Service Package Title is required.';
@@ -217,7 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
         $errors[] = 'Service Name cannot exceed 100 characters.';
     }
 
-    // 2. Category validation
     if ($rawCategoryID === '' || $categoryID <= 0) {
         $fieldErrors['serviceCategoryID'] = 'Please select a valid service category.';
         $errors[] = 'Please select a valid service category.';
@@ -233,7 +221,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
         mysqli_stmt_close($chkCat);
     }
 
-    // 3. Price validation
     if (trim($rawPrice) === '') {
         $fieldErrors['price'] = 'Standard Labor Fee is required.';
         $errors[] = 'Standard Labor Fee is required.';
@@ -247,7 +234,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
         $newPrice = round((float)$rawPrice, 2);
     }
 
-    // 4. Handle Image Upload if provided
     if (empty($errors) && isset($_FILES['image_file']) && $_FILES['image_file']['error'] !== UPLOAD_ERR_NO_FILE) {
         if ($_FILES['image_file']['error'] !== UPLOAD_ERR_OK) {
             $errors[] = 'File upload error occurred (code: ' . (int)$_FILES['image_file']['error'] . ').';
@@ -288,27 +274,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
         $sku = $service['sku'];
 
         if ($isPriceChanged) {
-            // Price History Versioning: Close previous version, insert new version with new price
+
             mysqli_begin_transaction($conn);
             try {
-                // 1. Close current active version
+
                 $closeStmt = mysqli_prepare($conn, "UPDATE service SET endDate = NOW() WHERE sku = ? AND endDate IS NULL");
                 mysqli_stmt_bind_param($closeStmt, 's', $sku);
                 mysqli_stmt_execute($closeStmt);
                 mysqli_stmt_close($closeStmt);
 
-                // 2. Insert new version
                 $insStmt = mysqli_prepare($conn, "INSERT INTO service (sku, name, image, description, price, serviceCategoryID, startDate, endDate) VALUES (?, ?, ?, ?, ?, ?, NOW(), NULL)");
                 mysqli_stmt_bind_param($insStmt, 'ssssdi', $sku, $name, $imagePath, $description, $newPrice, $categoryID);
                 mysqli_stmt_execute($insStmt);
                 $newServiceID = mysqli_insert_id($conn);
                 mysqli_stmt_close($insStmt);
 
-                // Copy previous images to new service version
                 mysqli_query($conn, "INSERT INTO serviceImage (serviceID, imagePath, isPrimary)
                     SELECT $newServiceID, imagePath, isPrimary FROM serviceImage WHERE serviceID = " . (int)$serviceID);
 
-                // Update primary if changed
                 if (!empty($imagePath)) {
                     mysqli_query($conn, "UPDATE serviceImage SET isPrimary = 0 WHERE serviceID = $newServiceID");
                     $chkImg = mysqli_query($conn, "SELECT serviceImageID FROM serviceImage WHERE serviceID = $newServiceID AND imagePath = '" . mysqli_real_escape_string($conn, $imagePath) . "' LIMIT 1");
@@ -319,7 +302,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
                     }
                 }
 
-                // Upload additional gallery photos for new version
                 if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
                     $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
                     if (!is_dir($uploadTargetDir)) mkdir($uploadTargetDir, 0777, true);
@@ -350,12 +332,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
                 $errors[] = 'Failed to update service rate history: ' . $e->getMessage();
             }
         } else {
-            // Update service in place
+
             $upStmt = mysqli_prepare($conn, "UPDATE service SET name = ?, image = ?, description = ?, serviceCategoryID = ? WHERE serviceID = ?");
             mysqli_stmt_bind_param($upStmt, 'sssii', $name, $imagePath, $description, $categoryID, $serviceID);
 
             if (mysqli_stmt_execute($upStmt)) {
-                // Sync primary image in serviceImage
+
                 if (!empty($imagePath)) {
                     mysqli_query($conn, "UPDATE serviceImage SET isPrimary = 0 WHERE serviceID = " . (int)$serviceID);
                     $chkImg = mysqli_query($conn, "SELECT serviceImageID FROM serviceImage WHERE serviceID = " . (int)$serviceID . " AND imagePath = '" . mysqli_real_escape_string($conn, $imagePath) . "' LIMIT 1");
@@ -366,7 +348,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_service'])) {
                     }
                 }
 
-                // Handle additional gallery images upload
                 if (isset($_FILES['gallery_images']) && is_array($_FILES['gallery_images']['name'])) {
                     $uploadTargetDir = __DIR__ . '/../../assets/images/uploads/';
                     if (!is_dir($uploadTargetDir)) mkdir($uploadTargetDir, 0777, true);
@@ -411,12 +392,10 @@ $activeModule = 'service';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4" style="max-width: 900px;">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -425,7 +404,6 @@ $activeModule = 'service';
             </ol>
         </nav>
 
-        <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 fw-bold mb-1">
@@ -447,7 +425,6 @@ $activeModule = 'service';
             </div>
         <?php endif; ?>
 
-        <!-- Validation Errors -->
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                 <h6 class="alert-heading fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Please resolve the following issues:</h6>
@@ -460,7 +437,6 @@ $activeModule = 'service';
             </div>
         <?php endif; ?>
 
-        <!-- Form Card -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3">
                 <span class="fw-semibold text-dark">
@@ -468,7 +444,7 @@ $activeModule = 'service';
                 </span>
             </div>
             <div class="card-body p-4">
-                <!-- Edit Service Form -->
+
                 <form action="editService.php" method="post" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="serviceID" value="<?php echo (int)$service['serviceID']; ?>">
 
@@ -533,7 +509,6 @@ $activeModule = 'service';
                         <textarea id="description" name="description" class="form-control" rows="4"><?php echo htmlspecialchars($_POST['description'] ?? $service['description'] ?? ''); ?></textarea>
                     </div>
 
-                    <!-- Media Assets Box -->
                     <div class="card bg-light border mb-4">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -545,7 +520,6 @@ $activeModule = 'service';
                                 </span>
                             </div>
 
-                            <!-- Current Gallery Photos Grid -->
                             <?php if (!empty($serviceImages)): ?>
                                 <div class="row g-3 mb-4">
                                     <?php foreach ($serviceImages as $si): ?>
@@ -602,7 +576,6 @@ $activeModule = 'service';
 
                             <hr class="my-3 text-secondary opacity-25">
 
-                            <!-- Add Multiple Additional Photos to Gallery -->
                             <div>
                                 <label for="gallery_images" class="form-label small fw-semibold text-muted d-flex align-items-center gap-1">
                                     <i class="fa-solid fa-cloud-arrow-up text-info"></i>
@@ -616,7 +589,6 @@ $activeModule = 'service';
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="d-flex justify-content-end gap-2">
                         <a href="index.php" class="btn btn-secondary">
                             <i class="fa-solid fa-xmark me-1"></i>Cancel

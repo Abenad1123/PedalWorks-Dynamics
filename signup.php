@@ -20,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
     $password        = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirmPassword'] ?? '';
 
-    // Validation (Server-side validation)
     if ($firstName === '') {
         $errors[] = 'First name is required.';
     }
@@ -45,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
         $errors[] = 'Database is offline. Please check that MySQL is running in XAMPP.';
     }
 
-    // Photo Upload Validation
     $uploadedPhotoFilename = null;
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
         $fileError = $_FILES['photo']['error'];
@@ -56,14 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
             $fileExt      = strtolower(pathinfo($fileOriginal, PATHINFO_EXTENSION));
 
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-            $maxFileSize       = 5 * 1024 * 1024; // 5 MB
+            $maxFileSize       = 5 * 1024 * 1024;  
 
             if (!in_array($fileExt, $allowedExtensions, true)) {
                 $errors[] = 'Photo must be an image file (.jpg, .jpeg, .png, .webp, .gif).';
             } elseif ($fileSize > $maxFileSize) {
                 $errors[] = 'Photo size cannot exceed 5 MB.';
             } else {
-                // Verify image MIME type
+
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
                 $mimeType = finfo_file($finfo, $fileTmpName);
                 finfo_close($finfo);
@@ -92,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
     }
 
     if (empty($errors)) {
-        // Check email uniqueness
+
         $emailCheck = mysqli_prepare($conn, "SELECT customerID FROM customer WHERE email = ? LIMIT 1");
         if ($emailCheck) {
             mysqli_stmt_bind_param($emailCheck, 's', $email);
@@ -104,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
             mysqli_stmt_close($emailCheck);
         }
 
-        // Check username uniqueness
         $userCheck = mysqli_prepare($conn, "SELECT customerAccountID FROM customerAccount WHERE username = ? LIMIT 1");
         if ($userCheck) {
             mysqli_stmt_bind_param($userCheck, 's', $username);
@@ -117,7 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
         }
     }
 
-    // Insert customer & account inside a transaction
     if (empty($errors)) {
         mysqli_begin_transaction($conn);
         try {
@@ -151,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup_customer'])) {
             $errors[] = 'Failed to create account: ' . $e->getMessage();
         }
     } else {
-        // If validation errors occurred, remove uploaded photo to prevent orphaned files
+
         if ($uploadedPhotoFilename && file_exists(__DIR__ . '/assets/images/uploads/users/' . $uploadedPhotoFilename)) {
             unlink(__DIR__ . '/assets/images/uploads/users/' . $uploadedPhotoFilename);
         }
@@ -187,9 +183,8 @@ include('./includes/header.php');
                 </div>
             <?php endif; ?>
 
-            <!-- Customer Registration Form -->
             <form action="signup.php" method="POST" enctype="multipart/form-data" autocomplete="on" novalidate>
-                <!-- Personal Details Section -->
+
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label for="firstName" class="form-label text-white-50 small fw-semibold">
@@ -209,7 +204,6 @@ include('./includes/header.php');
                     </div>
                 </div>
 
-                <!-- Contact & DOB Section -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-7">
                         <label for="email" class="form-label text-white-50 small fw-semibold">
@@ -228,7 +222,6 @@ include('./includes/header.php');
                     </div>
                 </div>
 
-                <!-- Photo Upload Section -->
                 <div class="mb-3">
                     <label for="photo" class="form-label text-white-50 small fw-semibold">
                         Profile Photo <span class="text-white-50" style="font-size: 0.75rem;">(Optional - JPG, PNG, WEBP, max 5MB)</span>
@@ -236,7 +229,6 @@ include('./includes/header.php');
                     <input type="file" class="form-control pw-form-control" id="photo" name="photo" accept="image/*">
                 </div>
 
-                <!-- Address Section -->
                 <div class="mb-3">
                     <label for="address" class="form-label text-white-50 small fw-semibold">
                         Address <span class="text-danger">*</span>
@@ -245,7 +237,6 @@ include('./includes/header.php');
                               placeholder="House/Street, Barangay, City, Postal Code" required><?php echo htmlspecialchars($address); ?></textarea>
                 </div>
 
-                <!-- Account Credentials Section -->
                 <div class="mb-3">
                     <label for="username" class="form-label text-white-50 small fw-semibold">
                         Account Username <span class="text-danger">*</span>
@@ -282,7 +273,6 @@ include('./includes/header.php');
                     </div>
                 </div>
 
-                <!-- Submit Button -->
                 <div class="d-grid gap-2 mb-3">
                     <button type="submit" name="signup_customer" class="pw-btn-trail py-3 fw-semibold">
                         Create Account

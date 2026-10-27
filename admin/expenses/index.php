@@ -3,7 +3,6 @@ session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
 
-// Access Control: Accounting Administrator or Super Administrator (FR17)
 requireAdminRole(['Accounting Administrator', 'Super Administrator']);
 
 $activeModule = 'expenses';
@@ -12,7 +11,6 @@ $successMessage = '';
 $errorMessage = '';
 $formErrors = [];
 
-// Handle Form Submissions: ADD, EDIT, DELETE
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
@@ -26,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $validCategories = ['Water', 'Electricity', 'Employee Salary', 'Rent', 'Other'];
 
-        // Server-side validation
         if (!in_array($category, $validCategories, true)) {
             $formErrors['category'] = 'Please select a valid expense category.';
         }
@@ -65,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     mysqli_stmt_close($stmt);
                 }
-            } else { // edit
+            } else {  
                 $stmt = mysqli_prepare($conn, "UPDATE expense SET category = ?, description = ?, amount = ?, expenseDate = ? WHERE expenseID = ?");
                 if ($stmt) {
                     mysqli_stmt_bind_param($stmt, 'ssdsi', $category, $description, $amount, $expenseDate, $expenseID);
@@ -95,11 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Filters
 $filterCategory = isset($_GET['category']) ? trim($_GET['category']) : 'all';
 $filterMonth    = isset($_GET['month']) ? trim($_GET['month']) : '';
 
-// KPI Analytics for Expenses
 $kpi = [
     'total'       => 0.0,
     'this_month'  => 0.0,
@@ -126,7 +121,6 @@ if ($conn) {
     }
 }
 
-// Query Expenses List
 $expenses = [];
 if ($conn) {
     $where = [];
@@ -200,7 +194,6 @@ function getCategoryBadge($cat) {
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Page Header -->
         <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-4 border-bottom gap-2">
             <div>
                 <nav aria-label="breadcrumb">
@@ -224,7 +217,6 @@ function getCategoryBadge($cat) {
             </div>
         </div>
 
-        <!-- Feedback Alerts -->
         <?php if ($successMessage !== ''): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($successMessage); ?>
@@ -238,7 +230,6 @@ function getCategoryBadge($cat) {
             </div>
         <?php endif; ?>
 
-        <!-- KPI Cards -->
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm border-start border-danger border-4 h-100">
@@ -290,7 +281,6 @@ function getCategoryBadge($cat) {
             </div>
         </div>
 
-        <!-- Filter & Search Controls -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <form method="GET" action="index.php" class="row g-2 align-items-center">
@@ -321,7 +311,6 @@ function getCategoryBadge($cat) {
             </div>
         </div>
 
-        <!-- Expenses Table -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0 fw-bold">
@@ -386,7 +375,6 @@ function getCategoryBadge($cat) {
                                 </td>
                             </tr>
 
-                            <!-- Edit Expense Modal -->
                             <div class="modal fade" id="<?php echo $editModalId; ?>" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -433,7 +421,6 @@ function getCategoryBadge($cat) {
                                 </div>
                             </div>
 
-                            <!-- Delete Confirmation Modal -->
                             <div class="modal fade" id="<?php echo $delModalId; ?>" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -466,7 +453,6 @@ function getCategoryBadge($cat) {
 
     </div>
 
-    <!-- Add Expense Modal -->
     <div class="modal fade" id="addExpenseModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

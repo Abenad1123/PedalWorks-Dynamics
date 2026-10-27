@@ -2,14 +2,12 @@
 session_start();
 include('../includes/config.php');
 
-// Enforce customer authentication
 if (!isset($_SESSION['customerAccountID']) && !isset($_SESSION['customerID']) && !isset($_SESSION['user_id'])) {
     $_SESSION['error'] = 'Please log in to access your account.';
     header('Location: ../login.php');
     exit;
 }
 
-// Resolve customer ID
 $customerID = (int)($_SESSION['customerID'] ?? $_SESSION['user_id'] ?? 0);
 $customerAccountID = (int)($_SESSION['customerAccountID'] ?? 0);
 
@@ -25,7 +23,6 @@ if ($customerID <= 0 && $customerAccountID > 0 && $conn) {
     mysqli_stmt_close($lookup);
 }
 
-// Fetch current customer details first to retain existing photo on error or non-update
 $customer = null;
 if ($conn && $customerID > 0) {
     $stmt = mysqli_prepare($conn, "SELECT c.customerID, c.firstName, c.lastName, c.birthDate, c.email, c.address, c.photo, 
@@ -50,7 +47,6 @@ if (!$customer) {
 
 $errors = [];
 
-// Handle Profile Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $firstName       = trim($_POST['firstName'] ?? '');
     $lastName        = trim($_POST['lastName'] ?? '');
@@ -60,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $password        = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirmPassword'] ?? '';
 
-    // Server-side validation
     if ($firstName === '') {
         $errors[] = 'First name is required.';
     }
@@ -82,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $errors[] = 'Database is offline. Please check your MySQL connection.';
     }
 
-    // Photo Upload Validation
     $uploadedPhotoFilename = null;
     $shouldUpdatePhoto = false;
 
@@ -95,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             $fileExt      = strtolower(pathinfo($fileOriginal, PATHINFO_EXTENSION));
 
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-            $maxFileSize       = 5 * 1024 * 1024; // 5 MB
+            $maxFileSize       = 5 * 1024 * 1024;  
 
             if (!in_array($fileExt, $allowedExtensions, true)) {
                 $errors[] = 'Photo must be an image file (.jpg, .jpeg, .png, .webp, .gif).';
@@ -130,7 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         }
     }
 
-    // Email uniqueness check
     if (empty($errors)) {
         $emailCheck = mysqli_prepare($conn, "SELECT customerID FROM customer WHERE email = ? AND customerID != ? LIMIT 1");
         if ($emailCheck) {
@@ -144,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         }
     }
 
-    // Execute atomic update
     if (empty($errors)) {
         mysqli_begin_transaction($conn);
         try {
@@ -153,11 +145,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             $oldPhoto    = $customer['photo'] ?? null;
 
             if ($shouldUpdatePhoto) {
-                // Update profile with new photo
+
                 $updateCustomer = mysqli_prepare($conn, "UPDATE customer SET firstName = ?, lastName = ?, birthDate = ?, email = ?, address = ?, photo = ? WHERE customerID = ?");
                 mysqli_stmt_bind_param($updateCustomer, 'ssssssi', $firstName, $dbLastName, $dbBirthDate, $email, $address, $uploadedPhotoFilename, $customerID);
             } else {
-                // Update profile keeping existing photo
+
                 $updateCustomer = mysqli_prepare($conn, "UPDATE customer SET firstName = ?, lastName = ?, birthDate = ?, email = ?, address = ? WHERE customerID = ?");
                 mysqli_stmt_bind_param($updateCustomer, 'sssssi', $firstName, $dbLastName, $dbBirthDate, $email, $address, $customerID);
             }
@@ -165,7 +157,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             mysqli_stmt_execute($updateCustomer);
             mysqli_stmt_close($updateCustomer);
 
-            // Optionally update password
             if ($password !== '') {
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
                 $updateAccount = mysqli_prepare($conn, "UPDATE customerAccount SET password = ? WHERE customerID = ?");
@@ -176,7 +167,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 
             mysqli_commit($conn);
 
-            // If a new photo was uploaded and an old photo exists, delete the old file safely
             if ($shouldUpdatePhoto && $oldPhoto) {
                 $safeOldFilename = basename($oldPhoto);
                 $oldPath = __DIR__ . '/../assets/images/uploads/users/' . $safeOldFilename;
@@ -187,7 +177,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 }
             }
 
-            // Update session cache
             $_SESSION['firstName'] = $firstName;
             $_SESSION['email']     = $email;
             if ($shouldUpdatePhoto) {
@@ -217,7 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     }
 }
 
-// Compute clean initials for fallback avatar
 $initials = strtoupper(substr($customer['firstName'], 0, 1) . substr($customer['lastName'] ?? '', 0, 1));
 if (trim($initials) === '') {
     $initials = strtoupper(substr($customer['username'] ?? 'U', 0, 1));
@@ -228,7 +216,6 @@ include('../includes/header.php');
 
 <div class="container py-5" style="max-width: 1040px;">
 
-    <!-- Minimal Header Bar -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pb-3 mb-4 border-bottom border-secondary border-opacity-25">
         <div>
             <h2 class="text-white fw-bold mb-1" style="font-size: 1.5rem; letter-spacing: -0.02em;">Account Settings</h2>
@@ -270,11 +257,10 @@ include('../includes/header.php');
     <?php endif; ?>
 
     <div class="row g-4">
-        <!-- Profile Identity Card -->
+
         <div class="col-lg-4 col-md-5">
             <div class="pw-auth-card p-4 text-center">
-                
-                <!-- Avatar: Uploaded Photo or Clean Initials Fallback -->
+
                 <div class="mx-auto mb-3 position-relative" style="width: 88px; height: 88px;">
                     <?php if (!empty($customer['photo']) && file_exists(__DIR__ . '/../assets/images/uploads/users/' . $customer['photo'])): ?>
                         <img src="/project/PedalWorks-Dynamics/assets/images/uploads/users/<?php echo htmlspecialchars($customer['photo']); ?>" 
@@ -293,7 +279,7 @@ include('../includes/header.php');
                     <?php echo htmlspecialchars($customer['firstName'] . ' ' . ($customer['lastName'] ?? '')); ?>
                 </h4>
                 <p class="text-secondary small mb-3" style="font-family: monospace;">@<?php echo htmlspecialchars($customer['username'] ?? ''); ?></p>
-                
+
                 <div class="mb-4">
                     <span class="badge <?php echo ($customer['status'] === 'Active') ? 'bg-success bg-opacity-25 text-success' : 'bg-secondary bg-opacity-25 text-secondary'; ?> px-2 py-1" style="font-size: 0.725rem; font-weight: 500; border-radius: 4px; border: 1px solid currentColor;">
                         <?php echo htmlspecialchars($customer['status'] ?? 'Active'); ?>
@@ -320,17 +306,15 @@ include('../includes/header.php');
             </div>
         </div>
 
-        <!-- Editable Details Card -->
         <div class="col-lg-8 col-md-7">
             <div class="pw-auth-card p-4 p-md-4">
-                
+
                 <h5 class="text-white fw-semibold mb-3 pb-2 border-bottom border-secondary border-opacity-25" style="font-size: 1rem;">
                     Personal Information
                 </h5>
 
-                <!-- Personal Details Form -->
                 <form action="profile.php" method="POST" enctype="multipart/form-data" autocomplete="on" novalidate>
-                    <!-- Names -->
+
                     <div class="row g-3 mb-3">
                         <div class="col-sm-6">
                             <label for="firstName" class="form-label text-secondary small fw-medium mb-1">
@@ -348,7 +332,6 @@ include('../includes/header.php');
                         </div>
                     </div>
 
-                    <!-- Email & Birthdate -->
                     <div class="row g-3 mb-3">
                         <div class="col-sm-7">
                             <label for="email" class="form-label text-secondary small fw-medium mb-1">
@@ -366,7 +349,6 @@ include('../includes/header.php');
                         </div>
                     </div>
 
-                    <!-- Photo Upload -->
                     <div class="mb-3">
                         <label for="photo" class="form-label text-secondary small fw-medium mb-1">
                             Update Profile Photo <span class="text-white-50" style="font-size: 0.75rem;">(Optional - JPG, PNG, WEBP, max 5MB)</span>
@@ -379,7 +361,6 @@ include('../includes/header.php');
                         <?php endif; ?>
                     </div>
 
-                    <!-- Address -->
                     <div class="mb-4">
                         <label for="address" class="form-label text-secondary small fw-medium mb-1">
                             Address <span class="text-danger">*</span>
@@ -388,12 +369,10 @@ include('../includes/header.php');
                                   placeholder="Street, City, Province, Postal Code" required><?php echo htmlspecialchars($_POST['address'] ?? $customer['address']); ?></textarea>
                     </div>
 
-                    <!-- Account Security Section -->
                     <h5 class="text-white fw-semibold mb-3 pt-3 pb-2 border-top border-bottom border-secondary border-opacity-25" style="font-size: 1rem;">
                         Security &amp; Credentials
                     </h5>
 
-                    <!-- Read-only Username -->
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-medium mb-1">Username</label>
                         <input type="text" class="form-control pw-form-control text-secondary" 
@@ -401,7 +380,6 @@ include('../includes/header.php');
                                style="background: #090d12; border-color: rgba(255,255,255,0.06); cursor: not-allowed;">
                     </div>
 
-                    <!-- Password Inputs -->
                     <div class="row g-3 mb-4">
                         <div class="col-sm-6">
                             <label for="password" class="form-label text-secondary small fw-medium mb-1">
@@ -429,7 +407,6 @@ include('../includes/header.php');
                         </div>
                     </div>
 
-                    <!-- Action Bar -->
                     <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top border-secondary border-opacity-25">
                         <button type="submit" name="submit" class="pw-btn-trail px-4 py-2" style="font-size: 0.9rem;">
                             Save Changes

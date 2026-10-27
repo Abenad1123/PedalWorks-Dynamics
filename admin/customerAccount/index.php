@@ -16,7 +16,6 @@ if (isset($_SESSION['error'])) {
     unset($_SESSION['error']);
 }
 
-// Fetch list of customer accounts
 $customerList = [];
 $activeCount = 0;
 $inactiveCount = 0;
@@ -51,12 +50,10 @@ $activeModule = 'customer';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container py-4">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -64,7 +61,6 @@ $activeModule = 'customer';
             </ol>
         </nav>
 
-        <!-- Header Ribbon -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom gap-3">
             <div>
                 <h1 class="h3 mb-1 d-flex align-items-center gap-2">
@@ -83,7 +79,6 @@ $activeModule = 'customer';
             </div>
         </div>
 
-        <!-- Flash Messages -->
         <?php if ($successMessage !== ''): ?>
             <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check fs-5"></i>
@@ -100,7 +95,6 @@ $activeModule = 'customer';
             </div>
         <?php endif; ?>
 
-        <!-- Metric Summary Cards -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">
                 <div class="card shadow-sm border-0 border-start border-info border-4">
@@ -136,7 +130,6 @@ $activeModule = 'customer';
             </div>
         </div>
 
-        <!-- Customer Directory Card -->
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">

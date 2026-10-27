@@ -18,7 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $selectedID = isset($_POST['productID']) ? (int)$_POST['productID'] : 0;
 }
 
-// Handle Stock Adjustment POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_stock'])) {
     $actionType = $_POST['action_type'] ?? 'add';
     $rawQuantity = $_POST['quantity'] ?? '';
@@ -43,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_stock'])) {
     }
 
     if (empty($fieldErrors) && $conn) {
-        // Fetch current active product
+
         $stmt = mysqli_prepare($conn, "SELECT productID, name, sku, stock, lowStockThreshold FROM product WHERE productID = ? AND endDate IS NULL LIMIT 1");
         mysqli_stmt_bind_param($stmt, 'i', $selectedID);
         mysqli_stmt_execute($stmt);
@@ -87,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_stock'])) {
     }
 }
 
-// Fetch all active products
 $activeProducts = [];
 $lowStockProducts = [];
 
@@ -108,7 +106,6 @@ if ($conn) {
     }
 }
 
-// Find currently selected product details
 $currentSelected = null;
 if ($selectedID > 0) {
     foreach ($activeProducts as $ap) {
@@ -131,12 +128,10 @@ $activeModule = 'product';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -145,7 +140,6 @@ $activeModule = 'product';
             </ol>
         </nav>
 
-        <!-- Header Section -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <div>
                 <h1 class="h3 fw-bold mb-1">
@@ -163,7 +157,6 @@ $activeModule = 'product';
             </div>
         </div>
 
-        <!-- System Alerts -->
         <?php if ($successMessage !== ''): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($successMessage); ?>
@@ -184,7 +177,7 @@ $activeModule = 'product';
         <?php endif; ?>
 
         <div class="row g-4 mb-4">
-            <!-- Left Column: Adjustment Form Card -->
+
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white py-3">
@@ -193,9 +186,9 @@ $activeModule = 'product';
                         </span>
                     </div>
                     <div class="card-body p-4">
-                        <!-- Inventory Adjustment Form -->
+
                         <form method="post" action="stockUpdate.php" novalidate>
-                            
+
                             <div class="mb-3">
                                 <label for="productID" class="form-label small fw-semibold text-muted">Select Item <span class="text-danger">*</span></label>
                                 <select id="productID" name="productID" 
@@ -287,7 +280,6 @@ $activeModule = 'product';
                 </div>
             </div>
 
-            <!-- Right Column: Low Stock Alerts & Summary Table -->
             <div class="col-lg-7">
                 <?php if (!empty($lowStockProducts)): ?>
                     <div class="alert alert-warning border-warning shadow-sm mb-4 d-flex align-items-center">

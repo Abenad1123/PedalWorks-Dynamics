@@ -4,14 +4,12 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include('includes/config.php');
 
-// Verify database connection
 if (!$conn) {
     $_SESSION['error'] = 'Database service unavailable. Please try again later.';
     header('Location: products.php');
     exit;
 }
 
-// Ensure user is an authenticated customer (FR6 Requirement)
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['error'] = 'Please sign in with your customer account to manage your shopping cart.';
     header('Location: login.php');
@@ -22,7 +20,6 @@ $customerAccountID = (int)$_SESSION['customerAccountID'];
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 $redirect = $_POST['redirect'] ?? $_GET['redirect'] ?? 'cart.php';
 
-// Sanitize redirect target to avoid open redirects
 if (!in_array($redirect, ['cart.php', 'products.php', 'index.php']) && !str_starts_with($redirect, 'products.php')) {
     $redirect = 'cart.php';
 }
@@ -38,7 +35,6 @@ switch ($action) {
             exit;
         }
 
-        // Fetch current active product version and check stock
         $stmt = mysqli_prepare($conn, "SELECT productID, name, stock, price FROM product WHERE productID = ? AND endDate IS NULL LIMIT 1");
         mysqli_stmt_bind_param($stmt, 'i', $productID);
         mysqli_stmt_execute($stmt);
@@ -59,7 +55,6 @@ switch ($action) {
             exit;
         }
 
-        // Check current quantity in cart
         $cartStmt = mysqli_prepare($conn, "SELECT quantity FROM customerCart WHERE customerAccountID = ? AND productID = ? LIMIT 1");
         mysqli_stmt_bind_param($cartStmt, 'ii', $customerAccountID, $productID);
         mysqli_stmt_execute($cartStmt);
@@ -77,7 +72,6 @@ switch ($action) {
             $_SESSION['success'] = 'Added ' . $quantity . ' × "' . $product['name'] . '" to your cart!';
         }
 
-        // Upsert cart item
         $upStmt = mysqli_prepare($conn, "INSERT INTO customerCart (customerAccountID, productID, quantity) 
                                          VALUES (?, ?, ?) 
                                          ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)");
@@ -99,14 +93,14 @@ switch ($action) {
         }
 
         if ($quantity <= 0) {
-            // Remove if quantity is 0 or less
+
             $delStmt = mysqli_prepare($conn, "DELETE FROM customerCart WHERE customerAccountID = ? AND productID = ?");
             mysqli_stmt_bind_param($delStmt, 'ii', $customerAccountID, $productID);
             mysqli_stmt_execute($delStmt);
             mysqli_stmt_close($delStmt);
             $_SESSION['success'] = 'Item removed from your shopping cart.';
         } else {
-            // Check available stock
+
             $stmt = mysqli_prepare($conn, "SELECT name, stock FROM product WHERE productID = ? AND endDate IS NULL LIMIT 1");
             mysqli_stmt_bind_param($stmt, 'i', $productID);
             mysqli_stmt_execute($stmt);

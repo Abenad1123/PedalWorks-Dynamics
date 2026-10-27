@@ -7,7 +7,7 @@ include('./includes/header.php');
 ?>
 
 <div class="container py-5">
-    <!-- Breadcrumb -->
+
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb small text-white-50">
             <li class="breadcrumb-item"><a href="index.php" class="text-white-50 text-decoration-none">Home</a></li>
@@ -15,7 +15,6 @@ include('./includes/header.php');
         </ol>
     </nav>
 
-    <!-- Hero Header -->
     <div class="row align-items-center mb-5 g-4">
         <div class="col-lg-7">
             <div class="pw-section-eyebrow mb-2">
@@ -50,7 +49,6 @@ include('./includes/header.php');
         </div>
     </div>
 
-    <!-- Core Pillars / Why Choose Us -->
     <div class="mb-5">
         <div class="text-center mb-4">
             <h2 class="pw-section-title">The PedalWorks Standard</h2>
@@ -102,7 +100,6 @@ include('./includes/header.php');
         </div>
     </div>
 
-    <!-- Workshop & Location Basecamp Info -->
     <div class="pw-workshop-banner p-4 p-md-5 mb-5">
         <div class="row align-items-center g-4">
             <div class="col-lg-7">

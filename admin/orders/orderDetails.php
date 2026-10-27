@@ -1,12 +1,9 @@
 <?php
-/**
- * Admin Order Details & Status Update Form
- */
+
 session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
 
-// Access Control
 requireAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 
 $activeModule = 'orders';
@@ -23,7 +20,6 @@ if ($orderId <= 0) {
     exit;
 }
 
-// 1. Fetch Order and Customer details using Prepared Statement on vw_order_transaction_details (or fallback)
 $order = null;
 $stmtOrder = mysqli_prepare($conn, "SELECT 
         productSaleID,
@@ -50,7 +46,6 @@ if ($stmtOrder) {
     mysqli_stmt_close($stmtOrder);
 }
 
-// Fallback if view didn't match (e.g. order with no items yet)
 if (!$order) {
     $fbStmt = mysqli_prepare($conn, "SELECT 
             ps.productSaleID,
@@ -85,7 +80,6 @@ if (!$order) {
     exit;
 }
 
-// 2. Fetch Line Items using Prepared Statement
 $items = [];
 $stmtItems = mysqli_prepare($conn, "SELECT 
         orderLineProductID,
@@ -110,7 +104,6 @@ if ($stmtItems) {
     mysqli_stmt_close($stmtItems);
 }
 
-// 3. Fetch Linked Workshop Services (if any)
 $services = [];
 $stmtSrv = mysqli_prepare($conn, "SELECT 
         cs.customerServiceID,
@@ -135,7 +128,6 @@ if ($stmtSrv) {
     mysqli_stmt_close($stmtSrv);
 }
 
-// Calculate totals
 $itemsSubtotal = 0;
 foreach ($items as $row) {
     $itemsSubtotal += (float)$row['lineSubtotal'];
@@ -164,12 +156,10 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Breadcrumbs -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -178,7 +168,6 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
             </ol>
         </nav>
 
-        <!-- Header Section -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <div>
                 <div class="d-flex align-items-center gap-2">
@@ -204,7 +193,6 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
             </div>
         </div>
 
-        <!-- Feedback Messages -->
         <?php if (!empty($_SESSION['actionSuccess'])): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($_SESSION['actionSuccess']); ?>
@@ -222,11 +210,9 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
         <?php endif; ?>
 
         <div class="row g-4">
-            
-            <!-- Left Column: Order Items & Financials -->
+
             <div class="col-lg-8">
-                
-                <!-- Items Card -->
+
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold fs-6">
@@ -291,7 +277,6 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
                                     <?php endforeach; ?>
                                 <?php endif; ?>
 
-                                <!-- Workshop Services Attached (if any) -->
                                 <?php if (!empty($services)): ?>
                                     <tr class="table-light">
                                         <td colspan="5" class="ps-4 py-2 small fw-bold text-uppercase text-secondary">
@@ -314,7 +299,6 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
                         </table>
                     </div>
 
-                    <!-- Financial Summary Footer -->
                     <div class="card-footer bg-white p-4 border-top">
                         <div class="row justify-content-end">
                             <div class="col-md-6 col-lg-5">
@@ -340,10 +324,8 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
 
             </div>
 
-            <!-- Right Column: Status Update Form & Customer Details -->
             <div class="col-lg-4">
-                
-                <!-- Status Update Card -->
+
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3 border-bottom">
                         <h5 class="mb-0 fw-bold fs-6">
@@ -378,7 +360,6 @@ $statuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Complete
                     </div>
                 </div>
 
-                <!-- Customer & Fulfillment Card -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3 border-bottom">
                         <h5 class="mb-0 fw-bold fs-6">

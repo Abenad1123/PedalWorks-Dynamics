@@ -3,10 +3,8 @@ session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
 
-// Access Control: Accounting Administrator or Super Administrator (FR20)
 requireAdminRole(['Accounting Administrator', 'Super Administrator']);
 
-// Date Range Filtering
 $preset    = isset($_GET['preset']) ? trim($_GET['preset']) : 'month';
 $startDate = isset($_GET['start_date']) ? trim($_GET['start_date']) : '';
 $endDate   = isset($_GET['end_date']) ? trim($_GET['end_date']) : '';
@@ -51,7 +49,6 @@ switch ($preset) {
         break;
 }
 
-// 1. Product Sales Income
 $productSales = 0.0;
 $orderCount = 0;
 $unitsSold = 0;
@@ -77,7 +74,6 @@ if ($conn) {
     }
 }
 
-// 2. Service Labor Revenue
 $serviceLabor = 0.0;
 $serviceCount = 0;
 if ($conn) {
@@ -102,7 +98,6 @@ if ($conn) {
 
 $grossIncome = $productSales + $serviceLabor;
 
-// 3. Overhead Expenses
 $expensesByCategory = [
     'Rent'            => 0.0,
     'Electricity'     => 0.0,
@@ -211,7 +206,6 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
 </head>
 <body>
 
-    <!-- Non-Print Floating Toolbar -->
     <div class="no-print bg-dark text-white py-2 sticky-top shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="small">
@@ -230,7 +224,7 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
     </div>
 
     <div class="print-container">
-        <!-- Letterhead Header -->
+
         <div class="report-header d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="fw-bold mb-0 text-dark">PedalWorks Dynamics</h2>
@@ -244,7 +238,6 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </div>
         </div>
 
-        <!-- Metadata Box -->
         <div class="report-meta-box">
             <div class="row g-2">
                 <div class="col-6">
@@ -266,7 +259,6 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </div>
         </div>
 
-        <!-- 1. Executive Summary Table -->
         <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3">1. Executive Financial Summary</h6>
         <table class="table table-bordered mb-4">
             <thead class="table-light">
@@ -297,7 +289,6 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </tbody>
         </table>
 
-        <!-- 2. Revenue Breakdown -->
         <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3">2. Recognized Revenue Breakdown</h6>
         <table class="table table-bordered mb-4">
             <thead class="table-light small">
@@ -325,7 +316,6 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </tbody>
         </table>
 
-        <!-- 3. Overhead Expenses Breakdown -->
         <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3">3. Operating Overhead Expenses</h6>
         <table class="table table-bordered mb-4">
             <thead class="table-light small">
@@ -353,7 +343,6 @@ $profitMargin = ($grossIncome > 0) ? ($netProfit / $grossIncome) * 100 : 0.0;
             </tbody>
         </table>
 
-        <!-- Signatures Section -->
         <div class="row pt-4 mt-5">
             <div class="col-6">
                 <div class="signature-line">

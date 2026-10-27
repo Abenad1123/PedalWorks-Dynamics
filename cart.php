@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include('includes/config.php');
 
-// Auth check: require customer login
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['error'] = 'Please sign in to view and manage your shopping cart.';
     header('Location: login.php');
@@ -46,7 +45,6 @@ include('includes/header.php');
 
 <div class="container py-5">
 
-    <!-- Breadcrumb & Header -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
         <div>
             <nav aria-label="breadcrumb">
@@ -73,11 +71,10 @@ include('includes/header.php');
         <?php endif; ?>
     </div>
 
-    <!-- Alert Messages -->
     <?php include('includes/alert.php'); ?>
 
     <?php if (empty($cartItems)): ?>
-        <!-- Apple HIG Empty State -->
+
         <div class="pw-cart-card text-center py-5 px-4 my-4">
             <div class="mb-3">
                 <div class="d-inline-flex align-items-center justify-content-center rounded-circle" 
@@ -95,7 +92,7 @@ include('includes/header.php');
         </div>
     <?php else: ?>
         <div class="row g-4">
-            <!-- Left: Cart Items List -->
+
             <div class="col-lg-8">
                 <div class="pw-cart-card">
                     <div class="p-3 border-bottom border-white border-opacity-10 d-flex justify-content-between align-items-center">
@@ -115,7 +112,7 @@ include('includes/header.php');
                             $isOutOfStock = ($maxStock <= 0);
                         ?>
                             <div class="pw-cart-item-row flex-column flex-sm-row align-items-start align-items-sm-center">
-                                <!-- Thumbnail -->
+
                                 <div class="pw-cart-thumb">
                                     <?php if (!empty($item['image']) && file_exists(__DIR__ . '/' . $item['image'])): ?>
                                         <img src="/project/PedalWorks-Dynamics/<?php echo htmlspecialchars($item['image']); ?>" 
@@ -125,7 +122,6 @@ include('includes/header.php');
                                     <?php endif; ?>
                                 </div>
 
-                                <!-- Product Info -->
                                 <div class="flex-grow-1 min-w-0">
                                     <div class="d-flex align-items-center gap-2 mb-1">
                                         <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 small" style="font-size: 0.725rem;">
@@ -146,7 +142,6 @@ include('includes/header.php');
                                     </div>
                                 </div>
 
-                                <!-- Quantity Stepper (FR7 Cart Modification) -->
                                 <div class="d-flex align-items-center gap-3">
                                     <form action="cart_action.php" method="POST" class="d-flex align-items-center gap-2 m-0">
                                         <input type="hidden" name="action" value="update">
@@ -166,14 +161,12 @@ include('includes/header.php');
                                         </div>
                                     </form>
 
-                                    <!-- Line Subtotal -->
                                     <div class="text-end" style="min-width: 95px;">
                                         <span class="text-white fw-bold d-block">
                                             &#8369;<?php echo number_format($item['lineSubtotal'], 2); ?>
                                         </span>
                                     </div>
 
-                                    <!-- Remove Button -->
                                     <form action="cart_action.php" method="POST" class="m-0">
                                         <input type="hidden" name="action" value="remove">
                                         <input type="hidden" name="productID" value="<?php echo (int)$item['productID']; ?>">
@@ -188,7 +181,6 @@ include('includes/header.php');
                 </div>
             </div>
 
-            <!-- Right: Order Summary Card -->
             <div class="col-lg-4">
                 <div class="pw-cart-card p-4 sticky-top" style="top: 90px;">
                     <h4 class="fw-bold text-white mb-3">Order Summary</h4>

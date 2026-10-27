@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include('includes/config.php');
 
-// Auth Guard: Require logged-in customer (FR8 Requirement)
 if (empty($_SESSION['customerAccountID'])) {
     $_SESSION['error'] = 'Please sign in to proceed with checkout.';
     header('Location: login.php');
@@ -14,7 +13,6 @@ if (empty($_SESSION['customerAccountID'])) {
 $customerAccountID = (int)$_SESSION['customerAccountID'];
 $customerID        = (int)($_SESSION['customerID'] ?? 0);
 
-// Fetch Cart Items
 $cartItems = [];
 $subtotal = 0.0;
 $totalQuantity = 0;
@@ -44,14 +42,12 @@ if ($conn) {
     }
 }
 
-// Redirect if cart is empty
 if (empty($cartItems)) {
     $_SESSION['warning'] = 'Your shopping cart is empty. Please add items before checking out.';
     header('Location: cart.php');
     exit;
 }
 
-// Fetch Customer Profile Information for Pre-fill
 $customerData = [
     'firstName' => $_SESSION['firstName'] ?? '',
     'lastName'  => '',
@@ -72,7 +68,6 @@ if ($conn && $customerID > 0) {
     }
 }
 
-// Fetch available workshop services for labor attachment (FR15)
 $availableServices = [];
 if ($conn) {
     $svcRes = @mysqli_query($conn, "SELECT s.serviceID, s.sku, s.name, s.price, sc.name AS categoryName 
@@ -87,29 +82,24 @@ if ($conn) {
     }
 }
 
-// Handle Form Submission
 $errors = [];
 $pickupMethod    = $_POST['pickupMethod'] ?? 'Delivery';
 $deliveryAddress = $_POST['deliveryAddress'] ?? ($customerData['address'] ?? '');
 $paymentMethod   = $_POST['paymentMethod'] ?? 'Cash on Delivery';
 
-// Enforce payment methods strictly per fulfillment method:
-// - Doorstep Delivery allows ONLY Cash on Delivery
-// - In-Store Pickup allows ONLY Cash on Pickup
 if ($pickupMethod === 'Delivery') {
     $paymentMethod = 'Cash on Delivery';
 } elseif ($pickupMethod === 'In-Store Pickup') {
     $paymentMethod = 'Cash on Pickup';
 }
 
-// Labor Attachment Fields (FR15)
 $attachLabor         = !empty($_POST['attachLabor']) && $_POST['attachLabor'] === '1';
 $laborServiceID      = isset($_POST['laborServiceID']) ? (int)$_POST['laborServiceID'] : 0;
 $laborScheduledRaw   = isset($_POST['laborScheduledDate']) ? trim($_POST['laborScheduledDate']) : '';
 $laborNotes          = isset($_POST['laborNotes']) ? trim($_POST['laborNotes']) : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Server-side validation
+
     if (!in_array($pickupMethod, ['Delivery', 'In-Store Pickup'], true)) {
         $errors['pickupMethod'] = 'Please select a valid fulfillment method.';
     }
@@ -122,16 +112,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['deliveryAddress'] = 'Please provide a complete street address (minimum 8 characters).';
         }
 
-        // Doorstep Delivery strictly allows ONLY Cash on Delivery
         $paymentMethod = 'Cash on Delivery';
     } else {
-        // In-store pickup doesn't strictly need a custom delivery address
+
         $deliveryAddress = 'In-Store Pickup: PedalWorks Basecamp, Km. 14 East Service Road, Western Bicutan, Taguig City';
-        // In-store pickup strictly enforces Cash on Pickup only
+
         $paymentMethod = 'Cash on Pickup';
     }
 
-    // Labor Request Validation (FR15)
     $laborScheduledFormatted = null;
     if ($attachLabor) {
         if ($laborServiceID <= 0) {
@@ -148,11 +136,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors) && $conn) {
-        // Start Database Transaction for FR12 Automatic Stock Deduction
+
         mysqli_begin_transaction($conn);
 
         try {
-            // 1. Re-validate and lock stock for each cart item
+
             $checkStmt = mysqli_prepare($conn, "SELECT c.quantity, p.productID, p.name, p.stock, p.price 
                                                 FROM customerCart c 
                                                 JOIN product p ON c.productID = p.productID 
@@ -175,7 +163,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Your shopping cart contains items that are no longer available.');
             }
 
-            // 2. Insert into productSale table (Order initial status is 'Pending')
             $saleStmt = mysqli_prepare($conn, "INSERT INTO productSale (customerAccountID, paymentMethod, pickupMethod, deliveryAddress, status, orderDate) 
                                                VALUES (?, ?, ?, ?, 'Pending', NOW())");
             mysqli_stmt_bind_param($saleStmt, 'isss', $customerAccountID, $paymentMethod, $pickupMethod, $deliveryAddress);
@@ -185,7 +172,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $productSaleID = mysqli_insert_id($conn);
             mysqli_stmt_close($saleStmt);
 
-            // 3. Insert orderLineProduct records & deduct stock (FR12)
             $lineStmt  = mysqli_prepare($conn, "INSERT INTO orderLineProduct (productSaleID, productID, quantity) VALUES (?, ?, ?)");
             $stockStmt = mysqli_prepare($conn, "UPDATE product SET stock = stock - ? WHERE productID = ?");
 
@@ -193,13 +179,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pid = (int)$item['productID'];
                 $qty = (int)$item['quantity'];
 
-                // Insert line item
                 mysqli_stmt_bind_param($lineStmt, 'iii', $productSaleID, $pid, $qty);
                 if (!mysqli_stmt_execute($lineStmt)) {
                     throw new Exception('Failed to record order item: ' . mysqli_stmt_error($lineStmt));
                 }
 
-                // Automatic stock deduction
                 mysqli_stmt_bind_param($stockStmt, 'ii', $qty, $pid);
                 if (!mysqli_stmt_execute($stockStmt)) {
                     throw new Exception('Failed to update stock inventory: ' . mysqli_stmt_error($stockStmt));
@@ -208,7 +192,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_close($lineStmt);
             mysqli_stmt_close($stockStmt);
 
-            // 4. Attach workshop labor request to order if selected (FR15)
             if ($attachLabor && $laborServiceID > 0) {
                 $laborStmt = mysqli_prepare($conn, "INSERT INTO customerService (serviceID, customerAccountID, productSaleID, requestDate, scheduledDate, notes, status) 
                                                     VALUES (?, ?, ?, NOW(), ?, ?, 'Pending')");
@@ -221,16 +204,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            // 5. Clear Customer's Cart
             $clearStmt = mysqli_prepare($conn, "DELETE FROM customerCart WHERE customerAccountID = ?");
             mysqli_stmt_bind_param($clearStmt, 'i', $customerAccountID);
             mysqli_stmt_execute($clearStmt);
             mysqli_stmt_close($clearStmt);
 
-            // Commit Transaction
             mysqli_commit($conn);
 
-            // Automated Order Confirmation Email (PHPMailer / itim211-2b-shop alignment)
             try {
                 if (file_exists('PHPMailer/src/PHPMailer.php')) {
                     if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
@@ -247,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mail->Username   = '312649aee7d340';
                     $mail->Password   = '7bec3dc61ba28b';
                     $mail->setFrom('orders@pedalworks.com', 'PedalWorks Dynamics');
-                    
+
                     $cEmail = !empty($customerData['email']) ? $customerData['email'] : 'customer@example.com';
                     $cName = trim(($customerData['firstName'] ?? '') . ' ' . ($customerData['lastName'] ?? ''));
                     if ($cName === '') $cName = 'Valued Rider';
@@ -301,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mail->send();
                 }
             } catch (\Throwable $mailEx) {
-                // Graceful fallback: SMTP connection issues never block order placement
+
             }
 
             $successMsg = 'Your order #PW-ORD-' . $productSaleID . ' has been placed successfully!';
@@ -323,7 +303,7 @@ include('includes/header.php');
 ?>
 
 <div class="container py-5">
-    <!-- Breadcrumb & Title -->
+
     <div class="mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-1 small text-white-50">
@@ -334,7 +314,6 @@ include('includes/header.php');
         </nav>
         <h1 class="h2 fw-bold text-white mb-3">Checkout &amp; Finalize Order</h1>
 
-        <!-- 3-Step Checkout Progress Stepper (Canyon & Trek Inspired) -->
         <div class="pw-checkout-stepper mb-4">
             <a href="cart.php" class="pw-step-item completed text-decoration-none">
                 <span class="pw-step-num"><i class="fa-solid fa-check"></i></span>
@@ -353,7 +332,6 @@ include('includes/header.php');
         </div>
     </div>
 
-    <!-- General Error Alert -->
     <?php if (!empty($errors['general'])): ?>
         <div class="alert alert-danger pw-glass-alert alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
             <i class="fa-solid fa-triangle-exclamation text-danger fs-5"></i>
@@ -364,9 +342,9 @@ include('includes/header.php');
 
     <form action="checkout.php" method="POST" novalidate>
         <div class="row g-4">
-            <!-- Left: Fulfillment & Payment Details -->
+
             <div class="col-lg-7">
-                <!-- Fulfillment Method (Apple Segmented Picker) -->
+
                 <div class="pw-checkout-card p-4 mb-4">
                     <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
                         <i class="fa-solid fa-truck-fast text-primary"></i>
@@ -408,7 +386,6 @@ include('includes/header.php');
                         <div class="text-danger small mb-3"><?php echo htmlspecialchars($errors['pickupMethod']); ?></div>
                     <?php endif; ?>
 
-                    <!-- Delivery Address Box -->
                     <div id="deliveryAddressGroup" style="<?php echo ($pickupMethod === 'In-Store Pickup') ? 'display: none;' : ''; ?>">
                         <label for="deliveryAddress" class="form-label text-white small fw-semibold">
                             Delivery Street Address <span class="text-danger">*</span>
@@ -423,7 +400,6 @@ include('includes/header.php');
                         <?php endif; ?>
                     </div>
 
-                    <!-- Basecamp Pickup Info Box -->
                     <div id="pickupInfoGroup" class="p-3 rounded" style="background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.18); <?php echo ($pickupMethod !== 'In-Store Pickup') ? 'display: none;' : ''; ?>">
                         <div class="d-flex align-items-start gap-3">
                             <div class="pw-workshop-spec-icon text-success" style="font-size: 1.4rem;">
@@ -446,7 +422,6 @@ include('includes/header.php');
                     </div>
                 </div>
 
-                <!-- Workshop Labor & Installation Request (FR15) -->
                 <div class="pw-checkout-card p-4 mb-4">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
@@ -499,7 +474,6 @@ include('includes/header.php');
                     </div>
                 </div>
 
-                <!-- Payment Method (FR8) -->
                 <div class="pw-checkout-card p-4">
                     <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
                         <i class="fa-solid fa-credit-card text-success"></i>
@@ -551,7 +525,6 @@ include('includes/header.php');
                 </div>
             </div>
 
-            <!-- Right: Order Review Sidebar -->
             <div class="col-lg-5">
                 <div class="pw-checkout-card p-4 sticky-top" style="top: 90px;">
                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-white border-opacity-10">
@@ -561,7 +534,6 @@ include('includes/header.php');
                         </span>
                     </div>
 
-                    <!-- Items List -->
                     <div class="mb-3" style="max-height: 280px; overflow-y: auto;">
                         <?php foreach ($cartItems as $item): ?>
                             <div class="d-flex align-items-center gap-3 py-2 border-bottom border-white border-opacity-5">
@@ -588,7 +560,6 @@ include('includes/header.php');
                         <?php endforeach; ?>
                     </div>
 
-                    <!-- Price Calculations -->
                     <div class="d-flex justify-content-between text-white-50 small mb-2">
                         <span>Subtotal</span>
                         <span class="text-white fw-semibold">&#8369;<?php echo number_format($subtotal, 2); ?></span>

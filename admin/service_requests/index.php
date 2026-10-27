@@ -3,12 +3,10 @@ session_start();
 include('../../includes/config.php');
 include('../../includes/admin_auth.php');
 
-// Access Control: Service & Repair Manager or Super Administrator (FR16)
 requireAdminRole(['Service & Repair Manager', 'Super Administrator']);
 
 $activeModule = 'service_requests';
 
-// Handle Status & Technician Assignment Update
 $actionSuccess = '';
 $actionError = '';
 
@@ -24,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     } elseif (!in_array($newStatus, $validStatuses, true)) {
         $actionError = 'Please select a valid service lifecycle status.';
     } elseif ($conn) {
-        // If technician not provided, default to current admin if status is moving beyond Pending
+
         if ($assignedTech === null && in_array($newStatus, ['Received', 'In Progress', 'Ready for Pickup', 'Completed'], true)) {
             $assignedTech = (int)$_SESSION['adminAccountID'];
         }
@@ -43,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Fetch technicians for assignment dropdown
 $technicians = [];
 if ($conn) {
     $tRes = mysqli_query($conn, "SELECT adminAccountID, username, role FROM adminAccount WHERE role IN ('Service & Repair Manager', 'Super Administrator') ORDER BY username ASC");
@@ -54,11 +51,9 @@ if ($conn) {
     }
 }
 
-// Filters
 $statusFilter = isset($_GET['status']) ? trim($_GET['status']) : 'all';
 $searchQuery  = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// KPI Statistics
 $kpi = [
     'pending'     => 0,
     'in_progress' => 0,
@@ -84,7 +79,6 @@ if ($conn) {
     }
 }
 
-// Fetch Service Requests
 $requests = [];
 if ($conn) {
     $where = [];
@@ -145,7 +139,6 @@ if ($conn) {
     }
 }
 
-// Status Badges & Styling Helper
 function getAdminStatusBadge($status) {
     switch ($status) {
         case 'Pending':
@@ -183,7 +176,6 @@ function getAdminStatusBadge($status) {
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Header -->
         <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-4 border-bottom gap-2">
             <div>
                 <nav aria-label="breadcrumb">
@@ -208,7 +200,6 @@ function getAdminStatusBadge($status) {
             </div>
         </div>
 
-        <!-- Feedback Alerts -->
         <?php if ($actionSuccess !== ''): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($actionSuccess); ?>
@@ -222,7 +213,6 @@ function getAdminStatusBadge($status) {
             </div>
         <?php endif; ?>
 
-        <!-- KPI Summary Cards -->
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-xl-3">
                 <div class="card border-0 shadow-sm border-start border-warning border-4 h-100">
@@ -270,7 +260,6 @@ function getAdminStatusBadge($status) {
             </div>
         </div>
 
-        <!-- Filter & Search Controls -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <form method="GET" action="index.php" class="row g-2 align-items-center">
@@ -305,7 +294,6 @@ function getAdminStatusBadge($status) {
             </div>
         </div>
 
-        <!-- Requests Table -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0 fw-bold">
@@ -399,7 +387,6 @@ function getAdminStatusBadge($status) {
                                 </td>
                             </tr>
 
-                            <!-- Status Update Modal -->
                             <div class="modal fade" id="<?php echo $modalId; ?>" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -413,7 +400,7 @@ function getAdminStatusBadge($status) {
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body p-4">
-                                                <!-- Service & Customer Summary -->
+
                                                 <div class="p-3 mb-3 rounded bg-light border">
                                                     <div class="d-flex justify-content-between mb-1">
                                                         <strong class="text-dark"><?php echo htmlspecialchars($r['serviceName']); ?></strong>
@@ -427,7 +414,6 @@ function getAdminStatusBadge($status) {
                                                     <?php endif; ?>
                                                 </div>
 
-                                                <!-- Status Select (FR16) -->
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold small text-uppercase">Service Lifecycle Status <span class="text-danger">*</span></label>
                                                     <select name="status" class="form-select" required>
@@ -441,7 +427,6 @@ function getAdminStatusBadge($status) {
                                                     <div class="form-text small">Updating status allows the customer to track their bike's progress live.</div>
                                                 </div>
 
-                                                <!-- Technician Assignment -->
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold small text-uppercase">Assign Workshop Technician</label>
                                                     <select name="adminAccountID" class="form-select">

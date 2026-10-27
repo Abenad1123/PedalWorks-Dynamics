@@ -1,13 +1,4 @@
 <?php
-/**
- * PedalWorks Dynamics — Initial Database Seeder
- * Run this file in your browser: http://localhost/project/PedalWorks-Dynamics/seed_admin.php
- * or from CLI: php seed_admin.php
- *
- * This script safely sets up:
- * 1. Default Admin Accounts for all 4 system roles
- * 2. Default Product and Service Categories
- */
 
 include('./includes/config.php');
 
@@ -17,9 +8,6 @@ if (!$conn) {
 
 $messages = [];
 
-// -------------------------------------------------------------------------
-// 1. Seed Admin Accounts
-// -------------------------------------------------------------------------
 $adminAccounts = [
     [
         'username' => 'admin',
@@ -62,9 +50,6 @@ foreach ($adminAccounts as $acc) {
     mysqli_stmt_close($stmt);
 }
 
-// -------------------------------------------------------------------------
-// 2. Seed Default Product Categories
-// -------------------------------------------------------------------------
 $productCategories = [
     'Full Build Bikes',
     'Bicycle Parts',
@@ -88,9 +73,6 @@ foreach ($productCategories as $catName) {
     mysqli_stmt_close($stmt);
 }
 
-// -------------------------------------------------------------------------
-// 3. Seed Default Service Categories
-// -------------------------------------------------------------------------
 $serviceCategories = [
     'Tune-Up & Overhaul',
     'Brake Services',

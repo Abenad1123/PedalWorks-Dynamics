@@ -36,7 +36,6 @@ if ($conn && ($productID > 0 || $sku !== '')) {
     }
 }
 
-// Check if user is logged in and if they have purchased this product
 $hasPurchased = false;
 $customerAccountID = (int)($_SESSION['customerAccountID'] ?? 0);
 $userReview = null;
@@ -47,7 +46,6 @@ $totalReviews = 0;
 if ($conn && $product) {
     $pID = (int)$product['productID'];
 
-    // 1. Check purchase verification
     if ($customerAccountID > 0) {
         $checkPurchaseSql = "SELECT COUNT(*) AS c 
                              FROM productSale ps 
@@ -64,7 +62,6 @@ if ($conn && $product) {
             mysqli_stmt_close($cpStmt);
         }
 
-        // Fetch user's own review if already submitted
         $urStmt = mysqli_prepare($conn, "SELECT reviewID, rating, reviewText, cleanText, createdAt, updatedAt FROM review WHERE customerAccountID = ? AND productID = ? LIMIT 1");
         if ($urStmt) {
             mysqli_stmt_bind_param($urStmt, 'ii', $customerAccountID, $pID);
@@ -75,7 +72,6 @@ if ($conn && $product) {
         }
     }
 
-    // 2. Fetch all published reviews for this product
     $revSql = "SELECT r.reviewID, r.customerAccountID, r.rating, r.cleanText, r.createdAt, r.updatedAt,
                       ca.username,
                       c.firstName, c.lastName, c.photo
@@ -102,7 +98,6 @@ if ($conn && $product) {
         }
     }
 
-    // 3. Fetch all photos for photo showcase
     $productImages = [];
     $imgStmt = mysqli_prepare($conn, "SELECT productImageID, imagePath, isPrimary FROM productImage WHERE productID = ? ORDER BY isPrimary DESC, productImageID ASC");
     if ($imgStmt) {
@@ -149,7 +144,7 @@ include('includes/header.php');
         $isOutOfStock = ($stock <= 0);
         $isLowStock   = ($stock > 0 && $stock <= $threshold);
     ?>
-        <!-- Breadcrumb Navigation -->
+
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb small text-white-50">
                 <li class="breadcrumb-item"><a href="index.php" class="text-white-50 text-decoration-none">Home</a></li>
@@ -159,9 +154,8 @@ include('includes/header.php');
             </ol>
         </nav>
 
-        <!-- Product Primary Showcase -->
         <div class="row g-4 mb-5">
-            <!-- Left: Product Image Stage & Photo Showcase -->
+
             <div class="col-lg-6">
                 <div class="pw-cart-card p-4 p-md-5 d-flex align-items-center justify-content-center position-relative" 
                      style="min-height: 440px; background: #ffffff; border-radius: 20px;">
@@ -207,7 +201,6 @@ include('includes/header.php');
                     <?php endif; ?>
                 </div>
 
-                <!-- Photo Thumbnails Strip -->
                 <?php if (count($productImages) > 1): ?>
                     <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
                         <?php foreach ($productImages as $tIdx => $tImg): ?>
@@ -242,11 +235,10 @@ include('includes/header.php');
                 <?php endif; ?>
             </div>
 
-            <!-- Right: Product Purchasing & Overview -->
             <div class="col-lg-6">
                 <div class="pw-cart-card p-4 p-md-5 h-100 d-flex flex-column justify-content-between">
                     <div>
-                        <!-- SKU and Category Header -->
+
                         <div class="d-flex align-items-center gap-2 mb-2">
                             <span class="pw-sku-mono text-warning">
                                 <i class="fa-solid fa-barcode me-1"></i><?php echo htmlspecialchars($product['sku']); ?>
@@ -255,12 +247,10 @@ include('includes/header.php');
                             <span class="text-white-50 small"><?php echo htmlspecialchars($catName); ?></span>
                         </div>
 
-                        <!-- Product Title -->
                         <h1 class="h2 fw-bold text-white mb-3" style="letter-spacing: -0.02em; line-height: 1.25;">
                             <?php echo htmlspecialchars($product['name']); ?>
                         </h1>
 
-                        <!-- Price Tag -->
                         <div class="mb-4">
                             <div class="text-white-50 small text-uppercase fw-semibold" style="letter-spacing: 0.05em;">Price</div>
                             <div class="h2 fw-bold text-white mb-0" style="color: var(--pw-trail-amber) !important; font-size: 2.4rem;">
@@ -271,7 +261,6 @@ include('includes/header.php');
                             </div>
                         </div>
 
-                        <!-- Sizing Guide Trigger & Stock Assurance -->
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                             <button type="button" class="btn btn-sm pw-btn-glass rounded-pill px-3 py-1 text-white" data-bs-toggle="modal" data-bs-target="#sizingGuideModal">
                                 <i class="fa-solid fa-ruler-combined text-warning me-1"></i> Frame Sizing &amp; Fit Guide
@@ -279,7 +268,6 @@ include('includes/header.php');
                             <span class="small text-white-50"><i class="fa-solid fa-shield-halved text-success me-1"></i> Factory Calibrated</span>
                         </div>
 
-                        <!-- Fulfillment Expectations (Canyon & Trek Inspired) -->
                         <div class="pw-fulfillment-card mb-4">
                             <div class="row g-2">
                                 <div class="col-sm-6">
@@ -307,7 +295,6 @@ include('includes/header.php');
                             </div>
                         </div>
 
-                        <!-- Short Description -->
                         <div class="mb-4 pb-3 border-bottom border-white border-opacity-10">
                             <h6 class="text-white fw-bold mb-2">Overview</h6>
                             <p class="text-white-50 mb-0" style="line-height: 1.7; font-size: 0.95rem;">
@@ -316,7 +303,6 @@ include('includes/header.php');
                         </div>
                     </div>
 
-                    <!-- Add to Cart Form -->
                     <div>
                         <?php if (!$isOutOfStock): ?>
                             <form action="cart_action.php" method="POST" class="mb-4">
@@ -353,7 +339,6 @@ include('includes/header.php');
                             </div>
                         <?php endif; ?>
 
-                        <!-- Feature highlights -->
                         <div class="row g-2 pt-2 border-top border-white border-opacity-10 small text-white-50">
                             <div class="col-sm-6">
                                 <i class="fa-solid fa-shield-halved text-success me-1"></i> Genuine Trail Guarantee
@@ -373,7 +358,6 @@ include('includes/header.php');
             </div>
         </div>
 
-        <!-- Specifications & Technical Details -->
         <div class="row g-4 mb-5">
             <div class="col-lg-8">
                 <div class="pw-cart-card p-4">
@@ -418,7 +402,6 @@ include('includes/header.php');
                 </div>
             </div>
 
-            <!-- Workshop Services Callout -->
             <div class="col-lg-4">
                 <div class="pw-cart-card p-4 h-100 d-flex flex-column justify-content-between">
                     <div>
@@ -437,7 +420,6 @@ include('includes/header.php');
             </div>
         </div>
 
-        <!-- Section: Customer Reviews & Ratings -->
         <div class="pw-cart-card p-4 p-md-5" id="reviews">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-white border-opacity-10 gap-3">
                 <div>
@@ -463,7 +445,6 @@ include('includes/header.php');
                 </div>
             </div>
 
-            <!-- Review Summary Cards -->
             <div class="row g-4 align-items-center mb-4">
                 <div class="col-md-4 text-center border-end border-white border-opacity-10 py-3">
                     <div class="h1 fw-bold text-white mb-1"><?php echo number_format($avgRating, 1); ?></div>
@@ -493,7 +474,6 @@ include('includes/header.php');
                                 Tell other mountain and trail riders how this gear performed in real conditions. Inappropriate language will be automatically masked.
                             </p>
 
-                            <!-- Review Form -->
                             <form action="review_action.php" method="POST" novalidate>
                                 <input type="hidden" name="action" value="<?php echo $userReview ? 'update' : 'create'; ?>">
                                 <input type="hidden" name="productID" value="<?php echo (int)$product['productID']; ?>">
@@ -549,7 +529,6 @@ include('includes/header.php');
                 </div>
             </div>
 
-            <!-- Customer Reviews List -->
             <div class="mt-4 pt-3 border-top border-white border-opacity-10">
                 <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
                     <i class="fa-solid fa-comments text-warning"></i>
@@ -635,7 +614,6 @@ include('includes/header.php');
             </div>
         </div>
 
-    <!-- Canyon & Trek Inspired Rider Sizing & Frame Fit Modal -->
     <div class="modal fade" id="sizingGuideModal" tabindex="-1" aria-labelledby="sizingGuideModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content pw-modal-content">
@@ -757,7 +735,6 @@ include('includes/header.php');
         </div>
     </div>
 
-    <!-- Canyon/Trek-Inspired Sticky Bottom Purchase Bar -->
     <?php if (!$isOutOfStock): ?>
     <div class="pw-sticky-cart-bar d-flex align-items-center justify-content-between" id="pwStickyCartBar" role="region" aria-label="Quick purchase bar">
         <div class="d-flex align-items-center gap-3">

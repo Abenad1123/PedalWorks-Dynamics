@@ -16,13 +16,13 @@ if (isset($_SESSION['error'])) {
     unset($_SESSION['error']);
 }
 
-// Filter parameters
+ 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $categoryFilter = isset($_GET['category']) ? trim($_GET['category']) : '';
 $stockFilter = isset($_GET['stock_status']) ? trim($_GET['stock_status']) : '';
 $showArchived = isset($_GET['show_archived']) && $_GET['show_archived'] === '1';
 
-// Fetch categories for filter dropdown
+ 
 $categories = [];
 if ($conn) {
     $catRes = mysqli_query($conn, "SELECT * FROM productCategory ORDER BY name ASC");
@@ -33,14 +33,14 @@ if ($conn) {
     }
 }
 
-// Build query
+ 
 $productList = [];
 $totalActive = 0;
 $totalLowStock = 0;
 $totalOutOfStock = 0;
 
 if ($conn) {
-    // Metric counts
+     
     $mRes = mysqli_query($conn, "SELECT 
         COUNT(*) AS activeCount,
         SUM(CASE WHEN stock <= lowStockThreshold AND stock > 0 THEN 1 ELSE 0 END) AS lowCount,
@@ -127,12 +127,12 @@ $activeModule = 'product';
 </head>
 <body class="bg-light">
 
-    <!-- Top Admin Navigation Bar -->
+    
     <?php include('../../includes/admin_nav.php'); ?>
 
     <div class="container-fluid px-4 py-4">
 
-        <!-- Breadcrumbs -->
+        
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small">
                 <li class="breadcrumb-item"><a href="../dashboard.php" class="text-decoration-none">Dashboard</a></li>
@@ -140,7 +140,7 @@ $activeModule = 'product';
             </ol>
         </nav>
 
-        <!-- Header Section -->
+        
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
             <div>
                 <h1 class="h3 fw-bold mb-1">
@@ -158,7 +158,7 @@ $activeModule = 'product';
             </div>
         </div>
 
-        <!-- System Alerts -->
+        
         <?php if ($successMessage !== ''): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i><?php echo htmlspecialchars($successMessage); ?>
@@ -173,7 +173,7 @@ $activeModule = 'product';
             </div>
         <?php endif; ?>
 
-        <!-- Stat KPI Cards -->
+        
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-md-3">
                 <div class="card border-0 shadow-sm h-100 border-start border-primary border-4">
@@ -213,7 +213,7 @@ $activeModule = 'product';
             </div>
         </div>
 
-        <!-- Filter & Search Card -->
+        
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <form method="get" action="index.php" class="row g-3 align-items-center">
@@ -264,7 +264,7 @@ $activeModule = 'product';
             </div>
         </div>
 
-        <!-- Product Table Card -->
+        
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <span class="fw-semibold text-dark">

@@ -1,19 +1,11 @@
-/**
- * PedalWorks Dynamics — High-Performance Homepage Animation Engine
- * Optimized for 60 FPS, Apple HIG fluidity, zero layout thrashing
- * Scope: Strictly restricted to index.php (Homepage)
- */
-
 (function () {
     'use strict';
 
-    // Verify Anime.js is loaded
     if (typeof anime === 'undefined') {
         console.warn('[PedalWorks Dynamics] Anime.js not detected. Scroll animations bypassed.');
         return;
     }
 
-    // Check for reduced motion preference (Accessibility First)
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
         console.info('[PedalWorks Dynamics] prefers-reduced-motion is active. Simplified static display applied.');
@@ -21,12 +13,8 @@
         return;
     }
 
-    // Mark document as ready for animations
     document.body.classList.add('pw-anim-ready');
 
-    /* ==========================================================================
-       1. HERO INTRO ENTRANCE TIMELINE
-       ========================================================================== */
     function initHeroIntro() {
         requestAnimationFrame(() => {
             const heroTimeline = anime.timeline({
@@ -87,15 +75,11 @@
         });
     }
 
-    /* ==========================================================================
-       2. HARDWARE-ACCELERATED PARALLAX ENGINE (Zero Layout Thrashing)
-       ========================================================================== */
     let latestScrollY = window.scrollY || window.pageYOffset;
     let smoothScrollY = latestScrollY;
     let isLoopRunning = false;
     let rafId = null;
 
-    // Mouse horizontal parallax sway tracking (Desktop)
     let mouseNormX = 0;
     let smoothMouseX = 0;
     let mouseTicking = false;
@@ -111,7 +95,6 @@
         }
     }, { passive: true });
 
-    // Cache Mountain Parallax 7 Layers & Atmospheric Overlays
     const layer0 = document.querySelector('.pw-mountain-layer-0');
     const layer1 = document.querySelector('.pw-mountain-layer-1');
     const layer2 = document.querySelector('.pw-mountain-layer-2');
@@ -129,14 +112,12 @@
     const contour3 = document.querySelector('.pw-contour-3');
     const heroCard = document.querySelector('.pw-hero-visual-card');
 
-    // Trail Progress Elements
     const trackFill = document.querySelector('.pw-trail-track-fill');
     const elevationValue = document.querySelector('.pw-elevation-value');
     const trailDots = document.querySelectorAll('.pw-trail-dot');
     const rail = document.querySelector('.pw-trail-progress-rail');
     const footer = document.querySelector('.pw-glass-footer');
 
-    // Sections for Waypoint Activation
     const waypoints = [
         { id: 'hero', element: document.querySelector('.pw-hero-section'), altitude: 1450 },
         { id: 'about', element: document.querySelector('#about'), altitude: 1120 },
@@ -146,7 +127,6 @@
         { id: 'workshop', element: document.querySelector('#workshop-basecamp'), altitude: 45 }
     ];
 
-    // Cached layout coordinates to eliminate forced reflows inside requestAnimationFrame
     let cachedWaypoints = [];
     let cachedFooterTop = 0;
     let cachedMaxScroll = 1;
@@ -172,7 +152,6 @@
         }
     }
 
-    // Debounced resize metric recalculation
     let resizeTimer = null;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
@@ -198,7 +177,6 @@
         wakeAnimationLoop();
     }, { passive: true });
 
-    // Asymptotic curve: responsive initial slope that smoothly tapers
     function getGentleDescent(scrollY, rate, maxPx) {
         if (maxPx <= 0) return 0;
         return maxPx * (1 - Math.exp(-(scrollY * rate) / maxPx));
@@ -207,7 +185,6 @@
     function renderParallax(timestamp) {
         const timeSec = timestamp ? timestamp * 0.001 : performance.now() * 0.001;
 
-        // Linear interpolation with responsive tracking
         smoothScrollY += (latestScrollY - smoothScrollY) * 0.14;
         smoothMouseX += (mouseNormX - smoothMouseX) * 0.08;
 
@@ -215,9 +192,6 @@
         const vh = cachedVh;
         const isNearHero = smoothScrollY < (vh * 1.3);
 
-        // -------------------------------------------------------------
-        // A. MOUNTAIN PARALLAX (Active only when near top of viewport)
-        // -------------------------------------------------------------
         if (isNearHero) {
             const windFar = Math.sin(timeSec * 0.65) * 3;
             const windNear = Math.cos(timeSec * 0.95) * 5;
@@ -309,9 +283,6 @@
             }
         }
 
-        // -------------------------------------------------------------
-        // B. TRAIL WAYPOINT PROGRESS (Pure Arithmetic, Zero Reflows)
-        // -------------------------------------------------------------
         if (trackFill) {
             trackFill.style.height = `${(scrollProgress * 100).toFixed(1)}%`;
         }
@@ -348,9 +319,6 @@
             }
         }
 
-        // -------------------------------------------------------------
-        // C. INTELLIGENT SLEEP (Zero CPU utilization when idle past hero)
-        // -------------------------------------------------------------
         const isPastHero = smoothScrollY >= (vh * 1.25);
         const isScrollSettled = Math.abs(latestScrollY - smoothScrollY) < 0.2;
         const isMouseSettled = Math.abs(mouseNormX - smoothMouseX) < 0.002;
@@ -363,9 +331,6 @@
         rafId = window.requestAnimationFrame(renderParallax);
     }
 
-    /* ==========================================================================
-       3. SCROLL-TRIGGERED SECTION REVEALS (Intersection Observer + Anime.js)
-       ========================================================================== */
     function initScrollReveals() {
         const observerOptions = {
             root: null,
@@ -391,7 +356,6 @@
     }
 
     function animateSectionEntry(container, id) {
-        // Section Head
         const head = container.querySelector('.pw-section-head');
         if (head) {
             anime({
@@ -408,7 +372,6 @@
             });
         }
 
-        // Feature Pillars (#about)
         if (id === 'about' || container.querySelector('.pw-feature-card')) {
             const cards = container.querySelectorAll('.pw-feature-card');
             anime({
@@ -431,7 +394,6 @@
             });
         }
 
-        // Product Categories
         if (id === 'products' || container.querySelector('.pw-category-card')) {
             const catCards = container.querySelectorAll('.pw-category-card');
             if (catCards.length) {
@@ -447,7 +409,6 @@
             }
         }
 
-        // Featured Catalog
         if (id === 'featured-products' || container.querySelector('.pw-product-item')) {
             const items = container.querySelectorAll('.pw-product-item');
             anime({
@@ -461,7 +422,6 @@
             });
         }
 
-        // Workshop Services (#services)
         if (id === 'services' || container.querySelector('.pw-service-card')) {
             const serviceCards = container.querySelectorAll('.pw-service-card');
             anime({
@@ -484,7 +444,6 @@
             });
         }
 
-        // Basecamp Workshop Banner
         if (id === 'workshop-basecamp' || container.querySelector('.pw-workshop-banner')) {
             const banner = container.querySelector('.pw-workshop-banner');
             anime({
@@ -498,9 +457,6 @@
         }
     }
 
-    /* ==========================================================================
-       4. HERO DEPTH PARALLAX (Natural layered depth, zero jitter)
-       ========================================================================== */
     function initHeroCardParallax() {
         const heroCard = document.querySelector('.pw-hero-visual-card');
         if (!heroCard) return;
@@ -520,7 +476,6 @@
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
 
-                // Restrict tilt to max 2.5 degrees for authentic high-end feel
                 const rotateX = -((y - centerY) / centerY) * 2.5;
                 const rotateY = ((x - centerX) / centerX) * 2.5;
 
@@ -534,9 +489,6 @@
         });
     }
 
-    /* ==========================================================================
-       5. CATEGORY FILTERING TRANSITIONS
-       ========================================================================== */
     function initFilterTransitions() {
         const filterPills = document.querySelectorAll('.pw-filter-pill');
         const productItems = document.querySelectorAll('.pw-product-item');
@@ -587,9 +539,6 @@
         });
     }
 
-    /* ==========================================================================
-       6. WAYPOINT DOT CLICK TO SMOOTH SCROLL
-       ========================================================================== */
     function initWaypointClicks() {
         trailDots.forEach(dot => {
             dot.addEventListener('click', function (e) {
@@ -623,9 +572,6 @@
         }
     }
 
-    /* ==========================================================================
-       INITIALIZATION BOOTSTRAPPER
-       ========================================================================== */
     document.addEventListener('DOMContentLoaded', function () {
         refreshLayoutMetrics();
         initHeroIntro();
@@ -634,11 +580,9 @@
         initFilterTransitions();
         initWaypointClicks();
 
-        // Launch animation loop
         wakeAnimationLoop();
     });
 
-    // Re-verify layout metrics once all images and stylesheets are fully loaded
     window.addEventListener('load', function () {
         refreshLayoutMetrics();
     }, { passive: true });

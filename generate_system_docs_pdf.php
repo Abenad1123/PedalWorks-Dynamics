@@ -1,8 +1,4 @@
 <?php
-/**
- * PedalWorks Dynamics - System & Database Architecture PDF Generator
- * Generates a comprehensive technical manual and conceptual guide.
- */
 
 require_once __DIR__ . '/includes/fpdf/fpdf.php';
 
@@ -16,7 +12,7 @@ class DocPDF extends FPDF {
 
     function Header() {
         if ($this->PageNo() == 1) {
-            // First page gets custom cover styling, skip standard running header
+
             return;
         }
         $this->SetFont('Arial', 'B', 8);
@@ -42,7 +38,7 @@ class DocPDF extends FPDF {
 
     function ChapterTitle($number, $title) {
         $this->Ln(4);
-        $this->SetFillColor(15, 23, 42); // Deep Slate
+        $this->SetFillColor(15, 23, 42);  
         $this->SetTextColor(255, 255, 255);
         $this->SetFont('Arial', 'B', 11);
         $this->Cell(190, 8, '  ' . $number . '. ' . strtoupper(toPdf($title)), 0, 1, 'L', true);
@@ -53,7 +49,7 @@ class DocPDF extends FPDF {
     function SectionHeading($title) {
         $this->Ln(2);
         $this->SetFont('Arial', 'B', 10);
-        $this->SetTextColor(194, 65, 12); // Terracotta
+        $this->SetTextColor(194, 65, 12);  
         $this->Cell(190, 6, toPdf($title), 0, 1, 'L');
         $this->SetDrawColor(254, 215, 170);
         $this->Line($this->GetX(), $this->GetY(), $this->GetX() + 190, $this->GetY());
@@ -89,7 +85,7 @@ class DocPDF extends FPDF {
         $this->SetFont('Arial', 'B', 8.5);
         $this->SetTextColor($titleColor[0], $titleColor[1], $titleColor[2]);
         $this->Cell(190, 6, '  ' . toPdf($title), 'LTR', 1, 'L', true);
-        
+
         $this->SetFont('Arial', '', 8);
         $this->SetTextColor(51, 65, 85);
         $this->MultiCell(190, 4.2, toPdf($text), 'LBR', 'L', true);
@@ -124,17 +120,12 @@ $pdf->AliasNbPages();
 $pdf->SetMargins(10, 10, 10);
 $pdf->SetAutoPageBreak(true, 15);
 
-// =========================================================================
-// PAGE 1: TITLE BANNER & EXECUTIVE SUMMARY
-// =========================================================================
 $pdf->AddPage();
 
-// Document Header Banner
-$pdf->SetFillColor(15, 23, 42); // Deep Slate
+$pdf->SetFillColor(15, 23, 42);  
 $pdf->Rect(10, 10, 190, 42, 'F');
 
-// Top Accent Line
-$pdf->SetFillColor(229, 121, 58); // Terracotta Accent
+$pdf->SetFillColor(229, 121, 58);  
 $pdf->Rect(10, 10, 190, 3, 'F');
 
 $pdf->SetY(16);
@@ -153,7 +144,6 @@ $pdf->Cell(190, 5, toPdf('Core Concepts, Relational Data Models, Workflow Lifecy
 $pdf->SetY(56);
 $pdf->SetTextColor(15, 23, 42);
 
-// Meta Info Box
 $pdf->SetFillColor(248, 250, 252);
 $pdf->SetDrawColor(226, 232, 240);
 $pdf->Rect(10, 56, 190, 14, 'DF');
@@ -178,7 +168,6 @@ $pdf->Cell(50, 6, 'PHP 8.2+ / MySQL / XAMPP', 0, 1, 'L');
 
 $pdf->Ln(4);
 
-// 1. EXECUTIVE SUMMARY
 $pdf->ChapterTitle('1', 'Executive Summary & Business Domain');
 $pdf->BodyText(
     "PedalWorks Dynamics is a full-featured, enterprise-grade web application engineered for an adventure bike shop and technical workshop operating in Taguig City. The system is designed to handle retail commerce for high-performance bicycles, precision components, attachments, and trail safety gear, alongside a professional workshop service booking and maintenance tracking pipeline.\n\n" .
@@ -193,7 +182,6 @@ $pdf->CalloutBox(
     "- Compliance Scope: Meets and exceeds Functional Requirements FR1 through FR20 (ITIM211 Project Proposal Specification)."
 );
 
-// 2. THE BIG PICTURE: DATABASE CLUSTERS
 $pdf->ChapterTitle('2', 'High-Level Data Model Architecture');
 $pdf->BodyText(
     "The PedalWorks relational schema consists of 13 core database tables and 2 high-performance SQL Views organized into five distinct operational clusters. Each cluster is strictly segregated by single-responsibility concerns:"
@@ -207,9 +195,6 @@ $pdf->TableRow($clusterWidths, ['3. Commerce Pipeline', 'customerCart, productSa
 $pdf->TableRow($clusterWidths, ['4. Workshop Services', 'customerService', 'Tracks bike repair/labor jobs, mechanic assignments, and order linkage.'], false);
 $pdf->TableRow($clusterWidths, ['5. Financial Accounting', 'expense (plus dynamic income view)', 'Records operating overheads and computes net profit dynamically.'], true);
 
-// =========================================================================
-// PAGE 2: SCHEMA BREAKDOWN & RELATIONAL ENTITIES
-// =========================================================================
 $pdf->AddPage();
 
 $pdf->ChapterTitle('3', 'Comprehensive Relational Schema Breakdown');
@@ -260,9 +245,6 @@ $pdf->BodyText(
     "   - Points to the exact SCD2 product version active at time of sale, guaranteeing price immutability."
 );
 
-// =========================================================================
-// PAGE 3: REPAIRS, EXPENSES, VIEWS & SCD2
-// =========================================================================
 $pdf->AddPage();
 
 $pdf->SectionHeading('3.4 Workshop Operations & Financial Tracking');
@@ -307,9 +289,6 @@ $pdf->CalloutBox(
     "Paired with a compound unique index on (sku, isCurrent), MySQL permits multiple NULLs (historical versions) while strictly preventing multiple 1s (only one current version allowed)."
 );
 
-// =========================================================================
-// PAGE 4: ACID WORKFLOWS & DATA LIFECYCLES
-// =========================================================================
 $pdf->AddPage();
 
 $pdf->SectionHeading('4.2 ACID Transaction Boundaries & Concurrency Control');
@@ -356,9 +335,6 @@ $pdf->BodyText(
     "4. Settlement: Once customer retrieves bike, status becomes 'Completed', and the labor fee is officially credited to workshop revenue."
 );
 
-// =========================================================================
-// PAGE 5: GLOSSARY OF TERMS & IDEAS
-// =========================================================================
 $pdf->AddPage();
 
 $pdf->ChapterTitle('6', 'Technical Terms & Concepts Glossary');
@@ -394,9 +370,6 @@ foreach ($terms as $t) {
     $fill = !$fill;
 }
 
-// =========================================================================
-// PAGE 6: DEFENSE & PANEL EXAMINATION GUIDE
-// =========================================================================
 $pdf->AddPage();
 
 $pdf->ChapterTitle('7', 'Oral Defense & Technical Panel Examination Guide');
@@ -429,7 +402,7 @@ $qa = [
 
 foreach ($qa as $item) {
     $pdf->SetFont('Arial', 'B', 8.5);
-    $pdf->SetTextColor(194, 65, 12); // Terracotta
+    $pdf->SetTextColor(194, 65, 12);  
     $pdf->MultiCell(190, 4.5, toPdf($item[0]));
     $pdf->Ln(1);
     $pdf->SetFont('Arial', '', 8);
@@ -438,7 +411,6 @@ foreach ($qa as $item) {
     $pdf->Ln(3);
 }
 
-// Sign-off footer block
 $pdf->SetFillColor(241, 245, 249);
 $pdf->SetDrawColor(203, 213, 225);
 $pdf->Rect(10, $pdf->GetY(), 190, 16, 'DF');
@@ -450,7 +422,6 @@ $pdf->SetFont('Arial', '', 7.5);
 $pdf->SetTextColor(100, 116, 139);
 $pdf->Cell(190, 4, toPdf('Document verified against ITIM211 Project Proposal Specification & XAMPP MySQL Production Database Schema.'), 0, 1, 'C');
 
-// Output to files
 $outputPath1 = __DIR__ . '/PedalWorks_Dynamics_System_and_Database_Architecture.pdf';
 $outputPath2 = dirname(__DIR__) . '/PedalWorks_Dynamics_System_and_Database_Architecture.pdf';
 

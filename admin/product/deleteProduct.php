@@ -23,7 +23,6 @@ if (!$conn) {
     exit;
 }
 
-// Find product
 $stmt = mysqli_prepare($conn, "SELECT productID, sku, name, endDate FROM product WHERE productID = ? LIMIT 1");
 mysqli_stmt_bind_param($stmt, 'i', $deleteID);
 mysqli_stmt_execute($stmt);
@@ -37,7 +36,6 @@ if (!$product) {
     exit;
 }
 
-// Check for sales order history
 $hasOrders = false;
 $orderCheck = mysqli_query($conn, "SELECT COUNT(*) as c FROM orderLineProduct WHERE productID = $deleteID");
 if ($orderCheck && ($r = mysqli_fetch_assoc($orderCheck)) && (int)$r['c'] > 0) {
@@ -48,7 +46,7 @@ if ($action === 'permanent') {
     if ($hasOrders) {
         $_SESSION['error'] = 'Cannot permanently delete "' . htmlspecialchars($product['name']) . '" because it is linked to past customer sales orders. It remains safely archived.';
     } else {
-        // Remove from any active carts first
+
         mysqli_query($conn, "DELETE FROM customerCart WHERE productID = $deleteID");
 
         $delStmt = mysqli_prepare($conn, "DELETE FROM product WHERE productID = ?");
@@ -61,7 +59,7 @@ if ($action === 'permanent') {
         mysqli_stmt_close($delStmt);
     }
 } else {
-    // Default action: Deactivate / Archive
+
     if ($product['endDate'] !== null) {
         $_SESSION['error'] = 'Product "' . htmlspecialchars($product['name']) . '" is already archived.';
     } else {
