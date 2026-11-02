@@ -15,7 +15,6 @@ $priceRange    = isset($_GET['price_range']) ? trim($_GET['price_range']) : '';
 $ratingFilter  = isset($_GET['rating']) ? trim($_GET['rating']) : '';
 $reviewFilter  = isset($_GET['review_filter']) ? trim($_GET['review_filter']) : '';
 
-// Apply price range preset if selected and no explicit custom values overridden
 if ($priceRange === 'under_2k' && $minPriceRaw === '' && $maxPriceRaw === '') {
     $minPriceRaw = '0';
     $maxPriceRaw = '2000';
@@ -59,7 +58,6 @@ if ($conn) {
     $params = [];
     $types = "";
 
-    // 1. Search Filter
     if ($search !== '') {
         $where[] = "(p.name LIKE ? OR p.description LIKE ? OR p.sku LIKE ?)";
         $searchWildcard = "%" . $search . "%";
@@ -69,14 +67,12 @@ if ($conn) {
         $types .= "sss";
     }
 
-    // 2. Category
     if ($category !== '' && $category !== 'all') {
         $where[] = "pc.name = ?";
         $params[] = $category;
         $types .= "s";
     }
 
-    // 3. Price Range
     if ($minPriceRaw !== '' && is_numeric($minPriceRaw)) {
         $minVal = (float)$minPriceRaw;
         if ($minVal >= 0) {
@@ -94,12 +90,10 @@ if ($conn) {
         }
     }
 
-    // In-Stock Filter
     if ($inStockOnly) {
         $where[] = "p.stock > 0";
     }
 
-    // 4. Customer Rating
     if ($ratingFilter !== '' && $ratingFilter !== 'all') {
         $rVal = (float)$ratingFilter;
         if ($rVal >= 5.0) {
@@ -111,7 +105,6 @@ if ($conn) {
         }
     }
 
-    // 5. Review Status
     if ($reviewFilter === 'with_reviews') {
         $where[] = "COALESCE(rev.reviewCount, 0) > 0";
     } elseif ($reviewFilter === 'no_reviews') {
@@ -120,7 +113,6 @@ if ($conn) {
         $where[] = "COALESCE(rev.reviewCount, 0) >= 2";
     }
 
-    // Sorting
     $orderBy = "p.name ASC";
     if ($sort === 'price_asc') {
         $orderBy = "p.price ASC";
@@ -166,7 +158,6 @@ if ($conn) {
     }
 }
 
-// Function to construct query string with modified or removed params
 function buildFilterUrl($overrides = [], $removals = []) {
     $current = $_GET;
     foreach ($removals as $rem) {

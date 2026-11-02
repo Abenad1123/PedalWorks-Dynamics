@@ -93,7 +93,6 @@ if ($conn) {
         $where[] = "p.stock > p.lowStockThreshold";
     }
 
-    // Price Range
     if ($minPrice !== '' && is_numeric($minPrice)) {
         $where[] = "p.price >= ?";
         $params[] = (float)$minPrice;
@@ -105,7 +104,6 @@ if ($conn) {
         $types .= "d";
     }
 
-    // Customer Rating
     if ($ratingFilter !== '' && is_numeric($ratingFilter)) {
         $rVal = (float)$ratingFilter;
         if ($rVal >= 5.0) {
@@ -117,7 +115,6 @@ if ($conn) {
         }
     }
 
-    // Review Status
     if ($reviewFilter === 'with_reviews') {
         $where[] = "COALESCE(rev.reviewCount, 0) > 0";
     } elseif ($reviewFilter === 'no_reviews') {

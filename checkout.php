@@ -612,7 +612,6 @@ function toggleFulfillment(method) {
         addressGroup.style.display = 'none';
         pickupGroup.style.display = 'block';
 
-        // In-Store Pickup allows ONLY Cash on Pickup
         if (codCol) codCol.style.display = 'none';
         if (copCol) copCol.style.display = 'block';
         if (codRadio) {
@@ -629,7 +628,6 @@ function toggleFulfillment(method) {
         addressGroup.style.display = 'block';
         pickupGroup.style.display = 'none';
 
-        // Doorstep Delivery allows ONLY Cash on Delivery (COD)
         if (codCol) codCol.style.display = 'block';
         if (copCol) copCol.style.display = 'none';
         if (codRadio) {
@@ -645,7 +643,6 @@ function toggleFulfillment(method) {
     }
 }
 
-// Client-side real-time inline validation for delivery address
 document.addEventListener('DOMContentLoaded', function() {
     const addrField = document.getElementById('deliveryAddress');
     if (addrField) {
