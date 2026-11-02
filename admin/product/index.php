@@ -93,7 +93,7 @@ if ($conn) {
         $where[] = "p.stock > p.lowStockThreshold";
     }
 
-    // Price Filter (5pts)
+    // Price Range
     if ($minPrice !== '' && is_numeric($minPrice)) {
         $where[] = "p.price >= ?";
         $params[] = (float)$minPrice;
@@ -105,7 +105,7 @@ if ($conn) {
         $types .= "d";
     }
 
-    // Ratings Filter (5pts)
+    // Customer Rating
     if ($ratingFilter !== '' && is_numeric($ratingFilter)) {
         $rVal = (float)$ratingFilter;
         if ($rVal >= 5.0) {
@@ -117,7 +117,7 @@ if ($conn) {
         }
     }
 
-    // Review Filter (5pts)
+    // Review Status
     if ($reviewFilter === 'with_reviews') {
         $where[] = "COALESCE(rev.reviewCount, 0) > 0";
     } elseif ($reviewFilter === 'no_reviews') {
@@ -282,7 +282,7 @@ $activeModule = 'product';
                             <option value="out" <?php echo ($stockFilter === 'out') ? 'selected' : ''; ?>>Out of Stock</option>
                         </select>
                     </div>
-                    <!-- Price Filter (5pts) -->
+                    <!-- Price Range -->
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold text-muted mb-1">Price Filter (Min / Max)</label>
                         <div class="input-group input-group-sm">
@@ -293,7 +293,7 @@ $activeModule = 'product';
                         </div>
                     </div>
 
-                    <!-- Ratings Filter (5pts) -->
+                    <!-- Customer Rating -->
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold text-muted mb-1" for="rating">Ratings Filter</label>
                         <select id="rating" name="rating" class="form-select form-select-sm">
@@ -304,7 +304,7 @@ $activeModule = 'product';
                         </select>
                     </div>
 
-                    <!-- Review Filter (5pts) -->
+                    <!-- Review Status -->
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold text-muted mb-1" for="review_filter">Review Filter</label>
                         <select id="review_filter" name="review_filter" class="form-select form-select-sm">

@@ -596,7 +596,7 @@ include('includes/header.php');
                 </div>
             </div>
 
-            <!-- REVIEW FILTER TOOLBAR (5pts) -->
+            <!-- REVIEW FILTER TOOLBAR -->
             <div class="mt-4 pt-3 border-top border-white border-opacity-10">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
                     <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
@@ -604,7 +604,7 @@ include('includes/header.php');
                         <span>Rider Experiences (<?php echo count($displayedReviews); ?> of <?php echo $totalReviews; ?>)</span>
                     </h5>
 
-                    <!-- Review Filter Form (5pts) -->
+                    <!-- Review Filter Form -->
                     <form method="GET" action="product_details.php#reviews" class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                         <input type="hidden" name="id" value="<?php echo (int)$product['productID']; ?>">
                         <?php if ($filterReviewRating !== ''): ?>
@@ -634,9 +634,9 @@ include('includes/header.php');
                     </form>
                 </div>
 
-                <!-- Review Rating Filter Pills (5pts) -->
+                <!-- Review Rating Filter Pills -->
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-4 pb-2 border-bottom border-white border-opacity-10">
-                    <span class="small text-white-50 me-1"><i class="fa-solid fa-filter text-warning me-1"></i>Filter by Rating (5pts):</span>
+                    <span class="small text-white-50 me-1"><i class="fa-solid fa-filter text-warning me-1"></i>Filter by Rating:</span>
                     <a href="product_details.php?id=<?php echo (int)$product['productID']; ?><?php echo ($filterReviewSearch !== '') ? '&review_search=' . urlencode($filterReviewSearch) : ''; ?><?php echo ($filterReviewSort !== 'newest') ? '&review_sort=' . urlencode($filterReviewSort) : ''; ?>#reviews" 
                        class="pw-filter-pill small py-1 px-3 <?php echo ($filterReviewRating === '') ? 'active' : ''; ?>">
                         All (<?php echo $totalReviews; ?>)

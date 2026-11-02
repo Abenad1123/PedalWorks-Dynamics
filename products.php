@@ -69,14 +69,14 @@ if ($conn) {
         $types .= "sss";
     }
 
-    // 2. Category Filter (5pts)
+    // 2. Category
     if ($category !== '' && $category !== 'all') {
         $where[] = "pc.name = ?";
         $params[] = $category;
         $types .= "s";
     }
 
-    // 3. Price Filter (5pts)
+    // 3. Price Range
     if ($minPriceRaw !== '' && is_numeric($minPriceRaw)) {
         $minVal = (float)$minPriceRaw;
         if ($minVal >= 0) {
@@ -99,7 +99,7 @@ if ($conn) {
         $where[] = "p.stock > 0";
     }
 
-    // 4. Ratings Filter (5pts)
+    // 4. Customer Rating
     if ($ratingFilter !== '' && $ratingFilter !== 'all') {
         $rVal = (float)$ratingFilter;
         if ($rVal >= 5.0) {
@@ -111,7 +111,7 @@ if ($conn) {
         }
     }
 
-    // 5. Review Filter (5pts)
+    // 5. Review Status
     if ($reviewFilter === 'with_reviews') {
         $where[] = "COALESCE(rev.reviewCount, 0) > 0";
     } elseif ($reviewFilter === 'no_reviews') {
@@ -220,11 +220,11 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
                            placeholder="Search by model, SKU, or specs...">
                 </div>
 
-                <!-- CATEGORY FILTER (5pts) -->
+                <!-- CATEGORY FILTER -->
                 <div class="col-lg-3 col-md-6">
                     <label for="category" class="pw-form-label d-flex align-items-center gap-1">
                         <i class="fa-solid fa-layer-group text-warning fa-xs"></i>
-                        <span>Category Filter (5pts)</span>
+                        <span>Category</span>
                     </label>
                     <select class="form-select pw-form-select" id="category" name="category">
                         <option value="">All Categories (<?php echo $totalCatalogCount; ?>)</option>
@@ -261,11 +261,11 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
 
             <!-- Row 2: Price Filter, Ratings Filter, Review Filter, Actions -->
             <div class="row g-3 align-items-end pt-3 border-top border-white border-opacity-10">
-                <!-- PRICE FILTER (5pts) -->
+                <!-- PRICE FILTER -->
                 <div class="col-lg-4 col-md-6">
                     <label class="pw-form-label d-flex align-items-center gap-1">
                         <i class="fa-solid fa-peso-sign text-warning fa-xs"></i>
-                        <span>Price Filter (5pts)</span>
+                        <span>Price Range</span>
                     </label>
                     <div class="input-group">
                         <span class="input-group-text bg-dark text-white-50 border-secondary border-opacity-25">&#8369;</span>
@@ -279,11 +279,11 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
                     </div>
                 </div>
 
-                <!-- RATINGS FILTER (5pts) -->
+                <!-- RATINGS FILTER -->
                 <div class="col-lg-3 col-md-6">
                     <label for="rating" class="pw-form-label d-flex align-items-center gap-1">
                         <i class="fa-solid fa-star text-warning fa-xs"></i>
-                        <span>Ratings Filter (5pts)</span>
+                        <span>Customer Rating</span>
                     </label>
                     <select class="form-select pw-form-select" id="rating" name="rating">
                         <option value="">Any Star Rating</option>
@@ -295,11 +295,11 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
                     </select>
                 </div>
 
-                <!-- REVIEW FILTER (5pts) -->
+                <!-- REVIEW FILTER -->
                 <div class="col-lg-3 col-md-6">
                     <label for="review_filter" class="pw-form-label d-flex align-items-center gap-1">
                         <i class="fa-solid fa-comments text-warning fa-xs"></i>
-                        <span>Review Filter (5pts)</span>
+                        <span>Review Status</span>
                     </label>
                     <select class="form-select pw-form-select" id="review_filter" name="review_filter">
                         <option value="">All Review Statuses</option>
@@ -707,7 +707,7 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
                 </div>
 
                 <div>
-                    <label for="mCategory" class="pw-form-label text-white">Category Filter (5pts)</label>
+                    <label for="mCategory" class="pw-form-label text-white">Category</label>
                     <select class="form-select pw-form-select" id="mCategory" name="category">
                         <option value="">All Categories (<?php echo $totalCatalogCount; ?>)</option>
                         <?php foreach ($categories as $cat): ?>
@@ -719,7 +719,7 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
                 </div>
 
                 <div>
-                    <label class="pw-form-label text-white">Price Filter (5pts)</label>
+                    <label class="pw-form-label text-white">Price Range</label>
                     <div class="input-group">
                         <span class="input-group-text bg-dark text-white-50 border-secondary border-opacity-25">&#8369;</span>
                         <input type="number" step="0.01" min="0" class="form-control pw-form-control" name="min_price" value="<?php echo htmlspecialchars($minPriceRaw); ?>" placeholder="Min">
@@ -729,7 +729,7 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
                 </div>
 
                 <div>
-                    <label for="mRating" class="pw-form-label text-white">Ratings Filter (5pts)</label>
+                    <label for="mRating" class="pw-form-label text-white">Customer Rating</label>
                     <select class="form-select pw-form-select" id="mRating" name="rating">
                         <option value="">Any Star Rating</option>
                         <option value="5" <?php echo ($ratingFilter === '5') ? 'selected' : ''; ?>>★★★★★ (5.0 Only)</option>
@@ -741,7 +741,7 @@ $hasActiveFilters = ($search !== '' || ($category !== '' && $category !== 'all')
                 </div>
 
                 <div>
-                    <label for="mReviewFilter" class="pw-form-label text-white">Review Filter (5pts)</label>
+                    <label for="mReviewFilter" class="pw-form-label text-white">Review Status</label>
                     <select class="form-select pw-form-select" id="mReviewFilter" name="review_filter">
                         <option value="">All Review Statuses</option>
                         <option value="with_reviews" <?php echo ($reviewFilter === 'with_reviews') ? 'selected' : ''; ?>>★ Has Customer Reviews</option>
