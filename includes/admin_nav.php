@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!function_exists('hasAdminRole')) {
-    include_once(__DIR__ . '/admin_auth.php');
+    include('admin_auth.php');
 }
 
 $currentUri = $_SERVER['REQUEST_URI'] ?? '';

@@ -210,13 +210,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_close($clearStmt);
 
             mysqli_commit($conn);
+            unset($_SESSION['cart_products']);
 
             try {
                 if (file_exists('PHPMailer/src/PHPMailer.php')) {
                     if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-                        require 'PHPMailer/src/Exception.php';
-                        require 'PHPMailer/src/PHPMailer.php';
-                        require 'PHPMailer/src/SMTP.php';
+                        include 'PHPMailer/src/Exception.php';
+                        include 'PHPMailer/src/PHPMailer.php';
+                        include 'PHPMailer/src/SMTP.php';
                     }
 
                     $mail = new PHPMailer\PHPMailer\PHPMailer(false);

@@ -79,6 +79,13 @@ switch ($action) {
         mysqli_stmt_execute($upStmt);
         mysqli_stmt_close($upStmt);
 
+        $_SESSION['cart_products'][$productID] = [
+            'item_id'    => (int)$product['productID'],
+            'item_name'  => $product['name'],
+            'item_price' => (float)$product['price'],
+            'item_qty'   => $newQty
+        ];
+
         header('Location: ' . $redirect);
         exit;
 
@@ -98,10 +105,11 @@ switch ($action) {
             mysqli_stmt_bind_param($delStmt, 'ii', $customerAccountID, $productID);
             mysqli_stmt_execute($delStmt);
             mysqli_stmt_close($delStmt);
+            unset($_SESSION['cart_products'][$productID]);
             $_SESSION['success'] = 'Item removed from your shopping cart.';
         } else {
 
-            $stmt = mysqli_prepare($conn, "SELECT name, stock FROM product WHERE productID = ? AND endDate IS NULL LIMIT 1");
+            $stmt = mysqli_prepare($conn, "SELECT name, stock, price FROM product WHERE productID = ? AND endDate IS NULL LIMIT 1");
             mysqli_stmt_bind_param($stmt, 'i', $productID);
             mysqli_stmt_execute($stmt);
             $res = mysqli_stmt_get_result($stmt);
@@ -118,6 +126,13 @@ switch ($action) {
                 mysqli_stmt_bind_param($upStmt, 'iii', $quantity, $customerAccountID, $productID);
                 mysqli_stmt_execute($upStmt);
                 mysqli_stmt_close($upStmt);
+
+                $_SESSION['cart_products'][$productID] = [
+                    'item_id'    => (int)$productID,
+                    'item_name'  => $product['name'],
+                    'item_price' => (float)$product['price'],
+                    'item_qty'   => $quantity
+                ];
                 $_SESSION['success'] = 'Cart updated successfully.';
             }
         }
@@ -132,6 +147,7 @@ switch ($action) {
             mysqli_stmt_bind_param($delStmt, 'ii', $customerAccountID, $productID);
             mysqli_stmt_execute($delStmt);
             mysqli_stmt_close($delStmt);
+            unset($_SESSION['cart_products'][$productID]);
             $_SESSION['success'] = 'Item removed from your cart.';
         }
         header('Location: cart.php');
@@ -142,6 +158,7 @@ switch ($action) {
         mysqli_stmt_bind_param($clearStmt, 'i', $customerAccountID);
         mysqli_stmt_execute($clearStmt);
         mysqli_stmt_close($clearStmt);
+        unset($_SESSION['cart_products']);
         $_SESSION['success'] = 'Shopping cart cleared.';
         header('Location: cart.php');
         exit;

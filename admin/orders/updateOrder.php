@@ -6,10 +6,10 @@ include('../../includes/admin_auth.php');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require '../../PHPMailer/src/Exception.php';
-require '../../PHPMailer/src/PHPMailer.php';
-require '../../PHPMailer/src/SMTP.php';
-require '../../includes/fpdf/fpdf.php';
+include '../../PHPMailer/src/Exception.php';
+include '../../PHPMailer/src/PHPMailer.php';
+include '../../PHPMailer/src/SMTP.php';
+include '../../includes/fpdf/fpdf.php';
 
 requireAdminRole(['Inventory Manager', 'Accounting Administrator', 'Super Administrator']);
 
@@ -20,6 +20,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $orderId = isset($_POST['orderId']) ? (int)$_POST['orderId'] : (isset($_SESSION['orderId']) ? (int)$_SESSION['orderId'] : 0);
 $status  = isset($_POST['status']) ? trim($_POST['status']) : '';
+
+$statusMap = [
+    'processing' => 'In Progress',
+    'delivered'  => 'Completed',
+    'canceled'   => 'Cancelled',
+    'cancelled'  => 'Cancelled'
+];
+$statusLower = strtolower($status);
+if (isset($statusMap[$statusLower])) {
+    $status = $statusMap[$statusLower];
+}
 
 $validStatuses = ['Pending', 'Received', 'In Progress', 'Ready for Pickup', 'Completed', 'Cancelled'];
 

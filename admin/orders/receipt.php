@@ -1,7 +1,7 @@
 <?php
 session_start();
 include('../../includes/config.php');
-require('../../includes/fpdf/fpdf.php');
+include('../../includes/fpdf/fpdf.php');
 
 $orderId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($orderId <= 0) {

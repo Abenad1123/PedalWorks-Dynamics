@@ -165,15 +165,12 @@ PedalWorks-Dynamics/
 ├── cart_action.php                # Cart Mutation Handler
 ├── checkout.php                   # ACID Transactional Checkout Pipeline
 ├── db.sql                         # Authoritative 3NF + SCD2 MySQL Schema
-├── generate_system_docs_pdf.php   # Automated Technical Architecture PDF Generator
 ├── index.php                      # Public Storefront & Homepage Search
 ├── login.php                      # Dual Customer/Admin Login Gate (Email/Username)
 ├── logout.php                     # Session Termination
 ├── products.php                   # Public Product Catalog & Dynamic Filtering
 ├── product_details.php            # Product Showcase, Gallery & Review Form
 ├── review_action.php              # Verified Customer Review CRUD Handler
-├── seed_admin.php                 # Staff Seed Script
-├── seed_catalog.php               # Catalog & Services Seed Script
 ├── services.php                   # Public Workshop Services Directory & Reviews
 ├── signup.php                     # Customer Registration with Photo Upload
 ├── PedalWorks_Dynamics_System_and_Database_Architecture.pdf # Technical Architecture PDF
@@ -251,17 +248,7 @@ erDiagram
    - Create a database named `pedalworks_db` with `utf8mb4_general_ci` collation.
    - Import the [`db.sql`](db.sql) file located in the project root.
 
-4. **Seed Administrative Accounts & Catalog Data**
-   Open PowerShell or Terminal in the project folder and run:
-   ```bash
-   # 1. Seed administrator role accounts
-   php seed_admin.php
-
-   # 2. Seed all 36 catalog products and workshop services
-   php seed_catalog.php
-   ```
-
-5. **Launch the Application**
+4. **Launch the Application**
    - **Customer Storefront**: `http://localhost/project/PedalWorks-Dynamics/index.php`
    - **Login Portal**: `http://localhost/project/PedalWorks-Dynamics/login.php`
    - **Management Console**: `http://localhost/project/PedalWorks-Dynamics/admin/dashboard.php`
