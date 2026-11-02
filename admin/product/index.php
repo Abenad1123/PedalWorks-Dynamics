@@ -21,6 +21,10 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $categoryFilter = isset($_GET['category']) ? trim($_GET['category']) : '';
 $stockFilter = isset($_GET['stock_status']) ? trim($_GET['stock_status']) : '';
 $showArchived = isset($_GET['show_archived']) && $_GET['show_archived'] === '1';
+$minPrice = isset($_GET['min_price']) ? trim($_GET['min_price']) : '';
+$maxPrice = isset($_GET['max_price']) ? trim($_GET['max_price']) : '';
+$ratingFilter = isset($_GET['rating']) ? trim($_GET['rating']) : '';
+$reviewFilter = isset($_GET['review_filter']) ? trim($_GET['review_filter']) : '';
 
  
 $categories = [];
@@ -89,10 +93,44 @@ if ($conn) {
         $where[] = "p.stock > p.lowStockThreshold";
     }
 
-    $sql = "SELECT p.*, pc.name AS categoryName, COALESCE(pic.photoCount, 0) AS photoCount 
+    // Price Filter (5pts)
+    if ($minPrice !== '' && is_numeric($minPrice)) {
+        $where[] = "p.price >= ?";
+        $params[] = (float)$minPrice;
+        $types .= "d";
+    }
+    if ($maxPrice !== '' && is_numeric($maxPrice)) {
+        $where[] = "p.price <= ?";
+        $params[] = (float)$maxPrice;
+        $types .= "d";
+    }
+
+    // Ratings Filter (5pts)
+    if ($ratingFilter !== '' && is_numeric($ratingFilter)) {
+        $rVal = (float)$ratingFilter;
+        if ($rVal >= 5.0) {
+            $where[] = "COALESCE(rev.avgRating, 0) >= 4.95";
+        } else {
+            $where[] = "COALESCE(rev.avgRating, 0) >= ?";
+            $params[] = $rVal;
+            $types .= "d";
+        }
+    }
+
+    // Review Filter (5pts)
+    if ($reviewFilter === 'with_reviews') {
+        $where[] = "COALESCE(rev.reviewCount, 0) > 0";
+    } elseif ($reviewFilter === 'no_reviews') {
+        $where[] = "COALESCE(rev.reviewCount, 0) = 0";
+    }
+
+    $sql = "SELECT p.*, pc.name AS categoryName, COALESCE(pic.photoCount, 0) AS photoCount,
+                   COALESCE(rev.avgRating, 0) AS avgRating,
+                   COALESCE(rev.reviewCount, 0) AS reviewCount 
             FROM product p 
             LEFT JOIN productCategory pc ON p.productCategoryID = pc.productCategoryID 
-            LEFT JOIN (SELECT productID, COUNT(*) AS photoCount FROM productImage GROUP BY productID) pic ON p.productID = pic.productID ";
+            LEFT JOIN (SELECT productID, COUNT(*) AS photoCount FROM productImage GROUP BY productID) pic ON p.productID = pic.productID 
+            LEFT JOIN (SELECT productID, ROUND(AVG(rating), 1) AS avgRating, COUNT(reviewID) AS reviewCount FROM review GROUP BY productID) rev ON p.productID = rev.productID ";
     
     if (!empty($where)) {
         $sql .= " WHERE " . implode(" AND ", $where);
@@ -244,6 +282,38 @@ $activeModule = 'product';
                             <option value="out" <?php echo ($stockFilter === 'out') ? 'selected' : ''; ?>>Out of Stock</option>
                         </select>
                     </div>
+                    <!-- Price Filter (5pts) -->
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold text-muted mb-1">Price Filter (Min / Max)</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white">₱</span>
+                            <input type="number" step="0.01" min="0" name="min_price" class="form-control" value="<?php echo htmlspecialchars($minPrice); ?>" placeholder="Min">
+                            <span class="input-group-text bg-white">–</span>
+                            <input type="number" step="0.01" min="0" name="max_price" class="form-control" value="<?php echo htmlspecialchars($maxPrice); ?>" placeholder="Max">
+                        </div>
+                    </div>
+
+                    <!-- Ratings Filter (5pts) -->
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold text-muted mb-1" for="rating">Ratings Filter</label>
+                        <select id="rating" name="rating" class="form-select form-select-sm">
+                            <option value="">Any Star Rating</option>
+                            <option value="5" <?php echo ($ratingFilter === '5') ? 'selected' : ''; ?>>5.0 Stars (★★★★★)</option>
+                            <option value="4" <?php echo ($ratingFilter === '4') ? 'selected' : ''; ?>>4.0+ Stars (★★★★☆ & up)</option>
+                            <option value="3" <?php echo ($ratingFilter === '3') ? 'selected' : ''; ?>>3.0+ Stars (★★★☆☆ & up)</option>
+                        </select>
+                    </div>
+
+                    <!-- Review Filter (5pts) -->
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold text-muted mb-1" for="review_filter">Review Filter</label>
+                        <select id="review_filter" name="review_filter" class="form-select form-select-sm">
+                            <option value="">All Review Statuses</option>
+                            <option value="with_reviews" <?php echo ($reviewFilter === 'with_reviews') ? 'selected' : ''; ?>>★ Has Customer Reviews</option>
+                            <option value="no_reviews" <?php echo ($reviewFilter === 'no_reviews') ? 'selected' : ''; ?>>No Reviews Yet</option>
+                        </select>
+                    </div>
+
                     <div class="col-md-3 d-flex flex-column justify-content-end">
                         <div class="form-check form-switch mb-2">
                             <input class="form-check-input" type="checkbox" role="switch" id="show_archived" name="show_archived" value="1" <?php echo $showArchived ? 'checked' : ''; ?>>
@@ -253,7 +323,7 @@ $activeModule = 'product';
                             <button type="submit" class="btn btn-primary btn-sm flex-fill">
                                 <i class="fa-solid fa-filter me-1"></i>Apply Filters
                             </button>
-                            <?php if ($search !== '' || $categoryFilter !== '' || $stockFilter !== '' || $showArchived): ?>
+                            <?php if ($search !== '' || $categoryFilter !== '' || $stockFilter !== '' || $minPrice !== '' || $maxPrice !== '' || $ratingFilter !== '' || $reviewFilter !== '' || $showArchived): ?>
                                 <a href="index.php" class="btn btn-outline-secondary btn-sm" title="Clear Filters">
                                     <i class="fa-solid fa-rotate-left"></i>
                                 </a>
@@ -336,6 +406,14 @@ $activeModule = 'product';
                                                 <?php echo htmlspecialchars($p['description']); ?>
                                             </div>
                                         <?php endif; ?>
+                                        <div class="mt-1 d-flex align-items-center gap-2" style="font-size: 0.75rem;">
+                                            <?php if ((int)($p['reviewCount'] ?? 0) > 0): ?>
+                                                <span class="text-warning fw-bold"><i class="fa-solid fa-star me-1"></i><?php echo number_format((float)$p['avgRating'], 1); ?></span>
+                                                <span class="text-muted">(<?php echo (int)$p['reviewCount']; ?> reviews)</span>
+                                            <?php else: ?>
+                                                <span class="text-muted opacity-75"><i class="fa-regular fa-star me-1"></i>No reviews</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-info-subtle text-info border border-info-subtle">

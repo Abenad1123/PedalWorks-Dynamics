@@ -96,6 +96,52 @@ if ($conn && $product) {
         if ($totalReviews > 0) {
             $avgRating = round($ratingSum / $totalReviews, 1);
         }
+
+        $starDistribution = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+        foreach ($reviews as $revRow) {
+            $sVal = (int)$revRow['rating'];
+            if (isset($starDistribution[$sVal])) {
+                $starDistribution[$sVal]++;
+            }
+        }
+
+        $filterReviewRating = isset($_GET['review_rating']) ? trim($_GET['review_rating']) : '';
+        $filterReviewSearch = isset($_GET['review_search']) ? trim($_GET['review_search']) : '';
+        $filterReviewSort   = isset($_GET['review_sort']) ? trim($_GET['review_sort']) : 'newest';
+
+        $displayedReviews = $reviews;
+
+        if ($filterReviewRating !== '' && is_numeric($filterReviewRating)) {
+            $rFilterInt = (int)$filterReviewRating;
+            $displayedReviews = array_values(array_filter($displayedReviews, function($item) use ($rFilterInt) {
+                return ((int)$item['rating'] === $rFilterInt);
+            }));
+        }
+
+        if ($filterReviewSearch !== '') {
+            $searchLow = mb_strtolower($filterReviewSearch);
+            $displayedReviews = array_values(array_filter($displayedReviews, function($item) use ($searchLow) {
+                $text = mb_strtolower($item['cleanText'] ?? '');
+                $author = mb_strtolower(trim(($item['firstName'] ?? '') . ' ' . ($item['lastName'] ?? '') . ' ' . ($item['username'] ?? '')));
+                return (strpos($text, $searchLow) !== false || strpos($author, $searchLow) !== false);
+            }));
+        }
+
+        if ($filterReviewSort === 'highest') {
+            usort($displayedReviews, function($a, $b) {
+                if ($a['rating'] == $b['rating']) {
+                    return strtotime($b['createdAt']) <=> strtotime($a['createdAt']);
+                }
+                return $b['rating'] <=> $a['rating'];
+            });
+        } elseif ($filterReviewSort === 'lowest') {
+            usort($displayedReviews, function($a, $b) {
+                if ($a['rating'] == $b['rating']) {
+                    return strtotime($b['createdAt']) <=> strtotime($a['createdAt']);
+                }
+                return $a['rating'] <=> $b['rating'];
+            });
+        }
     }
 
     $productImages = [];
@@ -446,21 +492,42 @@ include('includes/header.php');
             </div>
 
             <div class="row g-4 align-items-center mb-4">
-                <div class="col-md-4 text-center border-end border-white border-opacity-10 py-3">
-                    <div class="h1 fw-bold text-white mb-1"><?php echo number_format($avgRating, 1); ?></div>
-                    <div class="text-warning mb-2" style="letter-spacing: 2px;">
-                        <?php 
-                        $fullStars = floor($avgRating);
-                        for ($s = 1; $s <= 5; $s++) {
-                            if ($s <= $fullStars) {
-                                echo '<i class="fa-solid fa-star"></i>';
-                            } else {
-                                echo '<i class="fa-regular fa-star text-white-50"></i>';
+                <div class="col-md-4 border-end border-white border-opacity-10 py-3 text-center text-md-start">
+                    <div class="text-center mb-3">
+                        <div class="h1 fw-bold text-white mb-1"><?php echo number_format($avgRating, 1); ?></div>
+                        <div class="text-warning mb-1" style="letter-spacing: 2px;">
+                            <?php 
+                            $fullStars = floor($avgRating);
+                            for ($s = 1; $s <= 5; $s++) {
+                                if ($s <= $fullStars) {
+                                    echo '<i class="fa-solid fa-star"></i>';
+                                } else {
+                                    echo '<i class="fa-regular fa-star text-white-50"></i>';
+                                }
                             }
-                        }
-                        ?>
+                            ?>
+                        </div>
+                        <div class="text-white-50 small">Based on <?php echo $totalReviews; ?> verified <?php echo ($totalReviews === 1) ? 'review' : 'reviews'; ?></div>
                     </div>
-                    <span class="text-white-50 small">Based on <?php echo $totalReviews; ?> verified <?php echo ($totalReviews === 1) ? 'review' : 'reviews'; ?></span>
+
+                    <!-- Star Distribution Bars -->
+                    <div class="px-2">
+                        <?php for ($star = 5; $star >= 1; $star--): 
+                            $cnt = $starDistribution[$star] ?? 0;
+                            $pct = ($totalReviews > 0) ? round(($cnt / $totalReviews) * 100) : 0;
+                            $starActive = ($filterReviewRating === (string)$star);
+                        ?>
+                            <a href="product_details.php?id=<?php echo (int)$product['productID']; ?>&review_rating=<?php echo $star; ?>#reviews" 
+                               class="d-flex align-items-center gap-2 mb-1 text-decoration-none text-white-50 small" 
+                               title="Filter by <?php echo $star; ?> stars">
+                                <span style="width: 48px;" class="<?php echo $starActive ? 'text-warning fw-bold' : ''; ?>"><?php echo $star; ?> <i class="fa-solid fa-star text-warning fa-xs"></i></span>
+                                <div class="progress flex-grow-1" style="height: 6px; background: rgba(255,255,255,0.08);">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: <?php echo $pct; ?>%;" aria-valuenow="<?php echo $pct; ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span style="width: 28px;" class="text-end <?php echo $starActive ? 'text-white fw-bold' : ''; ?>"><?php echo $cnt; ?></span>
+                            </a>
+                        <?php endfor; ?>
+                    </div>
                 </div>
 
                 <div class="col-md-8">
@@ -529,20 +596,72 @@ include('includes/header.php');
                 </div>
             </div>
 
+            <!-- REVIEW FILTER TOOLBAR (5pts) -->
             <div class="mt-4 pt-3 border-top border-white border-opacity-10">
-                <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
-                    <i class="fa-solid fa-comments text-warning"></i>
-                    <span>Rider Experiences (<?php echo count($reviews); ?>)</span>
-                </h5>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                    <h5 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-comments text-warning"></i>
+                        <span>Rider Experiences (<?php echo count($displayedReviews); ?> of <?php echo $totalReviews; ?>)</span>
+                    </h5>
 
-                <?php if (empty($reviews)): ?>
+                    <!-- Review Filter Form (5pts) -->
+                    <form method="GET" action="product_details.php#reviews" class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                        <input type="hidden" name="id" value="<?php echo (int)$product['productID']; ?>">
+                        <?php if ($filterReviewRating !== ''): ?>
+                            <input type="hidden" name="review_rating" value="<?php echo htmlspecialchars($filterReviewRating); ?>">
+                        <?php endif; ?>
+
+                        <!-- Search within reviews -->
+                        <div class="input-group input-group-sm" style="width: 200px;">
+                            <span class="input-group-text bg-dark text-white-50 border-secondary border-opacity-25"><i class="fa-solid fa-magnifying-glass fa-xs"></i></span>
+                            <input type="text" name="review_search" class="form-control pw-form-control form-control-sm" 
+                                   value="<?php echo htmlspecialchars($filterReviewSearch); ?>" placeholder="Search reviews...">
+                        </div>
+
+                        <!-- Sort reviews -->
+                        <select name="review_sort" class="form-select form-select-sm pw-form-select" style="width: 145px;" onchange="this.form.submit()">
+                            <option value="newest" <?php echo ($filterReviewSort === 'newest') ? 'selected' : ''; ?>>Newest First</option>
+                            <option value="highest" <?php echo ($filterReviewSort === 'highest') ? 'selected' : ''; ?>>Highest Rating</option>
+                            <option value="lowest" <?php echo ($filterReviewSort === 'lowest') ? 'selected' : ''; ?>>Lowest Rating</option>
+                        </select>
+
+                        <button type="submit" class="btn btn-sm pw-btn-trail-sm py-1 px-3">Filter</button>
+                        <?php if ($filterReviewRating !== '' || $filterReviewSearch !== '' || $filterReviewSort !== 'newest'): ?>
+                            <a href="product_details.php?id=<?php echo (int)$product['productID']; ?>#reviews" class="btn btn-sm pw-btn-glass-sm py-1 px-2" title="Reset review filters">
+                                Reset
+                            </a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+
+                <!-- Review Rating Filter Pills (5pts) -->
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-4 pb-2 border-bottom border-white border-opacity-10">
+                    <span class="small text-white-50 me-1"><i class="fa-solid fa-filter text-warning me-1"></i>Filter by Rating (5pts):</span>
+                    <a href="product_details.php?id=<?php echo (int)$product['productID']; ?><?php echo ($filterReviewSearch !== '') ? '&review_search=' . urlencode($filterReviewSearch) : ''; ?><?php echo ($filterReviewSort !== 'newest') ? '&review_sort=' . urlencode($filterReviewSort) : ''; ?>#reviews" 
+                       class="pw-filter-pill small py-1 px-3 <?php echo ($filterReviewRating === '') ? 'active' : ''; ?>">
+                        All (<?php echo $totalReviews; ?>)
+                    </a>
+                    <?php for ($s = 5; $s >= 1; $s--): 
+                        $sCount = $starDistribution[$s] ?? 0;
+                    ?>
+                        <a href="product_details.php?id=<?php echo (int)$product['productID']; ?>&review_rating=<?php echo $s; ?><?php echo ($filterReviewSearch !== '') ? '&review_search=' . urlencode($filterReviewSearch) : ''; ?><?php echo ($filterReviewSort !== 'newest') ? '&review_sort=' . urlencode($filterReviewSort) : ''; ?>#reviews" 
+                           class="pw-filter-pill small py-1 px-3 <?php echo ($filterReviewRating === (string)$s) ? 'active' : ''; ?>">
+                            <?php echo $s; ?> Stars (<?php echo $sCount; ?>)
+                        </a>
+                    <?php endfor; ?>
+                </div>
+
+                <?php if (empty($displayedReviews)): ?>
                     <div class="text-center py-4 text-white-50">
                         <i class="fa-regular fa-message fa-2x mb-2 opacity-50 d-block"></i>
-                        <p class="small mb-0">No reviews have been submitted for this item yet. Be the first verified customer to share your thoughts!</p>
+                        <p class="small mb-2">No reviews match your selected rating or keyword filter.</p>
+                        <a href="product_details.php?id=<?php echo (int)$product['productID']; ?>#reviews" class="pw-btn-glass-sm py-1 px-3 text-white text-decoration-none">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Clear Review Filter
+                        </a>
                     </div>
                 <?php else: ?>
                     <div class="row g-3">
-                        <?php foreach ($reviews as $rev): 
+                        <?php foreach ($displayedReviews as $rev): 
                             $isMyReview = ($customerAccountID > 0 && (int)$rev['customerAccountID'] === $customerAccountID);
                             $reviewerName = trim($rev['firstName'] . ' ' . $rev['lastName']);
                             if ($reviewerName === '') {
